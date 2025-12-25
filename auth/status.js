@@ -1,8 +1,9 @@
+// auth/status.js
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-// GitHub Pages: récupère le nom du repo dans l'URL (ex: /wauklink-site)
+// GitHub Pages : récupère le nom du repo (ex: /wauklink-site)
 function basePath() {
   const parts = location.pathname.split("/").filter(Boolean);
   return parts.length ? `/${parts[0]}` : "";
@@ -28,6 +29,7 @@ function ensureBar() {
   bar.style.backdropFilter = "blur(8px)";
   bar.style.color = "#fff";
   bar.style.fontSize = "13px";
+
   document.body.appendChild(bar);
   return bar;
 }
@@ -58,7 +60,7 @@ async function getRole(uid) {
   try {
     const snap = await getDoc(doc(db, "users", uid));
     if (!snap.exists()) return "";
-    return (snap.data()?.role || "").toString();
+    return String(snap.data()?.role || "");
   } catch (e) {
     console.error("getRole error:", e);
     return "";
@@ -71,36 +73,38 @@ async function getRole(uid) {
 
   const loginUrl = `${base}/auth/login.html`;
   const adminUrl = `${base}/admin/index.html`;
-  const modUrl = `${base}/admin/index.html`; // même dashboard (on protège par rules)
+  const modUrl = `${base}/admin/index.html`; // même dashboard, filtré par rules
 
   onAuthStateChanged(auth, async (user) => {
     bar.innerHTML = "";
 
-    // Pas connecté
+    // ❌ Pas connecté
     if (!user) {
       bar.appendChild(pill("Non connecté"));
       bar.appendChild(linkBtn("Connexion", loginUrl));
       return;
     }
 
-    // Connecté
+    // ✅ Connecté
     bar.appendChild(pill(user.email || "Connecté"));
 
     const logout = linkBtn("Déconnexion", "#", {
       borderColor: "rgba(255,80,80,.45)",
       background: "rgba(255,80,80,.12)",
     });
+
     logout.addEventListener("click", async (e) => {
       e.preventDefault();
       await signOut(auth);
       location.reload();
     });
+
     bar.appendChild(logout);
 
-    // Rôle
+    // 🔐 Rôle
     const role = await getRole(user.uid);
 
-    // Moderator OU Admin => accès modération (bouton Modération)
+    // 🟡 Moderator OU Admin
     if (role === "moderator" || role === "admin") {
       bar.appendChild(
         linkBtn("Modération", modUrl, {
@@ -110,7 +114,7 @@ async function getRole(uid) {
       );
     }
 
-    // Admin => accès complet (bouton Admin)
+    // 🟢 Admin uniquement
     if (role === "admin") {
       bar.appendChild(
         linkBtn("Admin", adminUrl, {
