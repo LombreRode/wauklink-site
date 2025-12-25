@@ -10,20 +10,8 @@ function basePath() {
 const msg = document.getElementById("msg");
 
 async function getRole(uid) {
-  try {
-    const ref = doc(db, "users", uid);
-    const snap = await getDoc(ref);
-
-    if (!snap.exists()) {
-      return { role: "", exists: false, error: "" };
-    }
-
-    const data = snap.data() || {};
-    return { role: String(data.role || ""), exists: true, error: "" };
-  } catch (e) {
-    console.error("getRole error:", e);
-    return { role: "", exists: false, error: String(e?.message || e) };
-  }
+  const snap = await getDoc(doc(db, "users", uid));
+  return snap.exists() ? String(snap.data()?.role || "") : "";
 }
 
 onAuthStateChanged(auth, async (user) => {
@@ -36,26 +24,18 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  msg.textContent = `Connecté: ${user.email || "?"} • UID: ${user.uid}\nLecture rôle…`;
+  msg.textContent = "Vérification du rôle…";
+  const role = await getRole(user.uid);
 
-  const res = await getRole(user.uid);
-
-  msg.textContent =
-    `Connecté: ${user.email || "?"}\n` +
-    `UID: ${user.uid}\n` +
-    `Doc users/<uid> existe: ${res.exists ? "OUI" : "NON"}\n` +
-    `role lu: "${res.role}"\n` +
-    (res.error ? `ERREUR: ${res.error}\n` : "");
-
-  if (res.role === "admin") {
+  if (role === "admin") {
     window.location.replace(`${base}/admin/index.html`);
     return;
   }
 
-  if (res.role === "moderator") {
+  if (role === "moderator") {
     window.location.replace(`${base}/admin/moderation.html`);
     return;
   }
 
-  // reste sur la page avec le message debug
+  msg.textContent = "⛔ Accès refusé (pas admin/modérateur).";
 });
