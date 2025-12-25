@@ -6,297 +6,248 @@
   <title>WAUKLINK — Admin (Annonces)</title>
   <link rel="stylesheet" href="../style.css?v=1" />
   <style>
-    .wrap{padding:24px 0}
-    .top{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
-    .card{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:16px;padding:14px}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .page{padding:22px 0}
     .meta{opacity:.85;font-size:13px}
-    .kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:12px}
-    .kpi .v{font-weight:900;font-size:22px}
-    .ctrl{display:grid;grid-template-columns:1fr 220px 220px;gap:10px;margin-top:12px}
-    @media (max-width:800px){ .ctrl{grid-template-columns:1fr} }
-    input, select{
-      width:100%;padding:10px 12px;border-radius:12px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(0,0,0,.2);color:#fff
-    }
-    table{width:100%;border-collapse:collapse;margin-top:12px}
-    th,td{border-bottom:1px solid rgba(255,255,255,.12);padding:10px;text-align:left;vertical-align:top}
-    th{font-size:12px;opacity:.85}
-    .tag{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14);font-size:12px;opacity:.95}
-    .btn{
-      padding:8px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.06);color:#fff;cursor:pointer
-    }
-    .btn.danger{border-color:rgba(255,80,80,.45);background:rgba(255,80,80,.10)}
-    .btn.ok{border-color:rgba(80,255,160,.35);background:rgba(80,255,160,.10)}
-    .btn.warn{border-color:rgba(255,200,80,.35);background:rgba(255,200,80,.10)}
-    .btn:disabled{opacity:.5;cursor:not-allowed}
-    .actions{display:flex;gap:8px;flex-wrap:wrap}
-    .small{font-size:12px;opacity:.85}
-    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:12px 0}
+    .kpi{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:16px;padding:14px}
+    .kpi .n{font-size:26px;font-weight:900}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0}
+    input,select{padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.2);color:#fff}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.15);text-align:left;vertical-align:top}
+    th{opacity:.8}
+    .btn{padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;cursor:pointer}
+    .ok{border-color:rgba(80,255,160,.35);background:rgba(80,255,160,.12)}
+    .warn{border-color:rgba(255,190,80,.45);background:rgba(255,190,80,.12)}
+    .danger{border-color:rgba(255,80,80,.5);background:rgba(255,80,80,.15)}
+    .tag{display:inline-block;padding:3px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14);font-size:12px;opacity:.9}
+    .muted{opacity:.7}
   </style>
 </head>
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
       <div class="subtitle">Admin — Modération des annonces</div>
     </div>
-    <nav class="row">
-      <a class="btn" href="./index.html">Dashboard</a>
-      <a class="btn" href="../annonces/location.html">Site public</a>
+    <nav style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <a class="btn" href="index.html">Dashboard</a>
+      <a class="btn" href="reports.html">🚩 Signalements</a>
+      <a class="btn" href="ratings.html">⭐ Notes</a>
+      <a class="btn" href="../index.html">← Site</a>
     </nav>
   </div>
 </header>
 
-<main class="container wrap">
-  <div class="top">
-    <h2 style="margin:0">Annonces</h2>
-    <span class="tag" id="who">Vérification admin…</span>
+<main class="container page">
+  <div class="grid">
+    <div class="kpi"><div class="meta">Chargées</div><div class="n" id="kAll">0</div></div>
+    <div class="kpi"><div class="meta">Active</div><div class="n" id="kActive">0</div></div>
+    <div class="kpi"><div class="meta">Pending</div><div class="n" id="kPending">0</div></div>
+    <div class="kpi"><div class="meta">Orphelines (owner manquant)</div><div class="n" id="kOrph">0</div></div>
   </div>
 
-  <div class="kpi">
-    <div class="card"><div class="meta">Chargées</div><div class="v" id="kTotal">0</div></div>
-    <div class="card"><div class="meta">Active</div><div class="v" id="kActive">0</div></div>
-    <div class="card"><div class="meta">Pending</div><div class="v" id="kPending">0</div></div>
-    <div class="card"><div class="meta">Orphelines</div><div class="v" id="kOrphan">0</div></div>
+  <div class="toolbar">
+    <input id="q" placeholder="Recherche: titre, ville, type, email, owner..." style="min-width:260px;flex:1" />
+    <select id="filter">
+      <option value="all">Tous status</option>
+      <option value="pending">Pending</option>
+      <option value="active">Active</option>
+      <option value="removed">Removed</option>
+    </select>
+    <button class="btn" id="reload">↻ Recharger</button>
+    <span class="meta" id="msg"></span>
   </div>
 
-  <div class="card" style="margin-top:12px">
-    <div class="row" style="justify-content:space-between">
-      <div>
-        <div style="font-weight:900">Actions rapides</div>
-        <div class="meta">✅ Valider • 🕒 Pending • 🚫 Removed • 🛠 Fix ownerUid • 🗑 Supprimer</div>
-      </div>
-      <div class="row">
-        <button class="btn" id="btnReload">⟳ Recharger</button>
-      </div>
-    </div>
-
-    <div class="ctrl">
-      <input id="search" placeholder="Recherche : titre, ville, type, email, ownerUid…" />
-      <select id="statusFilter">
-        <option value="all">Tous statuts</option>
-        <option value="active">Active</option>
-        <option value="pending">Pending</option>
-        <option value="removed">Removed</option>
-        <option value="orphans">Orphelines (ownerUid manquant)</option>
-      </select>
-      <select id="limit">
-        <option value="50">Charger 50</option>
-        <option value="100" selected>Charger 100</option>
-        <option value="200">Charger 200</option>
-      </select>
-    </div>
-
-    <div class="small" style="margin-top:10px">
-      Pro : mets les nouvelles annonces en <b>pending</b> à la création, puis tu valides ici pour passer en <b>active</b>.
-    </div>
-
-    <div style="overflow:auto">
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Annonce</th>
-            <th>Statut</th>
-            <th>Owner</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="tbody">
-          <tr><td colspan="5" class="meta">Chargement…</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Annonce</th>
+        <th>Status</th>
+        <th>Owner</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
 </main>
 
 <script type="module">
-  import { db } from "../auth/firebase.js";
-  import { requireAdmin } from "./_shared/guard.js";
-
+  import { db, auth } from "../auth/firebase.js";
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
   import {
-    collection, query, orderBy, limit as qLimit, getDocs,
-    doc, updateDoc, deleteDoc
+    collection, getDocs, doc, updateDoc, deleteField, orderBy, query
   } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  const who = document.getElementById("who");
-  const btnReload = document.getElementById("btnReload");
-  const tbody = document.getElementById("tbody");
-  const search = document.getElementById("search");
-  const statusFilter = document.getElementById("statusFilter");
-  const limitSel = document.getElementById("limit");
+  const rows = document.getElementById("rows");
+  const msg = document.getElementById("msg");
+  const qInput = document.getElementById("q");
+  const filter = document.getElementById("filter");
+  const reloadBtn = document.getElementById("reload");
 
-  const kTotal = document.getElementById("kTotal");
+  const kAll = document.getElementById("kAll");
   const kActive = document.getElementById("kActive");
   const kPending = document.getElementById("kPending");
-  const kOrphan = document.getElementById("kOrphan");
+  const kOrph = document.getElementById("kOrph");
 
-  let currentUser = null; // admin connecté
-  let raw = [];          // annonces chargées
+  let currentUser = null;
+  onAuthStateChanged(auth, (u)=>{ currentUser = u || null; });
 
-  const esc = (s)=> String(s ?? "").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
-  const norm = (s)=> String(s ?? "").toLowerCase().trim();
-  const fmtDate = (ts)=> { try{ const d = ts?.toDate ? ts.toDate() : null; return d ? d.toLocaleString("fr-FR") : "-"; } catch { return "-"; } };
-
-  function computeKpis(items){
-    kTotal.textContent = items.length;
-    kActive.textContent = items.filter(a => a.status === "active").length;
-    kPending.textContent = items.filter(a => a.status === "pending").length;
-    kOrphan.textContent = items.filter(a => !a.ownerUid).length;
+  function setMsg(t){ msg.textContent = t || ""; }
+  function esc(s){ return String(s ?? "").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])); }
+  function fmtDate(ts){
+    try{
+      const d = ts?.toDate ? ts.toDate() : (ts?.seconds ? new Date(ts.seconds*1000) : null);
+      if(!d) return "-";
+      return d.toLocaleString("fr-FR");
+    }catch{ return "-"; }
   }
 
-  function render(items){
-    computeKpis(raw);
-
-    if (!items.length) {
-      tbody.innerHTML = `<tr><td colspan="5" class="meta">Aucun résultat.</td></tr>`;
+  // ✅ Normalisation owner: accepte ownerId OU ownerUid, et force ownerUid
+  async function fixOwnerUid(docId, data){
+    const owner = data.ownerUid || data.ownerId || "";
+    if(!owner){
+      alert("❌ Aucun ownerId/ownerUid trouvé.");
       return;
     }
-
-    tbody.innerHTML = items.map(a => {
-      const st = a.status || "-";
-      const ownerTxt = a.ownerUid
-        ? `<span class="mono">${esc(a.ownerUid)}</span>`
-        : `<span class="tag" title="Annonce orpheline">NO ownerUid</span>`;
-
-      const title = esc(a.titre || "Annonce");
-      const meta = `${esc(a.ville||"-")} • ${esc(a.type||"-")} • ${esc(a.prix ?? "-")}€`;
-      const date = fmtDate(a.createdAt);
-      const photosCount = Array.isArray(a.photos) ? a.photos.filter(Boolean).length : 0;
-
-      return `
-        <tr data-id="${esc(a.id)}">
-          <td class="meta">${esc(date)}</td>
-          <td>
-            <div style="font-weight:900">${title}</div>
-            <div class="meta">${meta}</div>
-            <div class="small">Photos: ${photosCount} • Email: ${esc(a.contactEmail||"-")}</div>
-          </td>
-          <td><span class="tag">${esc(st)}</span></td>
-          <td>${ownerTxt}</td>
-          <td>
-            <div class="actions">
-              <button class="btn ok" data-act="approve">✅ Valider</button>
-              <button class="btn warn" data-act="pending">🕒 Pending</button>
-              <button class="btn" data-act="remove">🚫 Removed</button>
-              <button class="btn" data-act="fixOwner">🛠 Fix ownerUid</button>
-              <button class="btn danger" data-act="delete">🗑 Supprimer</button>
-            </div>
-            <div class="small meta" style="margin-top:6px">
-              DocId: <span class="mono">${esc(a.id)}</span>
-            </div>
-          </td>
-        </tr>
-      `;
-    }).join("");
+    await updateDoc(doc(db,"annonces_location", docId), {
+      ownerUid: owner,
+      ownerId: deleteField()
+    });
   }
 
-  function applyFilters(){
-    const q = norm(search.value);
-    const f = statusFilter.value;
-
-    let items = raw.slice();
-
-    if (f === "orphans") items = items.filter(a => !a.ownerUid);
-    else if (f !== "all") items = items.filter(a => (a.status || "") === f);
-
-    if (q) {
-      items = items.filter(a => {
-        const blob = norm(
-          (a.titre||"") + " " + (a.ville||"") + " " + (a.type||"") + " " +
-          (a.contactEmail||"") + " " + (a.contactPhone||"") + " " + (a.ownerUid||"")
-        );
-        return blob.includes(q);
-      });
-    }
-
-    render(items);
+  async function setStatus(docId, status){
+    await updateDoc(doc(db,"annonces_location", docId), { status });
   }
 
   async function load(){
-    tbody.innerHTML = `<tr><td colspan="5" class="meta">Chargement…</td></tr>`;
-    const lim = Number(limitSel.value) || 100;
-    const qy = query(collection(db, "annonces_location"), orderBy("createdAt", "desc"), qLimit(lim));
-    const snap = await getDocs(qy);
-    raw = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    applyFilters();
+    setMsg("⏳ Chargement…");
+    rows.innerHTML = "";
+
+    const snap = await getDocs(query(
+      collection(db,"annonces_location"),
+      orderBy("createdAt","desc")
+    ));
+
+    const all = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+
+    // KPI
+    kAll.textContent = all.length;
+    kActive.textContent = all.filter(x=>x.status==="active").length;
+    kPending.textContent = all.filter(x=>x.status==="pending").length;
+    kOrph.textContent = all.filter(x=>!(x.ownerUid || x.ownerId)).length;
+
+    // filtre + recherche
+    const f = filter.value;
+    const s = (qInput.value || "").toLowerCase().trim();
+
+    const shown = all.filter(a=>{
+      if(f !== "all" && (a.status||"") !== f) return false;
+      if(!s) return true;
+      const blob = [
+        a.titre, a.title, a.ville, a.type, a.contactEmail,
+        a.ownerUid, a.ownerId, a.status, a.duree, a.prix
+      ].join(" ").toLowerCase();
+      return blob.includes(s);
+    });
+
+    if(!shown.length){
+      setMsg("✅ Rien à afficher.");
+      return;
+    }
+    setMsg(`✅ ${shown.length} ligne(s).`);
+
+    shown.forEach(a=>{
+      const owner = a.ownerUid || a.ownerId || "";
+      const ownerOk = !!a.ownerUid; // on veut ownerUid
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td class="muted">${esc(fmtDate(a.createdAt))}</td>
+        <td>
+          <div style="font-weight:900">${esc(a.titre || a.title || "-")}</div>
+          <div class="meta">${esc(a.ville||"-")} • ${esc(a.type||"-")} • ${esc(a.duree||"-")} • ${(a.prix ?? "-")}€</div>
+          <div class="meta">Email: ${esc(a.contactEmail||"-")}</div>
+          <div class="meta">DocId: ${esc(a.id)}</div>
+        </td>
+        <td>
+          <span class="tag">${esc(a.status||"-")}</span>
+        </td>
+        <td>
+          <div style="font-weight:900">${esc(owner || "-")}</div>
+          <div class="meta">${ownerOk ? "ownerUid ✅" : (owner ? "ownerId ⚠️" : "❌ aucun owner")}</div>
+        </td>
+        <td style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn ok">Valider</button>
+          <button class="btn warn">Pending</button>
+          <button class="btn danger">Removed</button>
+          <button class="btn">Fix ownerUid</button>
+        </td>
+      `;
+
+      const [bOk, bPen, bRem, bFix] = tr.querySelectorAll("button");
+
+      bOk.onclick = async ()=>{
+        try{
+          // ✅ avant validation: si ownerId -> ownerUid
+          if(!a.ownerUid && a.ownerId){
+            await fixOwnerUid(a.id, a);
+          }
+          await setStatus(a.id, "active");
+          await load();
+        }catch(e){
+          console.error(e);
+          alert("❌ Action refusée (rules/permissions) ou erreur. Voir Console F12.");
+        }
+      };
+
+      bPen.onclick = async ()=>{
+        try{
+          if(!confirm("Mettre en pending ?")) return;
+          await setStatus(a.id, "pending");
+          await load();
+        }catch(e){
+          console.error(e);
+          alert("❌ Action refusée (rules/permissions) ou erreur. Voir Console F12.");
+        }
+      };
+
+      bRem.onclick = async ()=>{
+        try{
+          if(!confirm("Mettre en removed ?")) return;
+          await setStatus(a.id, "removed");
+          await load();
+        }catch(e){
+          console.error(e);
+          alert("❌ Action refusée (rules/permissions) ou erreur. Voir Console F12.");
+        }
+      };
+
+      bFix.onclick = async ()=>{
+        try{
+          await fixOwnerUid(a.id, a);
+          await load();
+        }catch(e){
+          console.error(e);
+          alert("❌ Fix ownerUid refusé (rules/permissions). Voir Console F12.");
+        }
+      };
+
+      rows.appendChild(tr);
+    });
   }
 
-  async function act(id, action){
-    const a = raw.find(x => x.id === id);
-    if (!a) return;
+  reloadBtn.onclick = load;
+  filter.onchange = load;
+  qInput.oninput = () => { /* filtre instant */ load(); };
 
-    const ref = doc(db, "annonces_location", id);
-
-    if (action === "approve") {
-      if (!confirm("Valider cette annonce (status=active) ?")) return;
-      await updateDoc(ref, { status: "active" });
-    }
-
-    if (action === "pending") {
-      if (!confirm("Mettre cette annonce en pending ?")) return;
-      await updateDoc(ref, { status: "pending" });
-    }
-
-    if (action === "remove") {
-      if (!confirm("Désactiver sans supprimer (status=removed) ?")) return;
-      await updateDoc(ref, { status: "removed" });
-    }
-
-    if (action === "fixOwner") {
-      if (a.ownerUid) { alert("✅ ownerUid existe déjà."); return; }
-      if (!confirm("Assigner ownerUid = TON UID admin sur cette annonce orpheline ?")) return;
-      await updateDoc(ref, { ownerUid: currentUser.uid });
-    }
-
-    if (action === "delete") {
-      if (!confirm("SUPPRIMER définitivement ? (irréversible)")) return;
-      await deleteDoc(ref);
-    }
-
-    await load();
-  }
-
-  tbody.addEventListener("click", async (e) => {
-    const btn = e.target.closest("button[data-act]");
-    if (!btn) return;
-    const tr = e.target.closest("tr[data-id]");
-    if (!tr) return;
-
-    try {
-      btn.disabled = true;
-      await act(tr.dataset.id, btn.dataset.act);
-    } catch (err) {
-      console.error(err);
-      alert("❌ Action refusée (rules/permissions) ou erreur. Voir Console F12.");
-    } finally {
-      btn.disabled = false;
-    }
-  });
-
-  btnReload.addEventListener("click", load);
-  search.addEventListener("input", applyFilters);
-  statusFilter.addEventListener("change", applyFilters);
-  limitSel.addEventListener("change", load);
-
-  // ✅ GARDE ADMIN (centralisé)
-  requireAdmin({
-    redirectTo: "../index.html",
-    onOk: async (user) => {
-      currentUser = user;
-      who.textContent = "ADMIN OK";
-      await load();
-    },
-    onLoading: () => {
-      who.textContent = "Vérification admin…";
-    }
-  });
+  load();
 </script>
 
 <script type="module" src="../auth/status.js"></script>
+<script type="module" src="../auth/user_sync.js"></script>
 </body>
 </html>
