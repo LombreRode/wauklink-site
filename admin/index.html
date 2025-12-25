@@ -3,79 +3,105 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WAUKLINK — Admin (Dashboard)</title>
+  <title>WAUKLINK — Admin</title>
   <link rel="stylesheet" href="../style.css?v=1" />
   <style>
-    .wrap{padding:24px 0}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:12px}
-    .card{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:16px;padding:14px}
-    .meta{opacity:.85;font-size:13px}
-    .btn{display:inline-block;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;text-decoration:none;cursor:pointer}
-    .tag{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14);font-size:12px;opacity:.95}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+    .page{padding:24px 0}
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+      gap:16px;
+      margin-top:20px
+    }
+    .card{
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      border-radius:16px;
+      padding:18px;
+      cursor:pointer;
+      transition:.15s
+    }
+    .card:hover{transform:translateY(-2px)}
+    .icon{font-size:32px}
+    .title{font-weight:900;margin-top:10px}
+    .meta{opacity:.85;font-size:13px;margin-top:6px}
+    .btn{
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      cursor:pointer
+    }
   </style>
 </head>
+
 <body>
 <header class="topbar">
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
-      <div class="subtitle">Admin — Dashboard</div>
+      <div class="subtitle">Espace Administrateur</div>
     </div>
-    <nav class="row">
+    <nav>
       <a class="btn" href="../index.html">← Accueil</a>
-      <a class="btn" href="../annonces/location.html">Site public</a>
     </nav>
   </div>
 </header>
 
-<main class="container wrap">
-  <div class="row" style="justify-content:space-between">
-    <h2 style="margin:0">Tableau de bord</h2>
-    <span class="tag" id="who">Vérification admin…</span>
-  </div>
+<main class="container page">
+  <h2>Commandes administrateur</h2>
+  <p class="meta">
+    Accès réservé aux comptes avec <b>role = "admin"</b>.
+  </p>
 
   <div class="grid">
-    <div class="card">
-      <div style="font-weight:900">Modération des annonces</div>
-      <div class="meta">Valider / pending / removed / supprimer / fix ownerUid</div>
-      <div style="margin-top:10px">
-        <a class="btn" href="./annonces.html">Ouvrir →</a>
+
+    <!-- VALIDATION ANNONCES -->
+    <div class="card" onclick="go('index.html')">
+      <div class="icon">✅</div>
+      <div class="title">Validation des annonces</div>
+      <div class="meta">
+        Valider / refuser les annonces en attente.
       </div>
+      <button class="btn">Ouvrir</button>
     </div>
 
-    <div class="card">
-      <div style="font-weight:900">Signalements</div>
-      <div class="meta">Voir les reports (si tu actives la collection reports)</div>
-      <div style="margin-top:10px">
-        <a class="btn" href="./reports.html">Ouvrir →</a>
+    <!-- SIGNALEMENTS -->
+    <div class="card" onclick="go('reports.html')">
+      <div class="icon">🚩</div>
+      <div class="title">Signalements</div>
+      <div class="meta">
+        Voir les annonces signalées par les utilisateurs.
       </div>
+      <button class="btn">Ouvrir</button>
     </div>
 
-    <div class="card">
-      <div style="font-weight:900">Infos</div>
-      <div class="meta">Accès protégé par <span class="mono">admin/_shared/guard.js</span>.</div>
+    <!-- NOTES -->
+    <div class="card" onclick="go('ratings.html')">
+      <div class="icon">⭐</div>
+      <div class="title">Notes & étoiles</div>
+      <div class="meta">
+        Voir les notes, top annonces, reset moyenne.
+      </div>
+      <button class="btn">Ouvrir</button>
     </div>
+
   </div>
 </main>
 
-<script type="module">
-  import { requireAdmin } from "./_shared/guard.js";
+<footer class="footer">
+  © WAUKLINK — Admin
+</footer>
 
-  const who = document.getElementById("who");
-
-  requireAdmin({
-    redirectTo: "../index.html",
-    onOk: async (user) => {
-      who.textContent = "ADMIN OK";
-    },
-    onLoading: () => {
-      who.textContent = "Vérification admin…";
-    }
-  });
+<script>
+  function go(p){
+    window.location.href = p;
+  }
 </script>
 
 <script type="module" src="../auth/status.js"></script>
+<script type="module" src="../auth/user_sync.js"></script>
 </body>
 </html>
