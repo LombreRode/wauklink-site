@@ -19,6 +19,7 @@
     .pager{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:16px}
     .btn{padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;cursor:pointer}
     .btn:disabled{opacity:.5;cursor:not-allowed}
+
     .btn-danger{
       padding:10px 12px;border-radius:12px;cursor:pointer;
       border:1px solid rgba(255,80,80,.45);
@@ -32,13 +33,21 @@
     .modalBody{padding:16px}
     .modalActions{display:flex;gap:10px;flex-wrap:wrap;padding:16px;border-top:1px solid rgba(255,255,255,.14)}
     .closeX{background:transparent;border:1px solid rgba(255,255,255,.14);border-radius:12px;color:#fff;padding:6px 10px;cursor:pointer}
+
     .photos{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:10px}
     .ph{border:1px solid rgba(255,255,255,.14);border-radius:14px;overflow:hidden;background:rgba(255,255,255,.04);aspect-ratio:4/3}
     .ph img{width:100%;height:100%;object-fit:cover;display:block}
+
     .kv{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
     .kvc{border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px;background:rgba(255,255,255,.04)}
     .k{opacity:.75;font-size:12px}
     .v{font-weight:900}
+
+    /* ⭐ rating UI */
+    .ratingBox{margin-top:16px;border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px;background:rgba(255,255,255,.04)}
+    .ratingStars{font-size:22px;display:flex;gap:6px;margin-top:6px;user-select:none}
+    .ratingStars span{cursor:pointer;line-height:1}
+    .ratingStars span:hover{filter:brightness(1.2)}
   </style>
 </head>
 
@@ -106,6 +115,19 @@
       <div id="dDesc" style="margin-top:6px;white-space:pre-wrap"></div>
     </div>
 
+    <!-- ⭐ NOTE -->
+    <div class="ratingBox">
+      <div class="k">Votre note</div>
+      <div id="ratingStars" class="ratingStars" aria-label="Noter cette annonce">
+        <span data-v="1">☆</span>
+        <span data-v="2">☆</span>
+        <span data-v="3">☆</span>
+        <span data-v="4">☆</span>
+        <span data-v="5">☆</span>
+      </div>
+      <div id="ratingMsg" class="meta" style="margin-top:6px"></div>
+    </div>
+
     <div style="margin-top:14px">
       <div class="k">Photos (max 6)</div>
       <div id="dPhotos" class="photos"></div>
@@ -116,7 +138,6 @@
     <a id="btnMail" class="btn" href="#" style="text-decoration:none">✉ Joindre par mail</a>
     <a id="btnTel" class="btn" href="#" style="text-decoration:none;display:none">📞 Appeler</a>
     <button id="btnReport" class="btn-danger">🚩 Signaler</button>
-
     <button id="btnEdit" class="btn" style="display:none">✏️ Modifier</button>
     <button id="btnDelete" class="btn" style="display:none">🗑️ Supprimer</button>
     <button id="backBtn" class="btn">↩ Retour aux annonces</button>
@@ -130,7 +151,6 @@
   // ====== PARAMS (duree) ======
   const params = new URLSearchParams(window.location.search);
   const dureeParam = (params.get("duree") || "").trim().toLowerCase(); // "saisonniere" | "annuelle" | ""
-
   const allowedDuree = (dureeParam === "saisonniere" || dureeParam === "annuelle") ? dureeParam : "";
   const dureeLabel = allowedDuree === "saisonniere"
     ? "Location saisonnière"
@@ -143,7 +163,6 @@
   const pageTitle = document.getElementById("pageTitle");
   const pageMeta = document.getElementById("pageMeta");
   const pageBadge = document.getElementById("pageBadge");
-
   document.title = `WAUKLINK — ${dureeLabel}`;
   subTitle.textContent = `Annonces • ${dureeLabel}`;
   pageTitle.textContent = (allowedDuree ? `Offres • ${dureeLabel}` : "Offres Location (toutes durées)");
@@ -158,7 +177,8 @@
   import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
   import {
     collection, query, where, orderBy, limit, startAfter, getDocs,
-    doc, updateDoc, deleteDoc, addDoc, serverTimestamp
+    doc, updateDoc, deleteDoc, addDoc, serverTimestamp,
+    getDoc, setDoc, runTransaction, increment
   } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
   // ====== UI ======
@@ -188,6 +208,10 @@
   const btnDelete = document.getElementById("btnDelete");
   const btnReport = document.getElementById("btnReport");
 
+  // ⭐ rating UI
+  const ratingStars = document.getElementById("ratingStars");
+  const ratingMsg = document.getElementById("ratingMsg");
+
   // ====== STATE ======
   let page = 1;
   let lastDoc = null;
@@ -202,12 +226,17 @@
   function esc(s){
     return String(s ?? "").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
   }
-
   function stars(avg=0, count=0){
     const a = Math.max(0, Math.min(5, Number(avg||0)));
     const full = Math.round(a);
     const s = "★★★★★☆☆☆☆☆".slice(5-full, 10-full);
     return `${s}  ${a.toFixed(1)}/5 (${count} avis)`;
+  }
+
+  function renderStars(val = 0){
+    [...ratingStars.children].forEach(s => {
+      s.textContent = Number(s.dataset.v) <= val ? "★" : "☆";
+    });
   }
 
   function renderList(items){
@@ -216,7 +245,6 @@
       list.innerHTML = `<div class="meta">Aucune annonce pour l’instant.</div>`;
       return;
     }
-
     items.forEach((a, idx) => {
       const el = document.createElement("div");
       el.className = "card";
@@ -267,24 +295,23 @@
     }
   }
 
-  function openDetail(index){
+  async function openDetail(index){
     const a = currentItems[index];
     if(!a) return;
     currentDetail = a;
 
     dTitle.textContent = a.titre || "Annonce";
-
-    // ✅ ajoute la durée dans le meta si dispo
     const dureeTxt = a.duree ? ` • ${a.duree}` : "";
     dMeta.textContent = `${a.ville || ""} • ${a.type || ""}${dureeTxt}`;
-
     dStars.textContent = stars(a.ratingAvg || 0, a.ratingCount || 0);
+
     dPrice.textContent = (a.prix ?? "") + "€";
     dType.textContent = a.type ?? "";
     dVille.textContent = a.ville ?? "";
     dSurface.textContent = a.surface ?? "-";
     dDesc.textContent = a.description ?? "—";
 
+    // Photos
     dPhotos.innerHTML = "";
     const photos = Array.isArray(a.photos) ? a.photos.filter(Boolean).slice(0, 6) : [];
     if(photos.length === 0){
@@ -298,13 +325,13 @@
       });
     }
 
+    // Contact
     const mail = (a.contactEmail || "").trim();
     const tel = (a.contactPhone || "").trim();
     const subject = encodeURIComponent("WAUKLINK — Contact annonce : " + (a.titre || ""));
     const body = encodeURIComponent(
       `Bonjour,\n\nJe vous contacte au sujet de votre annonce : ${a.titre || ""}\nVille : ${a.ville || ""}\n\nMon message :\n`
     );
-
     btnMail.href = mail ? `mailto:${mail}?subject=${subject}&body=${body}` : "#";
     btnMail.style.opacity = mail ? "1" : ".5";
     btnMail.onclick = (e) => { if(!mail){ e.preventDefault(); alert("Email non disponible sur cette annonce."); } };
@@ -316,11 +343,13 @@
       btnTel.style.display = "none";
     }
 
+    // Signaler
     btnReport.onclick = async () => {
       if (!currentDetail) return;
       await sendReport(currentDetail);
     };
 
+    // Proprio
     const isOwner = !!currentUser && !!a.ownerUid && currentUser.uid === a.ownerUid;
     btnEdit.style.display = isOwner ? "inline-block" : "none";
     btnDelete.style.display = isOwner ? "inline-block" : "none";
@@ -376,59 +405,110 @@
       }
     };
 
+    // ⭐ Charger la note utilisateur (si connecté)
+    ratingMsg.textContent = "";
+    renderStars(0);
+    if (!currentUser) {
+      ratingMsg.textContent = "Connecte-toi pour noter.";
+    } else {
+      try{
+        const rRef = doc(db, "annonces_location", a.id, "ratings", currentUser.uid);
+        const snap = await getDoc(rRef);
+        if (snap.exists()) {
+          renderStars(snap.data()?.value || 0);
+          ratingMsg.textContent = "Vous avez déjà noté cette annonce.";
+        } else {
+          ratingMsg.textContent = "Clique sur une étoile pour noter.";
+        }
+      } catch(e){
+        console.error(e);
+        ratingMsg.textContent = "Impossible de charger votre note.";
+      }
+    }
+
     dlg.showModal();
   }
+
+  // ⭐ Click étoiles (1 note par user)
+  ratingStars.addEventListener("click", async (e) => {
+    const v = Number(e.target?.dataset?.v);
+    if (!v || v < 1 || v > 5) return;
+
+    if (!currentUser) {
+      alert("🔒 Connecte-toi pour noter.");
+      return;
+    }
+    if (!currentDetail) return;
+
+    const annonceRef = doc(db, "annonces_location", currentDetail.id);
+    const rateRef = doc(db, "annonces_location", currentDetail.id, "ratings", currentUser.uid);
+
+    try {
+      await runTransaction(db, async (tx) => {
+        const existing = await tx.get(rateRef);
+        if (existing.exists()) throw new Error("ALREADY_RATED");
+
+        const annonceSnap = await tx.get(annonceRef);
+        if (!annonceSnap.exists()) throw new Error("MISSING_ANNONCE");
+
+        const data = annonceSnap.data() || {};
+        const count = Number(data.ratingCount || 0);
+        const avg = Number(data.ratingAvg || 0);
+
+        const newCount = count + 1;
+        const newAvg = ((avg * count) + v) / newCount;
+
+        tx.set(rateRef, { value: v, createdAt: serverTimestamp() });
+        tx.update(annonceRef, {
+          ratingCount: increment(1),
+          ratingAvg: Number(newAvg.toFixed(2))
+        });
+      });
+
+      renderStars(v);
+      ratingMsg.textContent = "Merci pour votre note ⭐";
+
+      // (optionnel) met à jour l’UI locale
+      currentDetail.ratingCount = (currentDetail.ratingCount || 0) + 1;
+      currentDetail.ratingAvg = Number((((currentDetail.ratingAvg || 0) * (currentDetail.ratingCount - 1)) + v) / (currentDetail.ratingCount)).toFixed(2);
+      dStars.textContent = stars(currentDetail.ratingAvg || 0, currentDetail.ratingCount || 0);
+
+    } catch (err) {
+      if (String(err?.message).includes("ALREADY_RATED")) {
+        alert("Tu as déjà noté cette annonce.");
+        return;
+      }
+      console.error(err);
+      alert("❌ Erreur lors de la notation.");
+    }
+  });
 
   // ====== QUERY BUILDER (avec filtre duree) ======
   function makeBaseQuery(){
     const baseRef = collection(db, "annonces_location");
-    const constraints = [
-      where("status", "==", "active"),
-    ];
-
-    if (allowedDuree) {
-      constraints.push(where("duree", "==", allowedDuree));
-    }
-
+    const constraints = [ where("status", "==", "active") ];
+    if (allowedDuree) constraints.push(where("duree", "==", allowedDuree));
     constraints.push(orderBy("createdAt", "desc"));
     constraints.push(limit(PER_PAGE));
-
     return query(baseRef, ...constraints);
   }
-
   function makeNextQuery(){
     const baseRef = collection(db, "annonces_location");
-    const constraints = [
-      where("status", "==", "active"),
-    ];
-
-    if (allowedDuree) {
-      constraints.push(where("duree", "==", allowedDuree));
-    }
-
+    const constraints = [ where("status", "==", "active") ];
+    if (allowedDuree) constraints.push(where("duree", "==", allowedDuree));
     constraints.push(orderBy("createdAt", "desc"));
     constraints.push(startAfter(lastDoc));
     constraints.push(limit(PER_PAGE));
-
     return query(baseRef, ...constraints);
   }
-
   function makePrevQuery(){
     const baseRef = collection(db, "annonces_location");
-    const constraints = [
-      where("status", "==", "active"),
-    ];
-
-    if (allowedDuree) {
-      constraints.push(where("duree", "==", allowedDuree));
-    }
-
+    const constraints = [ where("status", "==", "active") ];
+    if (allowedDuree) constraints.push(where("duree", "==", allowedDuree));
     constraints.push(orderBy("createdAt", "desc"));
-
     cursorStack.pop();
     const prevCursor = cursorStack[cursorStack.length - 1] || null;
     if (prevCursor) constraints.push(startAfter(prevCursor));
-
     constraints.push(limit(PER_PAGE));
     return query(baseRef, ...constraints);
   }
@@ -436,14 +516,8 @@
   // ====== LOAD PAGE (pagination) ======
   async function loadPage(direction = "stay"){
     let qy = makeBaseQuery();
-
-    if(direction === "next" && lastDoc){
-      qy = makeNextQuery();
-    }
-
-    if(direction === "prev"){
-      qy = makePrevQuery();
-    }
+    if(direction === "next" && lastDoc) qy = makeNextQuery();
+    if(direction === "prev") qy = makePrevQuery();
 
     const snap = await getDocs(qy);
     const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
