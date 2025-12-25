@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WAUKLINK — Admin • Notes & Top annonces</title>
+  <link rel="stylesheet" href="../style.css?v=1" />
+  <style>
+    .page{padding:24px 0}
+    .top{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+    .meta{opacity:.85;font-size:13px}
+    .badge{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14);font-size:12px;opacity:.9}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:14px}
+    .card{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:16px;padding:14px;cursor:pointer}
+    .row{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+    .price{font-weight:900}
+    .stars{font-size:13px;opacity:.9;margin-top:6px}
+    .btn{padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;cursor:pointer}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .danger{border-color:rgba(255,80,80,.45);background:rgba(255,80,80,.12)}
+    .filters{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    select,input{
+      padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);
+      background:rgba(0,0,0,.2);color:#fff
+    }
+
+    dialog{border:none;border-radius:18px;padding:0;max-width:820px;width:min(92vw,820px);background:#0b1220;color:#fff}
+    .modalTop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;border-bottom:1px solid rgba(255,255,255,.14);padding:16px}
+    .modalBody{padding:16px}
+    .closeX{background:transparent;border:1px solid rgba(255,255,255,.14);border-radius:12px;color:#fff;padding:6px 10px;cursor:pointer}
+    .pill{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14);font-size:12px;opacity:.9}
+    .list{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+    .line{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);border-radius:14px;padding:10px}
+    .k{opacity:.75;font-size:12px}
+    .v{font-weight:900}
+  </style>
+</head>
+
+<body>
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Admin • Notes & Top annonces</div>
+    </div>
+    <nav style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <a class="btn" href="../index.html">← Accueil</a>
+      <a class="btn" href="./index.html">Admin</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container page">
+  <div class="top">
+    <h2 style="margin:0">Top annonces (notes)</h2>
+    <span class="badge" id="badge">—</span>
+  </div>
+
+  <div class="filters">
+    <select id="duree">
+      <option value="">Toutes durées</option>
+      <option value="saisonniere">Saisonnière</option>
+      <option value="annuelle">Annuelle</option>
+    </select>
+
+    <select id="status">
+      <option value="active">Actives</option>
+      <option value="pending">Pending</option>
+      <option value="">Tous statuts</option>
+    </select>
+
+    <select id="sort">
+      <option value="best">Meilleures notes</option>
+      <option value="new">Plus récentes</option>
+    </select>
+
+    <input id="q" placeholder="Recherche (titre, ville, type)" />
+    <button class="btn" id="reload">🔄 Recharger</button>
+  </div>
+
+  <p class="meta" id="msg" style="margin-top:10px"></p>
+  <div id="list" class="grid"></div>
+</main>
+
+<dialog id="dlg">
+  <div class="modalTop">
+    <div>
+      <div id="dTitle" style="font-weight:900;font-size:18px"></div>
+      <div class="meta" id="dMeta"></div>
+      <div class="stars" id="dStars"></div>
+    </div>
+    <button class="closeX" id="close">✕</button>
+  </div>
+  <div class="modalBody">
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <span class="pill" id="pStatus">status: —</span>
+      <span class="pill" id="pDuree">duree: —</span>
+      <span class="pill" id="pId">id: —</span>
+    </div>
+
+    <div class="list" id="ratingsList"></div>
+
+    <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn danger" id="resetAvg">♻️ Reset note (0/0)</button>
+      <button class="btn" id="close2">Fermer</button>
+    </div>
+
+    <p class="meta" style="margin-top:10px">
+      ⚠️ Reset = remet ratingAvg=0 et ratingCount=0 (ne supprime pas les documents /ratings).
+    </p>
+  </div>
+</dialog>
+
+<script type="module">
+  import { auth, db } from "../auth/firebase.js";
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import {
+    doc, getDoc,
+    collection, query, where, orderBy, limit, getDocs,
+    updateDoc
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+  // --------- UI
+  const badge = document.getElementById("badge");
+  const msg = document.getElementById("msg");
+  const list = document.getElementById("list");
+  const qInput = document.getElementById("q");
+  const dureeSel = document.getElementById("duree");
+  const statusSel = document.getElementById("status");
+  const sortSel = document.getElementById("sort");
+  const reloadBtn = document.getElementById("reload");
+
+  const dlg = document.getElementById("dlg");
+  const closeBtn = document.getElementById("close");
+  const closeBtn2 = document.getElementById("close2");
+
+  const dTitle = document.getElementById("dTitle");
+  const dMeta = document.getElementById("dMeta");
+  const dStars = document.getElementById("dStars");
+  const pStatus = document.getElementById("pStatus");
+  const pDuree = document.getElementById("pDuree");
+  const pId = document.getElementById("pId");
+  const ratingsList = document.getElementById("ratingsList");
+  const resetAvgBtn = document.getElementById("resetAvg");
+
+  closeBtn.onclick = () => dlg.open && dlg.close();
+  closeBtn2.onclick = () => dlg.open && dlg.close();
+
+  // --------- helpers
+  function esc(s){
+    return String(s ?? "").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
+  }
+  function stars(avg=0, count=0){
+    const a = Math.max(0, Math.min(5, Number(avg||0)));
+    const full = Math.round(a);
+    const s = "★★★★★☆☆☆☆☆".slice(5-full, 10-full);
+    return `${s}  ${a.toFixed(1)}/5 (${count} avis)`;
+  }
+  function setMsg(t){ msg.textContent = t || ""; }
+
+  // --------- admin guard (role=admin dans users/{uid})
+  async function requireAdmin(user){
+    if(!user) return false;
+    const uref = doc(db, "users", user.uid);
+    const usnap = await getDoc(uref);
+    return usnap.exists() && usnap.data()?.role === "admin";
+  }
+
+  // --------- state
+  let currentUser = null;
+  let currentItems = [];
+  let currentDetail = null;
+
+  onAuthStateChanged(auth, async (u) => {
+    currentUser = u || null;
+
+    if(!currentUser){
+      alert("🔒 Connecte-toi (admin).");
+      window.location.href = "../auth/login.html";
+      return;
+    }
+
+    const ok = await requireAdmin(currentUser);
+    if(!ok){
+      alert("⛔ Accès admin requis.");
+      window.location.href = "../index.html";
+      return;
+    }
+
+    await load();
+  });
+
+  // --------- load list
+  async function load(){
+    setMsg("⏳ Chargement…");
+    list.innerHTML = "";
+    currentItems = [];
+
+    const duree = (dureeSel.value || "").trim();
+    const st = (statusSel.value || "").trim();
+    const s = (qInput.value || "").trim().toLowerCase();
+
+    const base = collection(db, "annonces_location");
+    const constraints = [];
+
+    if(st) constraints.push(where("status", "==", st));
+    if(duree) constraints.push(where("duree", "==", duree));
+
+    if(sortSel.value === "best"){
+      // Tri "best": orderBy ratingAvg desc (puis createdAt desc)
+      constraints.push(orderBy("ratingAvg", "desc"));
+      constraints.push(orderBy("createdAt", "desc"));
+    } else {
+      constraints.push(orderBy("createdAt", "desc"));
+    }
+
+    constraints.push(limit(80)); // admin view
+
+    const qy = query(base, ...constraints);
+    const snap = await getDocs(qy);
+    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    const filtered = s
+      ? items.filter(a => ((a.titre||"")+" "+(a.ville||"")+" "+(a.type||"")).toLowerCase().includes(s))
+      : items;
+
+    currentItems = filtered;
+    badge.textContent = `${filtered.length} annonces`;
+    setMsg("");
+
+    if(!filtered.length){
+      list.innerHTML = `<div class="meta">Aucune annonce trouvée.</div>`;
+      return;
+    }
+
+    filtered.forEach((a, idx) => {
+      const el = document.createElement("div");
+      el.className = "card";
+      el.innerHTML = `
+        <div class="row">
+          <div>
+            <div style="font-weight:900">${esc(a.titre || "Annonce")}</div>
+            <div class="meta">${esc(a.ville || "")} • ${esc(a.type || "")} • ${esc(a.duree || "")}</div>
+            <div class="stars">${esc(stars(a.ratingAvg || 0, a.ratingCount || 0))}</div>
+            <div class="meta" style="margin-top:6px">status: ${esc(a.status || "")}</div>
+          </div>
+          <div class="price">${esc(a.prix ?? "")}€</div>
+        </div>
+        <div class="meta" style="margin-top:10px;opacity:.8">Cliquer pour détails →</div>
+      `;
+      el.onclick = () => openDetail(idx);
+      list.appendChild(el);
+    });
+  }
+
+  reloadBtn.onclick = load;
+  dureeSel.onchange = load;
+  statusSel.onchange = load;
+  sortSel.onchange = load;
+  qInput.addEventListener("input", () => load());
+
+  // --------- open detail + list ratings
+  async function openDetail(index){
+    const a = currentItems[index];
+    if(!a) return;
+    currentDetail = a;
+
+    dTitle.textContent = a.titre || "Annonce";
+    dMeta.textContent = `${a.ville || ""} • ${a.type || ""}`;
+    dStars.textContent = stars(a.ratingAvg || 0, a.ratingCount || 0);
+
+    pStatus.textContent = `status: ${a.status || "—"}`;
+    pDuree.textContent = `duree: ${a.duree || "—"}`;
+    pId.textContent = `id: ${a.id}`;
+
+    ratingsList.innerHTML = `<div class="meta">⏳ Chargement des notes…</div>`;
+
+    // Charger les docs /ratings
+    try{
+      const rs = await getDocs(collection(db, "annonces_location", a.id, "ratings"));
+      if(rs.empty){
+        ratingsList.innerHTML = `<div class="meta">Aucune note enregistrée.</div>`;
+      } else {
+        const lines = [];
+        rs.forEach(docu => {
+          const v = docu.data()?.value;
+          const uid = docu.id;
+          lines.push(`
+            <div class="line">
+              <div class="k">Utilisateur</div>
+              <div class="v">${esc(uid)}</div>
+              <div class="k" style="margin-top:6px">Note</div>
+              <div class="v">${"★".repeat(Number(v||0))}${"☆".repeat(5-Number(v||0))} (${Number(v||0)}/5)</div>
+            </div>
+          `);
+        });
+        ratingsList.innerHTML = lines.join("");
+      }
+    } catch(e){
+      console.error(e);
+      ratingsList.innerHTML = `<div class="meta">❌ Impossible de lire /ratings (rules).</div>`;
+    }
+
+    resetAvgBtn.onclick = async () => {
+      if(!confirm("Reset ratingAvg=0 et ratingCount=0 ?")) return;
+      try{
+        await updateDoc(doc(db,"annonces_location", a.id), { ratingAvg: 0, ratingCount: 0 });
+        alert("✅ Reset fait.");
+        dlg.close();
+        await load();
+      } catch(e){
+        console.error(e);
+        alert("❌ Impossible (rules).");
+      }
+    };
+
+    dlg.showModal();
+  }
+</script>
+
+<script type="module" src="../auth/status.js"></script>
+<script type="module" src="../auth/user_sync.js"></script>
+</body>
+</html>
