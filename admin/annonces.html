@@ -18,7 +18,6 @@
   </style>
 </head>
 <body>
-
 <header class="topbar">
   <div class="container topbar-row">
     <div>
@@ -32,14 +31,11 @@
     </nav>
   </div>
 </header>
-
 <main class="container page">
   <div class="meta">
     Ici tu valides les annonces <span class="tag">status = pending</span> → <span class="tag">active</span>
   </div>
-
   <div id="msg" class="meta" style="margin-top:10px"></div>
-
   <table>
     <thead>
       <tr>
@@ -54,7 +50,6 @@
     <tbody id="rows"></tbody>
   </table>
 </main>
-
 <script type="module">
   import { db, auth } from "../auth/firebase.js";
   import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
@@ -62,37 +57,28 @@
     collection, query, where, orderBy, getDocs,
     doc, updateDoc, deleteDoc
   } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
   const rows = document.getElementById("rows");
   const msg = document.getElementById("msg");
-
   let currentUser = null;
   onAuthStateChanged(auth, (u)=>{ currentUser = u || null; });
-
   function setMsg(t){ msg.textContent = t; }
-
   async function load(){
     setMsg("⏳ Chargement…");
     rows.innerHTML = "";
-
     const qy = query(
       collection(db, "annonces_location"),
       where("status", "==", "pending"),
       orderBy("createdAt", "desc")
     );
-
     const snap = await getDocs(qy);
-
     if(snap.empty){
       setMsg("✅ Aucune annonce en attente.");
       return;
     }
     setMsg(`✅ ${snap.size} annonce(s) en attente.`);
-
     snap.forEach((d)=>{
       const a = d.data();
       const tr = document.createElement("tr");
-
       tr.innerHTML = `
         <td>${a.titre || a.title || "-"}</td>
         <td>${a.ville || "-"}</td>
@@ -104,9 +90,7 @@
           <button class="btn danger">Refuser</button>
         </td>
       `;
-
       const [btnOk, btnNo] = tr.querySelectorAll("button");
-
       btnOk.onclick = async ()=>{
         if(!confirm("Valider cette annonce ?")) return;
         try{
@@ -117,7 +101,6 @@
           alert("❌ Impossible de valider (rules / pas admin).");
         }
       };
-
       btnNo.onclick = async ()=>{
         if(!confirm("Refuser (supprimer) cette annonce ?")) return;
         try{
@@ -128,14 +111,11 @@
           alert("❌ Impossible de refuser (rules / pas admin).");
         }
       };
-
       rows.appendChild(tr);
     });
   }
-
   load();
 </script>
-
 <script type="module" src="../auth/status.js"></script>
 <script type="module" src="../auth/user_sync.js"></script>
 </body>
