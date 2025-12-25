@@ -4,8 +4,13 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/f
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 async function getRole(uid) {
-  const snap = await getDoc(doc(db, "users", uid));
-  return snap.exists() ? String(snap.data()?.role || "") : "";
+  try {
+    const snap = await getDoc(doc(db, "users", uid));
+    return snap.exists() ? String(snap.data()?.role || "") : "";
+  } catch (e) {
+    console.error("getRole error:", e);
+    return "";
+  }
 }
 
 export function requireModeration(opts = {}) {
@@ -16,20 +21,11 @@ export function requireModeration(opts = {}) {
   onLoading(null);
 
   return onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      try { onLoading(null); } catch {}
-      setTimeout(() => (location.href = redirectTo), 200);
-      return;
-    }
+    if (!user) return location.replace(redirectTo);
 
     const role = await getRole(user.uid);
+    if (!(role === "admin" || role === "moderator")) return location.replace(redirectTo);
 
-    if (!(role === "admin" || role === "moderator")) {
-      try { onLoading(user); } catch {}
-      setTimeout(() => (location.href = redirectTo), 200);
-      return;
-    }
-
-    await onOk(user, role);
+    return onOk(user, role);
   });
 }
