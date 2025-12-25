@@ -2,9 +2,9 @@ import { auth, db } from "./firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-// Détecte automatiquement le "prefix" GitHub Pages (ex: /wauklink-site)
+// GitHub Pages: récupère le nom du repo dans l'URL (ex: /wauklink-site)
 function basePath() {
-  const parts = location.pathname.split("/").filter(Boolean); // ["wauklink-site", "index.html", ...]
+  const parts = location.pathname.split("/").filter(Boolean);
   return parts.length ? `/${parts[0]}` : "";
 }
 
@@ -28,12 +28,11 @@ function ensureBar() {
   bar.style.backdropFilter = "blur(8px)";
   bar.style.color = "#fff";
   bar.style.fontSize = "13px";
-
   document.body.appendChild(bar);
   return bar;
 }
 
-function makeLink(label, href, danger = false) {
+function linkBtn(label, href, danger = false) {
   const a = document.createElement("a");
   a.textContent = label;
   a.href = href;
@@ -63,12 +62,12 @@ async function isAdmin(uid) {
     const snap = await getDoc(doc(db, "users", uid));
     return snap.exists() && snap.data()?.role === "admin";
   } catch (e) {
-    console.error("isAdmin error:", e);
+    console.error(e);
     return false;
   }
 }
 
-async function boot() {
+(async function boot() {
   const bar = ensureBar();
   const base = basePath();
 
@@ -80,37 +79,29 @@ async function boot() {
 
     if (!user) {
       bar.appendChild(pill("Non connecté"));
-      bar.appendChild(makeLink("Connexion", loginUrl));
+      bar.appendChild(linkBtn("Connexion", loginUrl));
       return;
     }
 
     bar.appendChild(pill(user.email || "Connecté"));
 
-    const logout = makeLink("Déconnexion", "#", true);
+    const logout = linkBtn("Déconnexion", "#", true);
     logout.addEventListener("click", async (e) => {
       e.preventDefault();
-      try {
-        await signOut(auth);
-        location.reload();
-      } catch (err) {
-        console.error(err);
-        alert("❌ Impossible de se déconnecter.");
-      }
+      await signOut(auth);
+      location.reload();
     });
     bar.appendChild(logout);
 
-    const ok = await isAdmin(user.uid);
-    if (ok) {
-      // Vérifie que la page admin existe (sinon ça évite un bouton qui mène à 404)
+    if (await isAdmin(user.uid)) {
+      // évite d'afficher un bouton qui mène à 404
       try {
         const r = await fetch(adminUrl, { method: "HEAD" });
-        if (r.ok) bar.appendChild(makeLink("Admin", adminUrl));
+        if (r.ok) bar.appendChild(linkBtn("Admin", adminUrl));
         else bar.appendChild(pill("⚠️ Admin: page 404"));
       } catch {
         bar.appendChild(pill("⚠️ Admin: page 404"));
       }
     }
   });
-}
-
-boot();
+})();
