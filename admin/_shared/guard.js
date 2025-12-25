@@ -8,7 +8,7 @@ async function getRole(uid) {
   return snap.exists() ? String(snap.data()?.role || "") : "";
 }
 
-export function requireAdmin(opts = {}) {
+export function requireModeration(opts = {}) {
   const redirectTo = opts.redirectTo ?? "../index.html";
   const onOk = opts.onOk ?? (() => {});
   const onLoading = opts.onLoading ?? (() => {});
@@ -17,17 +17,19 @@ export function requireAdmin(opts = {}) {
 
   return onAuthStateChanged(auth, async (user) => {
     if (!user) {
-      setTimeout(() => (location.href = redirectTo), 300);
+      try { onLoading(null); } catch {}
+      setTimeout(() => (location.href = redirectTo), 200);
       return;
     }
 
     const role = await getRole(user.uid);
 
-    if (role !== "admin") {
-      setTimeout(() => (location.href = redirectTo), 300);
+    if (!(role === "admin" || role === "moderator")) {
+      try { onLoading(user); } catch {}
+      setTimeout(() => (location.href = redirectTo), 200);
       return;
     }
 
-    await onOk(user);
+    await onOk(user, role);
   });
 }
