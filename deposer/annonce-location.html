@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WAUKLINK — Déposer une annonce</title>
+  <link rel="stylesheet" href="../style.css?v=1" />
+  <style>
+    .wrap{padding:24px 0}
+    .card{max-width:820px;margin:auto;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:16px;padding:18px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .row-1{grid-template-columns:1fr}
+    input, textarea, select{
+      width:100%;padding:10px 12px;border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(0,0,0,.2);color:#fff
+    }
+    textarea{min-height:120px;resize:vertical}
+    .btn{padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);color:#fff;cursor:pointer}
+    .meta{opacity:.85;font-size:13px}
+    .ok{border-color:rgba(80,255,160,.35);background:rgba(80,255,160,.12)}
+    .tag{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14);font-size:12px}
+    .thumb{
+      width:84px;height:84px;object-fit:cover;border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Déposer une annonce</div>
+    </div>
+    <nav>
+      <a class="btn" href="../index.html">← Retour</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container wrap">
+  <div class="card">
+    <div class="meta" style="margin-bottom:12px">
+      Toutes les annonces sont vérifiées par un admin avant publication.
+      <span class="tag">Validation requise</span>
+    </div>
+
+    <form id="form">
+      <div class="row">
+        <input id="titre" placeholder="Titre de l’annonce" required />
+        <input id="ville" placeholder="Ville" required />
+      </div>
+
+      <div class="row">
+        <select id="type" required>
+          <option value="">Type</option>
+          <option value="Appartement">Appartement</option>
+          <option value="Maison">Maison</option>
+          <option value="Studio">Studio</option>
+          <option value="Chambre">Chambre</option>
+        </select>
+        <input id="surface" type="number" placeholder="Surface (m²)" />
+      </div>
+
+      <div class="row">
+        <input id="prix" type="number" placeholder="Prix (€)" required />
+        <input id="contactEmail" type="email" placeholder="Email de contact" required />
+      </div>
+
+      <div class="row-1">
+        <textarea id="description" placeholder="Description détaillée" required></textarea>
+      </div>
+
+      <!-- PHOTOS -->
+      <div class="row-1" style="margin-top:12px">
+        <div class="meta">Photos (max 6)</div>
+        <input id="photosInput" type="file" accept="image/*" multiple />
+        <div id="photosPreview" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"></div>
+      </div>
+
+      <div class="row-1" style="margin-top:12px">
+        <button class="btn ok" id="submitBtn" type="submit">📤 Déposer l’annonce</button>
+      </div>
+
+      <div id="msg" class="meta" style="margin-top:10px"></div>
+    </form>
+  </div>
+</main>
+
+<script type="module">
+  import { auth, db } from "../auth/firebase.js";
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+  /* ================================
+     CLOUDINARY — CONFIG FINALE
+     ================================ */
+  const CLOUD_NAME = "dxozdzsla";
+  const UPLOAD_PRESET = "wauklink_unsigned";
+
+  const form = document.getElementById("form");
+  const msg = document.getElementById("msg");
+  const submitBtn = document.getElementById("submitBtn");
+
+  const titre = document.getElementById("titre");
+  const ville = document.getElementById("ville");
+  const type = document.getElementById("type");
+  const surface = document.getElementById("surface");
+  const prix = document.getElementById("prix");
+  const contactEmail = document.getElementById("contactEmail");
+  const description = document.getElementById("description");
+
+  const photosInput = document.getElementById("photosInput");
+  const photosPreview = document.getElementById("photosPreview");
+
+  let currentUser = null;
+  let selectedFiles = [];
+
+  function setMsg(t){ msg.textContent = t; }
+
+  function previewFiles(files){
+    photosPreview.innerHTML = "";
+    files.forEach(file=>{
+      const img=document.createElement("img");
+      img.className="thumb";
+      img.src=URL.createObjectURL(file);
+      photosPreview.appendChild(img);
+    });
+  }
+
+  async function uploadOne(file){
+    const url=`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
+    const fd=new FormData();
+    fd.append("file",file);
+    fd.append("upload_preset",UPLOAD_PRESET);
+    const res=await fetch(url,{method:"POST",body:fd});
+    if(!res.ok) throw new Error("Upload Cloudinary échoué");
+    const data=await res.json();
+    return data.secure_url;
+  }
+
+  async function uploadAll(files){
+    const urls=[];
+    for(let i=0;i<files.length;i++){
+      setMsg(`⏳ Upload photo ${i+1}/${files.length}…`);
+      urls.push(await uploadOne(files[i]));
+    }
+    return urls;
+  }
+
+  onAuthStateChanged(auth,(user)=>{
+    if(!user){
+      setMsg("❌ Vous devez être connecté pour déposer une annonce.");
+      form.style.display="none";
+      return;
+    }
+    currentUser=user;
+  });
+
+  photosInput.addEventListener("change",()=>{
+    selectedFiles=[...photosInput.files].slice(0,6);
+    previewFiles(selectedFiles);
+  });
+
+  form.addEventListener("submit",async(e)=>{
+    e.preventDefault();
+    if(!currentUser) return;
+
+    submitBtn.disabled=true;
+    try{
+      let photos=[];
+      if(selectedFiles.length){
+        photos=await uploadAll(selectedFiles);
+      }
+
+      await addDoc(collection(db,"annonces_location"),{
+        titre:titre.value.trim(),
+        ville:ville.value.trim(),
+        type:type.value,
+        surface:Number(surface.value||0),
+        prix:Number(prix.value),
+        description:description.value.trim(),
+        contactEmail:contactEmail.value.trim(),
+        photos,
+        status:"pending",
+        ownerUid:currentUser.uid,
+        createdAt:serverTimestamp(),
+        ratingAvg:0,
+        ratingCount:0
+      });
+
+      setMsg("✅ Annonce envoyée. En attente de validation admin.");
+      form.reset();
+      photosPreview.innerHTML="";
+      selectedFiles=[];
+    }catch(err){
+      console.error(err);
+      setMsg("❌ Erreur lors de l’envoi. Ouvre la console (F12).");
+    }finally{
+      submitBtn.disabled=false;
+    }
+  });
+</script>
+
+<script type="module" src="../auth/status.js"></script>
+<script type="module" src="../auth/user_sync.js"></script>
+
+</body>
+</html>

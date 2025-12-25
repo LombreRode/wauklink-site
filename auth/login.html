@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Connexion – WAUKLINK</title>
+  <link rel="stylesheet" href="auth.css">
+  <style>
+    #msg{
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      display:none;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="card">
+    <h1>Connexion</h1>
+    <form id="loginForm" autocomplete="off">
+      <!-- anti-autofill -->
+      <input type="text" style="display:none">
+      <input type="password" style="display:none">
+      <input
+        id="email"
+        type="email"
+        name="email"
+        placeholder="Email"
+        required
+        autocomplete="off"
+      >
+      <input
+        type="password"
+        name="password"
+        placeholder="Mot de passe"
+        required
+        minlength="6"
+        autocomplete="current-password"
+      >
+      <button class="btn" type="submit">Se connecter</button>
+    </form>
+    <div class="small" style="margin-top:12px;">
+      Pas de compte ? <a href="register.html">Créer un compte</a>
+    </div>
+    <div id="msg"></div>
+  </div>
+</div>
+
+<script type="module">
+  // ✅ IMPORTANT : sync user -> Firestore /users/{uid}
+  import "./user_sync.js";
+
+  import { auth } from "./firebase.js";
+  import {
+    signInWithEmailAndPassword,
+    onAuthStateChanged,
+    setPersistence,
+    browserLocalPersistence
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+  const form = document.getElementById("loginForm");
+  const msg = document.getElementById("msg");
+
+  function show(text, ok=false){
+    msg.style.display = "block";
+    msg.style.borderColor = ok
+      ? "rgba(34,197,94,.35)"
+      : "rgba(239,68,68,.35)";
+    msg.style.background = ok
+      ? "rgba(34,197,94,.10)"
+      : "rgba(239,68,68,.10)";
+    msg.textContent = text;
+  }
+
+  // persistance de session
+  await setPersistence(auth, browserLocalPersistence);
+
+  // si déjà connecté → redirection
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      show("✅ Déjà connecté, redirection…", true);
+      setTimeout(() => {
+        window.location.href = "../index.html";
+      }, 700);
+    }
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    show("⏳ Connexion en cours…", true);
+
+    const data = new FormData(form);
+    const email = data.get("email").trim();
+    const password = data.get("password");
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      show("✅ Connexion réussie !", true);
+      setTimeout(() => {
+        window.location.href = "../index.html";
+      }, 700);
+    } catch (err) {
+      console.error(err);
+      show("❌ " + (err.code || "") + " — " + err.message);
+    }
+  });
+</script>
+</body>
+</html>

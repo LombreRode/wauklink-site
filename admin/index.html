@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WAUKLINK — Admin (Dashboard)</title>
+  <link rel="stylesheet" href="../style.css?v=1" />
+  <style>
+    .wrap{padding:24px 0}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:12px}
+    .card{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:16px;padding:14px}
+    .meta{opacity:.85;font-size:13px}
+    .btn{display:inline-block;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;text-decoration:none;cursor:pointer}
+    .tag{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14);font-size:12px;opacity:.95}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Admin — Dashboard</div>
+    </div>
+    <nav class="row">
+      <a class="btn" href="../index.html">← Accueil</a>
+      <a class="btn" href="../annonces/location.html">Site public</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container wrap">
+  <div class="row" style="justify-content:space-between">
+    <h2 style="margin:0">Tableau de bord</h2>
+    <span class="tag" id="who">Vérification admin…</span>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div style="font-weight:900">Modération des annonces</div>
+      <div class="meta">Valider / pending / removed / supprimer / fix ownerUid</div>
+      <div style="margin-top:10px">
+        <a class="btn" href="./annonces.html">Ouvrir →</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:900">Signalements</div>
+      <div class="meta">Voir les reports (si tu actives la collection reports)</div>
+      <div style="margin-top:10px">
+        <a class="btn" href="./reports.html">Ouvrir →</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:900">Infos</div>
+      <div class="meta">Accès protégé par <span class="mono">admin/_shared/guard.js</span>.</div>
+    </div>
+  </div>
+</main>
+
+<script type="module">
+  import { requireAdmin } from "./_shared/guard.js";
+
+  const who = document.getElementById("who");
+
+  requireAdmin({
+    redirectTo: "../index.html",
+    onOk: async (user) => {
+      who.textContent = "ADMIN OK";
+    },
+    onLoading: () => {
+      who.textContent = "Vérification admin…";
+    }
+  });
+</script>
+
+<script type="module" src="../auth/status.js"></script>
+</body>
+</html>

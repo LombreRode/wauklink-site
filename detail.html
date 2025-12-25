@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WAUKLINK • Détail</title>
+  <link rel="stylesheet" href="detail.css" />
+  <script src="detail.js" defer></script>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a class="back" href="index.html">← Retour</a>
+      <div class="brand">
+        <div class="brand-title">WAUKLINK</div>
+        <div class="brand-sub">Détail du service</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="service-card">
+      <div class="service-head">
+        <img id="icon" class="icon" alt="" />
+        <div>
+          <div id="segment" class="segment"></div>
+          <h1 id="title" class="title">Service</h1>
+          <p id="desc" class="desc"></p>
+        </div>
+      </div>
+
+      <hr class="sep" />
+
+      <h2 class="h2">Faire une demande</h2>
+
+      <form id="form" class="form">
+        <label>Nom</label>
+        <input id="name" type="text" placeholder="Votre nom" required />
+
+        <label>Téléphone</label>
+        <input id="phone" type="tel" placeholder="06..." required />
+
+        <label>Message</label>
+        <textarea id="msg" placeholder="Expliquez votre besoin..." required></textarea>
+
+        <div class="actions">
+          <button type="button" class="btn secondary" onclick="history.back()">Annuler</button>
+          <button type="submit" class="btn primary">Envoyer</button>
+        </div>
+      </form>
+
+      <p id="note" class="note"></p>
+    </section>
+  </main>
+</body>
+</html>

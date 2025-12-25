@@ -1,0 +1,177 @@
+/* ================= RESET ================= */
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background:#0b1224;
+  color:#f8fafc;
+}
+
+/* ================= LAYOUT ================= */
+.container{
+  max-width:1100px;
+  margin:0 auto;
+  padding:0 16px;
+}
+
+.main-layout{
+  padding:60px 0 90px;
+}
+
+/* ================= TOPBAR ================= */
+.topbar{
+  background:#006b52;
+  color:#fff;
+  padding:22px 0;
+}
+
+.topbar-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+.topbar h1{
+  margin:0;
+  font-size:28px;
+}
+
+.subtitle{
+  font-size:14px;
+  opacity:.9;
+}
+
+.topnav a{
+  color:#fff;
+  text-decoration:underline;
+}
+
+/* ================= SECTIONS ================= */
+.circle-section{
+  padding:40px 0 70px;
+  border-radius:18px;
+  background:radial-gradient(
+    circle at 50% 30%,
+    rgba(255,255,255,.06),
+    rgba(255,255,255,.02) 55%,
+    transparent 100%
+  );
+}
+
+.circle-section h2,
+.circle-subtitle{
+  text-align:center;
+}
+
+/* ================= CIRCLE UI ================= */
+.circle-wrapper{
+  position:relative;
+  width:720px;
+  height:720px;
+  margin:0 auto;
+  touch-action:none;
+  user-select:none;
+  cursor:grab;
+}
+
+.circle{
+  position:absolute;
+  top:50%;
+  left:50%;
+  width:0;
+  height:0;
+}
+
+.circle-card{
+  position:absolute;
+  width:170px;
+  padding:14px;
+  background:#ffffff;
+  color:#111827;
+  border-radius:14px;
+  border:2px solid #22c55e;
+  text-align:center;
+  cursor:pointer;
+  box-shadow:0 12px 28px rgba(0,0,0,.35);
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+
+.circle-card:hover{
+  transform:scale(1.05);
+  box-shadow:0 18px 40px rgba(0,0,0,.45);
+}
+
+.circle-icon{
+  font-size:26px;
+  margin-bottom:6px;
+}
+
+.circle-card h3{
+  margin:6px 0;
+  font-size:14px;
+}
+
+.open{
+  font-size:12px;
+  opacity:.7;
+}
+
+/* ================= BUTTONS ================= */
+.btn{
+  padding:8px 12px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.06);
+  color:#fff;
+  cursor:pointer;
+}
+
+.btn:hover{
+  filter:brightness(1.08);
+}
+
+/* ===== ✅ BOUTON SIGNALER (PRO, DÉFINITIF) ===== */
+.btn-danger{
+  padding:8px 12px;
+  border-radius:12px;
+  border:1px solid rgba(255,80,80,.45);
+  background:rgba(255,80,80,.12);
+  color:#ffffff;
+  cursor:pointer;
+}
+
+.btn-danger:hover{
+  filter:brightness(1.12);
+}
+
+/* ================= FOOTER ================= */
+.footer{
+  text-align:center;
+  padding:20px;
+  color:#9ca3af;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width:900px){
+  .circle-wrapper{
+    width:480px;
+    height:480px;
+  }
+  .circle-card{
+    width:150px;
+  }
+}
+
+@media (max-width:600px){
+  .circle-wrapper{
+    width:340px;
+    height:340px;
+  }
+  .circle-card{
+    width:140px;
+  }
+}

@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WAUKLINK — Annonces Location</title>
+  <link rel="stylesheet" href="../style.css?v=1" />
+  <style>
+    .page { padding: 24px 0; }
+    .top{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+    .meta{opacity:.85;font-size:13px}
+    .badge{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14);font-size:12px;opacity:.9}
+    .search{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.2);color:#fff}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:14px}
+    .card{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:16px;padding:14px;cursor:pointer}
+    .row{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+    .price{font-weight:900}
+    .stars{font-size:13px;opacity:.9;margin-top:6px}
+    .pager{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:16px}
+    .btn{padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;cursor:pointer}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+
+    /* ✅ bouton danger (au cas où ton style.css ne l'a pas / ou pour être sûr) */
+    .btn-danger{
+      padding:10px 12px;border-radius:12px;cursor:pointer;
+      border:1px solid rgba(255,80,80,.45);
+      background: rgba(255,80,80,.12);
+      color:#fff;
+    }
+    .btn-danger:hover{ filter:brightness(1.12); }
+
+    dialog{border:none;border-radius:18px;padding:0;max-width:760px;width:min(92vw,760px);background:#0b1220;color:#fff}
+    .modalTop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;border-bottom:1px solid rgba(255,255,255,.14);padding:16px}
+    .modalBody{padding:16px}
+    .modalActions{display:flex;gap:10px;flex-wrap:wrap;padding:16px;border-top:1px solid rgba(255,255,255,.14)}
+    .closeX{background:transparent;border:1px solid rgba(255,255,255,.14);border-radius:12px;color:#fff;padding:6px 10px;cursor:pointer}
+    .photos{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:10px}
+    .ph{border:1px solid rgba(255,255,255,.14);border-radius:14px;overflow:hidden;background:rgba(255,255,255,.04);aspect-ratio:4/3}
+    .ph img{width:100%;height:100%;object-fit:cover;display:block}
+    .kv{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+    .kvc{border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px;background:rgba(255,255,255,.04)}
+    .k{opacity:.75;font-size:12px}
+    .v{font-weight:900}
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Annonces • Location</div>
+    </div>
+    <nav style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <a href="../index.html" style="text-decoration:underline;opacity:.9;">← Accueil</a>
+      <a href="../pricing.html" style="text-decoration:underline;opacity:.9;">Tarifs</a>
+      <a href="../legal/index.html" style="text-decoration:underline;opacity:.9;">CGU</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container page">
+  <div class="top">
+    <h2 style="margin:0">Offres Location (logements • chambres)</h2>
+    <span class="badge">20 annonces / page</span>
+  </div>
+  <p class="meta">
+    Clique sur une annonce pour voir le détail. Si c’est ton annonce, tu peux la modifier / supprimer.
+  </p>
+  <input id="q" class="search" placeholder="Rechercher : ville, type (studio, T2…), prix…" />
+  <div id="list" class="grid"></div>
+  <div class="pager">
+    <button id="prev" class="btn" disabled>◀ Précédent</button>
+    <span id="pageInfo" class="meta">Page 1</span>
+    <button id="next" class="btn" disabled>Suivant ▶</button>
+  </div>
+</main>
+
+<footer class="footer">
+  © WAUKLINK —
+  <a href="../legal/privacy.html">Confidentialité</a> |
+  <a href="../legal/mentions-legales.html">Mentions légales</a>
+</footer>
+
+<dialog id="detailDlg">
+  <div class="modalTop">
+    <div>
+      <div id="dTitle" style="font-weight:900;font-size:18px"></div>
+      <div id="dMeta" class="meta"></div>
+      <div id="dStars" class="stars"></div>
+    </div>
+    <button class="closeX" id="closeDlg">✕</button>
+  </div>
+
+  <div class="modalBody">
+    <div class="kv">
+      <div class="kvc"><div class="k">Prix</div><div class="v" id="dPrice"></div></div>
+      <div class="kvc"><div class="k">Type</div><div class="v" id="dType"></div></div>
+      <div class="kvc"><div class="k">Ville</div><div class="v" id="dVille"></div></div>
+      <div class="kvc"><div class="k">Surface</div><div class="v" id="dSurface"></div></div>
+    </div>
+
+    <div style="margin-top:12px">
+      <div class="k">Description</div>
+      <div id="dDesc" style="margin-top:6px;white-space:pre-wrap"></div>
+    </div>
+
+    <div style="margin-top:14px">
+      <div class="k">Photos (max 6)</div>
+      <div id="dPhotos" class="photos"></div>
+    </div>
+  </div>
+
+  <div class="modalActions">
+    <a id="btnMail" class="btn" href="#" style="text-decoration:none">✉ Joindre par mail</a>
+    <a id="btnTel" class="btn" href="#" style="text-decoration:none;display:none">📞 Appeler</a>
+
+    <!-- ✅ signalement -->
+    <button id="btnReport" class="btn-danger">🚩 Signaler</button>
+
+    <!-- ✅ Proprio seulement -->
+    <button id="btnEdit" class="btn" style="display:none">✏️ Modifier</button>
+    <button id="btnDelete" class="btn" style="display:none">🗑️ Supprimer</button>
+
+    <button id="backBtn" class="btn">↩ Retour aux annonces</button>
+  </div>
+</dialog>
+
+<script type="module">
+  // ====== CONFIG ======
+  const PER_PAGE = 20;
+
+  // ====== IMPORTS ======
+  import { db, auth } from "../auth/firebase.js";
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import {
+    collection, query, where, orderBy, limit, startAfter, getDocs,
+    doc, updateDoc, deleteDoc, addDoc, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+  // ====== UI ======
+  const list = document.getElementById("list");
+  const qInput = document.getElementById("q");
+  const prevBtn = document.getElementById("prev");
+  const nextBtn = document.getElementById("next");
+  const pageInfo = document.getElementById("pageInfo");
+
+  const dlg = document.getElementById("detailDlg");
+  const closeDlg = document.getElementById("closeDlg");
+  const backBtn = document.getElementById("backBtn");
+
+  const dTitle = document.getElementById("dTitle");
+  const dMeta = document.getElementById("dMeta");
+  const dStars = document.getElementById("dStars");
+  const dPrice = document.getElementById("dPrice");
+  const dType = document.getElementById("dType");
+  const dVille = document.getElementById("dVille");
+  const dSurface = document.getElementById("dSurface");
+  const dDesc = document.getElementById("dDesc");
+  const dPhotos = document.getElementById("dPhotos");
+
+  const btnMail = document.getElementById("btnMail");
+  const btnTel = document.getElementById("btnTel");
+  const btnEdit = document.getElementById("btnEdit");
+  const btnDelete = document.getElementById("btnDelete");
+  const btnReport = document.getElementById("btnReport");
+
+  // ====== STATE ======
+  let page = 1;
+  let lastDoc = null;
+  let cursorStack = [];
+  let currentItems = [];
+  let currentUser = null;
+  let currentDetail = null; // ✅ annonce actuellement ouverte
+
+  onAuthStateChanged(auth, (u) => { currentUser = u || null; });
+
+  // ====== HELPERS ======
+  function esc(s){
+    return String(s ?? "").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
+  }
+
+  function stars(avg=0, count=0){
+    const a = Math.max(0, Math.min(5, Number(avg||0)));
+    const full = Math.round(a);
+    const s = "★★★★★☆☆☆☆☆".slice(5-full, 10-full);
+    return `${s}  ${a.toFixed(1)}/5 (${count} avis)`;
+  }
+
+  function renderList(items){
+    list.innerHTML = "";
+    if(!items.length){
+      list.innerHTML = `<div class="meta">Aucune annonce pour l’instant.</div>`;
+      return;
+    }
+
+    items.forEach((a, idx) => {
+      const el = document.createElement("div");
+      el.className = "card";
+      el.innerHTML = `
+        <div class="row">
+          <div>
+            <div style="font-weight:900">${esc(a.titre)}</div>
+            <div class="meta">${esc(a.ville)} • ${esc(a.type)} • ${esc(a.surface || "")}</div>
+            <div class="stars">${esc(stars(a.ratingAvg || 0, a.ratingCount || 0))}</div>
+          </div>
+          <div class="price">${esc(a.prix)}€</div>
+        </div>
+        <div class="meta" style="margin-top:10px;opacity:.8">Cliquer pour ouvrir →</div>
+      `;
+      el.addEventListener("click", () => openDetail(idx));
+      list.appendChild(el);
+    });
+  }
+
+  function closeDetail(){ if(dlg.open) dlg.close(); }
+  closeDlg.addEventListener("click", closeDetail);
+  backBtn.addEventListener("click", closeDetail);
+
+  async function sendReport(annonce){
+    const reason = prompt("Pourquoi signalez-vous cette annonce ? (min 5 caractères)");
+    if (!reason || reason.trim().length < 5) {
+      alert("Motif trop court (min 5 caractères).");
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, "reports"), {
+        annonceId: annonce.id,
+        annonceOwnerUid: annonce.ownerUid || null,
+        annonceTitre: annonce.titre || null,
+        annonceVille: annonce.ville || null,
+        annonceType: annonce.type || null,
+        annoncePrix: annonce.prix ?? null,
+
+        reason: reason.trim(),
+        reporterUid: currentUser ? currentUser.uid : null,
+        reporterEmail: currentUser ? currentUser.email : null,
+
+        status: "open",
+        createdAt: serverTimestamp()
+      });
+
+      alert("✅ Signalement envoyé. Merci !");
+    } catch (e) {
+      console.error(e);
+      alert("❌ Impossible d’envoyer le signalement (rules/connexion).");
+    }
+  }
+
+  function openDetail(index){
+    const a = currentItems[index];
+    if(!a) return;
+    currentDetail = a;
+
+    // Texte
+    dTitle.textContent = a.titre || "Annonce";
+    dMeta.textContent = `${a.ville || ""} • ${a.type || ""}`;
+    dStars.textContent = stars(a.ratingAvg || 0, a.ratingCount || 0);
+    dPrice.textContent = (a.prix ?? "") + "€";
+    dType.textContent = a.type ?? "";
+    dVille.textContent = a.ville ?? "";
+    dSurface.textContent = a.surface ?? "-";
+    dDesc.textContent = a.description ?? "—";
+
+    // Photos
+    dPhotos.innerHTML = "";
+    const photos = Array.isArray(a.photos) ? a.photos.filter(Boolean).slice(0, 6) : [];
+    if(photos.length === 0){
+      dPhotos.innerHTML = `<div class="meta">Aucune photo.</div>`;
+    } else {
+      photos.forEach((url) => {
+        const ph = document.createElement("div");
+        ph.className = "ph";
+        ph.innerHTML = `<img src="${esc(url)}" alt="Photo annonce">`;
+        dPhotos.appendChild(ph);
+      });
+    }
+
+    // Contact
+    const mail = (a.contactEmail || "").trim();
+    const tel = (a.contactPhone || "").trim();
+    const subject = encodeURIComponent("WAUKLINK — Contact annonce : " + (a.titre || ""));
+    const body = encodeURIComponent(
+      `Bonjour,\n\nJe vous contacte au sujet de votre annonce : ${a.titre || ""}\nVille : ${a.ville || ""}\n\nMon message :\n`
+    );
+    btnMail.href = mail ? `mailto:${mail}?subject=${subject}&body=${body}` : "#";
+    btnMail.style.opacity = mail ? "1" : ".5";
+    btnMail.onclick = (e) => { if(!mail){ e.preventDefault(); alert("Email non disponible sur cette annonce."); } };
+
+    if(tel){
+      btnTel.href = `tel:${tel}`;
+      btnTel.style.display = "inline-block";
+    } else {
+      btnTel.style.display = "none";
+    }
+
+    // ✅ Signaler
+    btnReport.onclick = async () => {
+      if (!currentDetail) return;
+      await sendReport(currentDetail);
+    };
+
+    // ✅ Proprio : afficher boutons
+    const isOwner = !!currentUser && !!a.ownerUid && currentUser.uid === a.ownerUid;
+    btnEdit.style.display = isOwner ? "inline-block" : "none";
+    btnDelete.style.display = isOwner ? "inline-block" : "none";
+
+    // ✅ SUPPRIMER
+    btnDelete.onclick = async () => {
+      if (!confirm("Supprimer cette annonce ?")) return;
+      try {
+        await deleteDoc(doc(db, "annonces_location", a.id));
+        alert("✅ Annonce supprimée !");
+        closeDetail();
+        await loadPage("stay");
+      } catch (e) {
+        console.error(e);
+        alert("❌ Impossible de supprimer (permissions / rules).");
+      }
+    };
+
+    // ✅ MODIFIER (simple)
+    btnEdit.onclick = async () => {
+      const newTitre = prompt("Titre :", a.titre ?? "");
+      if (newTitre === null) return;
+      const newVille = prompt("Ville :", a.ville ?? "");
+      if (newVille === null) return;
+      const newType = prompt("Type (Studio, T1, T2...) :", a.type ?? "");
+      if (newType === null) return;
+      const newSurface = prompt("Surface (ex: 25 m²) :", a.surface ?? "");
+      if (newSurface === null) return;
+      const newPrix = prompt("Prix (€ / mois) :", a.prix ?? "");
+      if (newPrix === null) return;
+      const newDesc = prompt("Description :", a.description ?? "");
+      if (newDesc === null) return;
+
+      const prixNum = Number(newPrix);
+      if (!Number.isFinite(prixNum) || prixNum <= 0) {
+        alert("❌ Prix invalide.");
+        return;
+      }
+
+      try {
+        await updateDoc(doc(db, "annonces_location", a.id), {
+          titre: String(newTitre).trim(),
+          ville: String(newVille).trim(),
+          type: String(newType).trim(),
+          surface: String(newSurface).trim(),
+          prix: prixNum,
+          description: String(newDesc).trim()
+        });
+        alert("✅ Annonce modifiée !");
+        closeDetail();
+        await loadPage("stay");
+      } catch (e) {
+        console.error(e);
+        alert("❌ Impossible de modifier (permissions / rules).");
+      }
+    };
+
+    dlg.showModal();
+  }
+
+  // ====== LOAD PAGE (pagination) ======
+  async function loadPage(direction = "stay"){
+    const baseRef = collection(db, "annonces_location");
+    let qy = query(
+      baseRef,
+      where("status", "==", "active"),
+      orderBy("createdAt", "desc"),
+      limit(PER_PAGE)
+    );
+
+    if(direction === "next" && lastDoc){
+      qy = query(
+        baseRef,
+        where("status", "==", "active"),
+        orderBy("createdAt", "desc"),
+        startAfter(lastDoc),
+        limit(PER_PAGE)
+      );
+    }
+
+    if(direction === "prev"){
+      cursorStack.pop();
+      const prevCursor = cursorStack[cursorStack.length - 1] || null;
+      if(prevCursor){
+        qy = query(
+          baseRef,
+          where("status", "==", "active"),
+          orderBy("createdAt", "desc"),
+          startAfter(prevCursor),
+          limit(PER_PAGE)
+        );
+      }
+    }
+
+    const snap = await getDocs(qy);
+    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    lastDoc = snap.docs.length ? snap.docs[snap.docs.length - 1] : null;
+
+    if(direction === "next"){
+      if(snap.docs.length) cursorStack.push(snap.docs[0]);
+      page++;
+    } else if(direction === "prev"){
+      page = Math.max(1, page - 1);
+    } else {
+      page = 1;
+      cursorStack = [];
+      if(snap.docs.length) cursorStack.push(snap.docs[0]);
+    }
+
+    const s = (qInput.value || "").toLowerCase().trim();
+    currentItems = s
+      ? items.filter(a => ((a.titre||"")+" "+(a.ville||"")+" "+(a.type||"")+" "+(a.prix||"")).toLowerCase().includes(s))
+      : items;
+
+    renderList(currentItems);
+    pageInfo.textContent = `Page ${page}`;
+    prevBtn.disabled = page <= 1;
+    nextBtn.disabled = items.length < PER_PAGE;
+  }
+
+  // ====== EVENTS ======
+  qInput.addEventListener("input", () => loadPage("stay"));
+  nextBtn.addEventListener("click", () => loadPage("next"));
+  prevBtn.addEventListener("click", () => loadPage("prev"));
+
+  // ====== BOOT ======
+  await loadPage("stay");
+</script>
+
+<script type="module" src="../auth/status.js"></script>
+<script type="module" src="../auth/user_sync.js"></script>
+</body>
+</html>

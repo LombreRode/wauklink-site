@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WAUKLINK — Admin (Users)</title>
+  <link rel="stylesheet" href="../style.css?v=1" />
+  <style>
+    .wrap{padding:24px 0}
+    .card{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:16px;padding:14px}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .meta{opacity:.85;font-size:13px}
+    .btn{padding:8px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;cursor:pointer;text-decoration:none}
+    input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.2);color:#fff}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th,td{border-bottom:1px solid rgba(255,255,255,.12);padding:10px;text-align:left;vertical-align:top}
+    th{font-size:12px;opacity:.85}
+    .tag{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14);font-size:12px}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace}
+    .kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:12px}
+    .kpi .v{font-weight:900;font-size:22px}
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Admin — Utilisateurs</div>
+    </div>
+    <nav class="row">
+      <a class="btn" href="./index.html">Dashboard</a>
+      <a class="btn" href="./annonces.html">Annonces</a>
+      <a class="btn" href="./reports.html">Reports</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container wrap">
+  <div class="row" style="justify-content:space-between">
+    <h2 style="margin:0">Utilisateurs (Firestore /users)</h2>
+    <span class="tag" id="who">Vérification admin…</span>
+  </div>
+
+  <div class="kpi">
+    <div class="card"><div class="meta">Users</div><div class="v" id="kUsers">0</div></div>
+    <div class="card"><div class="meta">Total annonces (chargées)</div><div class="v" id="kAds">0</div></div>
+    <div class="card"><div class="meta">UID uniques (annonces)</div><div class="v" id="kOwners">0</div></div>
+  </div>
+
+  <div class="card" style="margin-top:12px">
+    <div class="row" style="justify-content:space-between">
+      <div class="meta">
+        Cette page lit <span class="mono">users</span> + calcule le nombre d’annonces par <span class="mono">ownerUid</span>.
+      </div>
+      <button class="btn" id="reload">⟳ Recharger</button>
+    </div>
+
+    <div style="margin-top:10px">
+      <input id="search" placeholder="Recherche : email, uid, displayName…" />
+    </div>
+
+    <div style="overflow:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>Utilisateur</th>
+            <th>UID</th>
+            <th>Annonces</th>
+            <th>Dernière connexion</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr><td colspan="4" class="meta">Chargement…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script type="module">
+  import { db } from "../auth/firebase.js";
+  import { requireAdmin } from "./_shared/guard.js";
+
+  import {
+    collection, getDocs, query, orderBy, limit
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+  const who = document.getElementById("who");
+  const tbody = document.getElementById("tbody");
+  const reload = document.getElementById("reload");
+  const search = document.getElementById("search");
+
+  const kUsers = document.getElementById("kUsers");
+  const kAds = document.getElementById("kAds");
+  const kOwners = document.getElementById("kOwners");
+
+  let users = [];
+  let ads = [];
+  let adsCountByUid = new Map();
+
+  const esc = (s)=> String(s ?? "").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
+  const norm = (s)=> String(s ?? "").toLowerCase().trim();
+  const fmtDate = (ts)=> { try{ const d = ts?.toDate ? ts.toDate() : null; return d ? d.toLocaleString("fr-FR") : "-"; } catch { return "-"; } };
+
+  function computeCounts(){
+    adsCountByUid = new Map();
+    for (const a of ads) {
+      const uid = a.ownerUid || "";
+      if (!uid) continue;
+      adsCountByUid.set(uid, (adsCountByUid.get(uid) || 0) + 1);
+    }
+    kAds.textContent = String(ads.length);
+    kOwners.textContent = String(adsCountByUid.size);
+  }
+
+  function render(){
+    const q = norm(search.value);
+
+    const rows = users
+      .map(u => ({
+        ...u,
+        annoncesCount: adsCountByUid.get(u.uid) || 0
+      }))
+      .filter(u => {
+        if (!q) return true;
+        const blob = norm((u.email||"") + " " + (u.uid||"") + " " + (u.displayName||""));
+        return blob.includes(q);
+      })
+      .sort((a,b) => (b.annoncesCount||0) - (a.annoncesCount||0));
+
+    kUsers.textContent = String(users.length);
+
+    if (!rows.length) {
+      tbody.innerHTML = `<tr><td colspan="4" class="meta">Aucun résultat.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = rows.map(u => `
+      <tr>
+        <td>
+          <div style="font-weight:900">${esc(u.email || u.displayName || "Utilisateur")}</div>
+          <div class="meta">${esc(u.displayName || "")}</div>
+        </td>
+        <td class="mono">${esc(u.uid)}</td>
+        <td><span class="tag">${esc(u.annoncesCount)}</span></td>
+        <td class="meta">${esc(fmtDate(u.lastLoginAt))}</td>
+      </tr>
+    `).join("");
+  }
+
+  async function load(){
+    tbody.innerHTML = `<tr><td colspan="4" class="meta">Chargement…</td></tr>`;
+
+    // ✅ users (registre)
+    const usersSnap = await getDocs(query(collection(db, "users"), orderBy("lastLoginAt", "desc"), limit(500)));
+    users = usersSnap.docs.map(d => ({ id: d.id, ...d.data(), uid: d.id }));
+
+    // ✅ annonces (pour compter par ownerUid)
+    const adsSnap = await getDocs(query(collection(db, "annonces_location"), orderBy("createdAt", "desc"), limit(1000)));
+    ads = adsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    computeCounts();
+    render();
+  }
+
+  reload.addEventListener("click", load);
+  search.addEventListener("input", render);
+
+  requireAdmin({
+    redirectTo: "../index.html",
+    onOk: async () => {
+      who.textContent = "ADMIN OK";
+      await load();
+    },
+    onLoading: () => {
+      who.textContent = "Vérification admin…";
+    }
+  });
+</script>
+
+<script type="module" src="../auth/status.js"></script>
+<script type="module" src="../auth/user_sync.js"></script>
+</body>
+</html>
