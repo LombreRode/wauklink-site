@@ -2,7 +2,6 @@ import { auth, db } from "./firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-// GitHub Pages: récupère le nom du repo dans l'URL (ex: /wauklink-site)
 function basePath() {
   const parts = location.pathname.split("/").filter(Boolean);
   return parts.length ? `/${parts[0]}` : "";
@@ -62,7 +61,7 @@ async function isAdmin(uid) {
     const snap = await getDoc(doc(db, "users", uid));
     return snap.exists() && snap.data()?.role === "admin";
   } catch (e) {
-    console.error(e);
+    console.error("isAdmin error:", e);
     return false;
   }
 }
@@ -93,15 +92,9 @@ async function isAdmin(uid) {
     });
     bar.appendChild(logout);
 
+    // ✅ PLUS DE TEST HEAD → si role=admin, on affiche le bouton direct
     if (await isAdmin(user.uid)) {
-      // évite d'afficher un bouton qui mène à 404
-      try {
-        const r = await fetch(adminUrl, { method: "HEAD" });
-        if (r.ok) bar.appendChild(linkBtn("Admin", adminUrl));
-        else bar.appendChild(pill("⚠️ Admin: page 404"));
-      } catch {
-        bar.appendChild(pill("⚠️ Admin: page 404"));
-      }
+      bar.appendChild(linkBtn("Admin", adminUrl));
     }
   });
 })();
