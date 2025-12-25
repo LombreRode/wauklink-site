@@ -28,7 +28,6 @@
   </style>
 </head>
 <body>
-
 <header class="topbar">
   <div class="container topbar-row">
     <div>
@@ -54,20 +53,31 @@
         <input id="ville" placeholder="Ville" required />
       </div>
 
+      <!-- ✅ Type de location (durée) -->
       <div class="row">
+        <select id="duree" required>
+          <option value="">Type de location</option>
+          <option value="saisonniere">Location saisonnière</option>
+          <option value="annuelle">Location annuelle</option>
+        </select>
+
         <select id="type" required>
-          <option value="">Type</option>
+          <option value="">Type de bien</option>
           <option value="Appartement">Appartement</option>
           <option value="Maison">Maison</option>
           <option value="Studio">Studio</option>
           <option value="Chambre">Chambre</option>
         </select>
-        <input id="surface" type="number" placeholder="Surface (m²)" />
       </div>
 
       <div class="row">
+        <input id="surface" type="number" placeholder="Surface (m²)" />
         <input id="prix" type="number" placeholder="Prix (€)" required />
+      </div>
+
+      <div class="row">
         <input id="contactEmail" type="email" placeholder="Email de contact" required />
+        <input type="text" placeholder="(optionnel) Téléphone" id="contactPhone" style="display:none" />
       </div>
 
       <div class="row-1">
@@ -105,6 +115,7 @@
   const msg = document.getElementById("msg");
   const submitBtn = document.getElementById("submitBtn");
 
+  const duree = document.getElementById("duree");
   const titre = document.getElementById("titre");
   const ville = document.getElementById("ville");
   const type = document.getElementById("type");
@@ -123,7 +134,7 @@
 
   function previewFiles(files){
     photosPreview.innerHTML = "";
-    files.forEach(file=>{
+    files.slice(0,6).forEach(file=>{
       const img=document.createElement("img");
       img.className="thumb";
       img.src=URL.createObjectURL(file);
@@ -139,14 +150,16 @@
     const res=await fetch(url,{method:"POST",body:fd});
     if(!res.ok) throw new Error("Upload Cloudinary échoué");
     const data=await res.json();
+    if(!data?.secure_url) throw new Error("Cloudinary: secure_url manquant");
     return data.secure_url;
   }
 
   async function uploadAll(files){
+    const limited = files.slice(0,6);
     const urls=[];
-    for(let i=0;i<files.length;i++){
-      setMsg(`⏳ Upload photo ${i+1}/${files.length}…`);
-      urls.push(await uploadOne(files[i]));
+    for(let i=0;i<limited.length;i++){
+      setMsg(`⏳ Upload photo ${i+1}/${limited.length}…`);
+      urls.push(await uploadOne(limited[i]));
     }
     return urls;
   }
@@ -158,6 +171,7 @@
       return;
     }
     currentUser=user;
+    setMsg("");
   });
 
   photosInput.addEventListener("change",()=>{
@@ -169,14 +183,28 @@
     e.preventDefault();
     if(!currentUser) return;
 
+    if(!duree.value){
+      setMsg("❌ Choisis le type de location (saisonnière ou annuelle).");
+      return;
+    }
+
     submitBtn.disabled=true;
+    submitBtn.style.opacity=".7";
+
     try{
+      setMsg("⏳ Préparation…");
+
       let photos=[];
       if(selectedFiles.length){
         photos=await uploadAll(selectedFiles);
       }
 
+      setMsg("⏳ Envoi de l’annonce…");
+
       await addDoc(collection(db,"annonces_location"),{
+        // ✅ clé pour filtrer ensuite
+        duree: duree.value, // "saisonniere" | "annuelle"
+
         titre:titre.value.trim(),
         ville:ville.value.trim(),
         type:type.value,
@@ -184,6 +212,7 @@
         prix:Number(prix.value),
         description:description.value.trim(),
         contactEmail:contactEmail.value.trim(),
+
         photos,
         status:"pending",
         ownerUid:currentUser.uid,
@@ -192,21 +221,27 @@
         ratingCount:0
       });
 
-      setMsg("✅ Annonce envoyée. En attente de validation admin.");
+      setMsg("✅ Annonce envoyée ! Redirection…");
+
+      // ✅ redirection vers la bonne “carte”
+      const target = `../annonces/location.html?duree=${encodeURIComponent(duree.value)}`;
+      setTimeout(()=>{ window.location.href = target; }, 700);
+
       form.reset();
       photosPreview.innerHTML="";
       selectedFiles=[];
+
     }catch(err){
       console.error(err);
       setMsg("❌ Erreur lors de l’envoi. Ouvre la console (F12).");
     }finally{
       submitBtn.disabled=false;
+      submitBtn.style.opacity="1";
     }
   });
 </script>
 
 <script type="module" src="../auth/status.js"></script>
 <script type="module" src="../auth/user_sync.js"></script>
-
 </body>
 </html>
