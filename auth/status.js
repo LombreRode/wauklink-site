@@ -2,6 +2,7 @@ import { auth, db } from "./firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
+// GitHub Pages: récupère le nom du repo dans l'URL (ex: /wauklink-site)
 function basePath() {
   const parts = location.pathname.split("/").filter(Boolean);
   return parts.length ? `/${parts[0]}` : "";
@@ -31,7 +32,7 @@ function ensureBar() {
   return bar;
 }
 
-function linkBtn(label, href, danger = false) {
+function linkBtn(label, href, style = {}) {
   const a = document.createElement("a");
   a.textContent = label;
   a.href = href;
@@ -42,10 +43,7 @@ function linkBtn(label, href, danger = false) {
   a.style.padding = "7px 10px";
   a.style.borderRadius = "12px";
   a.style.cursor = "pointer";
-  if (danger) {
-    a.style.borderColor = "rgba(255,80,80,.45)";
-    a.style.background = "rgba(255,80,80,.12)";
-  }
+  Object.assign(a.style, style);
   return a;
 }
 
@@ -56,13 +54,14 @@ function pill(text) {
   return s;
 }
 
-async function isAdmin(uid) {
+async function getRole(uid) {
   try {
     const snap = await getDoc(doc(db, "users", uid));
-    return snap.exists() && snap.data()?.role === "admin";
+    if (!snap.exists()) return "";
+    return (snap.data()?.role || "").toString();
   } catch (e) {
-    console.error("isAdmin error:", e);
-    return false;
+    console.error("getRole error:", e);
+    return "";
   }
 }
 
@@ -72,19 +71,25 @@ async function isAdmin(uid) {
 
   const loginUrl = `${base}/auth/login.html`;
   const adminUrl = `${base}/admin/index.html`;
+  const modUrl = `${base}/admin/index.html`; // même dashboard (on protège par rules)
 
   onAuthStateChanged(auth, async (user) => {
     bar.innerHTML = "";
 
+    // Pas connecté
     if (!user) {
       bar.appendChild(pill("Non connecté"));
       bar.appendChild(linkBtn("Connexion", loginUrl));
       return;
     }
 
+    // Connecté
     bar.appendChild(pill(user.email || "Connecté"));
 
-    const logout = linkBtn("Déconnexion", "#", true);
+    const logout = linkBtn("Déconnexion", "#", {
+      borderColor: "rgba(255,80,80,.45)",
+      background: "rgba(255,80,80,.12)",
+    });
     logout.addEventListener("click", async (e) => {
       e.preventDefault();
       await signOut(auth);
@@ -92,9 +97,27 @@ async function isAdmin(uid) {
     });
     bar.appendChild(logout);
 
-    // ✅ PLUS DE TEST HEAD → si role=admin, on affiche le bouton direct
-    if (await isAdmin(user.uid)) {
-      bar.appendChild(linkBtn("Admin", adminUrl));
+    // Rôle
+    const role = await getRole(user.uid);
+
+    // Moderator OU Admin => accès modération (bouton Modération)
+    if (role === "moderator" || role === "admin") {
+      bar.appendChild(
+        linkBtn("Modération", modUrl, {
+          borderColor: "rgba(255,190,80,.45)",
+          background: "rgba(255,190,80,.12)",
+        })
+      );
+    }
+
+    // Admin => accès complet (bouton Admin)
+    if (role === "admin") {
+      bar.appendChild(
+        linkBtn("Admin", adminUrl, {
+          borderColor: "rgba(80,255,160,.35)",
+          background: "rgba(80,255,160,.12)",
+        })
+      );
     }
   });
 })();
