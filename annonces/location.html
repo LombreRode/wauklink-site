@@ -19,8 +19,6 @@
     .pager{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:16px}
     .btn{padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;cursor:pointer}
     .btn:disabled{opacity:.5;cursor:not-allowed}
-
-    /* ✅ bouton danger (au cas où ton style.css ne l'a pas / ou pour être sûr) */
     .btn-danger{
       padding:10px 12px;border-radius:12px;cursor:pointer;
       border:1px solid rgba(255,80,80,.45);
@@ -43,12 +41,13 @@
     .v{font-weight:900}
   </style>
 </head>
+
 <body>
 <header class="topbar">
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
-      <div class="subtitle">Annonces • Location</div>
+      <div class="subtitle" id="subTitle">Annonces • Location</div>
     </div>
     <nav style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
       <a href="../index.html" style="text-decoration:underline;opacity:.9;">← Accueil</a>
@@ -60,14 +59,17 @@
 
 <main class="container page">
   <div class="top">
-    <h2 style="margin:0">Offres Location (logements • chambres)</h2>
-    <span class="badge">20 annonces / page</span>
+    <h2 style="margin:0" id="pageTitle">Offres Location</h2>
+    <span class="badge" id="pageBadge">20 annonces / page</span>
   </div>
-  <p class="meta">
+
+  <p class="meta" id="pageMeta">
     Clique sur une annonce pour voir le détail. Si c’est ton annonce, tu peux la modifier / supprimer.
   </p>
+
   <input id="q" class="search" placeholder="Rechercher : ville, type (studio, T2…), prix…" />
   <div id="list" class="grid"></div>
+
   <div class="pager">
     <button id="prev" class="btn" disabled>◀ Précédent</button>
     <span id="pageInfo" class="meta">Page 1</span>
@@ -113,14 +115,10 @@
   <div class="modalActions">
     <a id="btnMail" class="btn" href="#" style="text-decoration:none">✉ Joindre par mail</a>
     <a id="btnTel" class="btn" href="#" style="text-decoration:none;display:none">📞 Appeler</a>
-
-    <!-- ✅ signalement -->
     <button id="btnReport" class="btn-danger">🚩 Signaler</button>
 
-    <!-- ✅ Proprio seulement -->
     <button id="btnEdit" class="btn" style="display:none">✏️ Modifier</button>
     <button id="btnDelete" class="btn" style="display:none">🗑️ Supprimer</button>
-
     <button id="backBtn" class="btn">↩ Retour aux annonces</button>
   </div>
 </dialog>
@@ -128,6 +126,32 @@
 <script type="module">
   // ====== CONFIG ======
   const PER_PAGE = 20;
+
+  // ====== PARAMS (duree) ======
+  const params = new URLSearchParams(window.location.search);
+  const dureeParam = (params.get("duree") || "").trim().toLowerCase(); // "saisonniere" | "annuelle" | ""
+
+  const allowedDuree = (dureeParam === "saisonniere" || dureeParam === "annuelle") ? dureeParam : "";
+  const dureeLabel = allowedDuree === "saisonniere"
+    ? "Location saisonnière"
+    : allowedDuree === "annuelle"
+      ? "Location annuelle"
+      : "Location (toutes)";
+
+  // ====== UI TITLES ======
+  const subTitle = document.getElementById("subTitle");
+  const pageTitle = document.getElementById("pageTitle");
+  const pageMeta = document.getElementById("pageMeta");
+  const pageBadge = document.getElementById("pageBadge");
+
+  document.title = `WAUKLINK — ${dureeLabel}`;
+  subTitle.textContent = `Annonces • ${dureeLabel}`;
+  pageTitle.textContent = (allowedDuree ? `Offres • ${dureeLabel}` : "Offres Location (toutes durées)");
+  pageBadge.textContent = `${PER_PAGE} annonces / page`;
+  pageMeta.textContent =
+    allowedDuree
+      ? `Tu es dans : ${dureeLabel}. Clique sur une annonce pour voir le détail.`
+      : `Clique sur une annonce pour voir le détail. Si c’est ton annonce, tu peux la modifier / supprimer.`;
 
   // ====== IMPORTS ======
   import { db, auth } from "../auth/firebase.js";
@@ -170,7 +194,7 @@
   let cursorStack = [];
   let currentItems = [];
   let currentUser = null;
-  let currentDetail = null; // ✅ annonce actuellement ouverte
+  let currentDetail = null;
 
   onAuthStateChanged(auth, (u) => { currentUser = u || null; });
 
@@ -222,7 +246,6 @@
       alert("Motif trop court (min 5 caractères).");
       return;
     }
-
     try {
       await addDoc(collection(db, "reports"), {
         annonceId: annonce.id,
@@ -231,15 +254,12 @@
         annonceVille: annonce.ville || null,
         annonceType: annonce.type || null,
         annoncePrix: annonce.prix ?? null,
-
         reason: reason.trim(),
         reporterUid: currentUser ? currentUser.uid : null,
         reporterEmail: currentUser ? currentUser.email : null,
-
         status: "open",
         createdAt: serverTimestamp()
       });
-
       alert("✅ Signalement envoyé. Merci !");
     } catch (e) {
       console.error(e);
@@ -252,9 +272,12 @@
     if(!a) return;
     currentDetail = a;
 
-    // Texte
     dTitle.textContent = a.titre || "Annonce";
-    dMeta.textContent = `${a.ville || ""} • ${a.type || ""}`;
+
+    // ✅ ajoute la durée dans le meta si dispo
+    const dureeTxt = a.duree ? ` • ${a.duree}` : "";
+    dMeta.textContent = `${a.ville || ""} • ${a.type || ""}${dureeTxt}`;
+
     dStars.textContent = stars(a.ratingAvg || 0, a.ratingCount || 0);
     dPrice.textContent = (a.prix ?? "") + "€";
     dType.textContent = a.type ?? "";
@@ -262,7 +285,6 @@
     dSurface.textContent = a.surface ?? "-";
     dDesc.textContent = a.description ?? "—";
 
-    // Photos
     dPhotos.innerHTML = "";
     const photos = Array.isArray(a.photos) ? a.photos.filter(Boolean).slice(0, 6) : [];
     if(photos.length === 0){
@@ -276,13 +298,13 @@
       });
     }
 
-    // Contact
     const mail = (a.contactEmail || "").trim();
     const tel = (a.contactPhone || "").trim();
     const subject = encodeURIComponent("WAUKLINK — Contact annonce : " + (a.titre || ""));
     const body = encodeURIComponent(
       `Bonjour,\n\nJe vous contacte au sujet de votre annonce : ${a.titre || ""}\nVille : ${a.ville || ""}\n\nMon message :\n`
     );
+
     btnMail.href = mail ? `mailto:${mail}?subject=${subject}&body=${body}` : "#";
     btnMail.style.opacity = mail ? "1" : ".5";
     btnMail.onclick = (e) => { if(!mail){ e.preventDefault(); alert("Email non disponible sur cette annonce."); } };
@@ -294,18 +316,15 @@
       btnTel.style.display = "none";
     }
 
-    // ✅ Signaler
     btnReport.onclick = async () => {
       if (!currentDetail) return;
       await sendReport(currentDetail);
     };
 
-    // ✅ Proprio : afficher boutons
     const isOwner = !!currentUser && !!a.ownerUid && currentUser.uid === a.ownerUid;
     btnEdit.style.display = isOwner ? "inline-block" : "none";
     btnDelete.style.display = isOwner ? "inline-block" : "none";
 
-    // ✅ SUPPRIMER
     btnDelete.onclick = async () => {
       if (!confirm("Supprimer cette annonce ?")) return;
       try {
@@ -319,7 +338,6 @@
       }
     };
 
-    // ✅ MODIFIER (simple)
     btnEdit.onclick = async () => {
       const newTitre = prompt("Titre :", a.titre ?? "");
       if (newTitre === null) return;
@@ -361,38 +379,70 @@
     dlg.showModal();
   }
 
+  // ====== QUERY BUILDER (avec filtre duree) ======
+  function makeBaseQuery(){
+    const baseRef = collection(db, "annonces_location");
+    const constraints = [
+      where("status", "==", "active"),
+    ];
+
+    if (allowedDuree) {
+      constraints.push(where("duree", "==", allowedDuree));
+    }
+
+    constraints.push(orderBy("createdAt", "desc"));
+    constraints.push(limit(PER_PAGE));
+
+    return query(baseRef, ...constraints);
+  }
+
+  function makeNextQuery(){
+    const baseRef = collection(db, "annonces_location");
+    const constraints = [
+      where("status", "==", "active"),
+    ];
+
+    if (allowedDuree) {
+      constraints.push(where("duree", "==", allowedDuree));
+    }
+
+    constraints.push(orderBy("createdAt", "desc"));
+    constraints.push(startAfter(lastDoc));
+    constraints.push(limit(PER_PAGE));
+
+    return query(baseRef, ...constraints);
+  }
+
+  function makePrevQuery(){
+    const baseRef = collection(db, "annonces_location");
+    const constraints = [
+      where("status", "==", "active"),
+    ];
+
+    if (allowedDuree) {
+      constraints.push(where("duree", "==", allowedDuree));
+    }
+
+    constraints.push(orderBy("createdAt", "desc"));
+
+    cursorStack.pop();
+    const prevCursor = cursorStack[cursorStack.length - 1] || null;
+    if (prevCursor) constraints.push(startAfter(prevCursor));
+
+    constraints.push(limit(PER_PAGE));
+    return query(baseRef, ...constraints);
+  }
+
   // ====== LOAD PAGE (pagination) ======
   async function loadPage(direction = "stay"){
-    const baseRef = collection(db, "annonces_location");
-    let qy = query(
-      baseRef,
-      where("status", "==", "active"),
-      orderBy("createdAt", "desc"),
-      limit(PER_PAGE)
-    );
+    let qy = makeBaseQuery();
 
     if(direction === "next" && lastDoc){
-      qy = query(
-        baseRef,
-        where("status", "==", "active"),
-        orderBy("createdAt", "desc"),
-        startAfter(lastDoc),
-        limit(PER_PAGE)
-      );
+      qy = makeNextQuery();
     }
 
     if(direction === "prev"){
-      cursorStack.pop();
-      const prevCursor = cursorStack[cursorStack.length - 1] || null;
-      if(prevCursor){
-        qy = query(
-          baseRef,
-          where("status", "==", "active"),
-          orderBy("createdAt", "desc"),
-          startAfter(prevCursor),
-          limit(PER_PAGE)
-        );
-      }
+      qy = makePrevQuery();
     }
 
     const snap = await getDocs(qy);
