@@ -3,79 +3,137 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WAUKLINK — Admin</title>
+  <title>WAUKLINK — Admin (Annonces)</title>
   <link rel="stylesheet" href="../style.css?v=1" />
   <style>
     .page{padding:24px 0}
     .meta{opacity:.85;font-size:13px}
-    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:14px}
-    .card{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:18px;padding:16px}
-    .btn{padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;cursor:pointer}
-    .title{font-weight:900;font-size:16px}
-    .icon{font-size:22px;margin-bottom:6px}
+    table{width:100%;border-collapse:collapse;margin-top:14px}
+    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.15);text-align:left}
+    th{opacity:.8}
+    .btn{padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;cursor:pointer}
+    .ok{border-color:rgba(80,255,160,.35);background:rgba(80,255,160,.12)}
+    .danger{border-color:rgba(255,80,80,.5);background:rgba(255,80,80,.15)}
+    .tag{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14);font-size:12px;opacity:.9}
   </style>
 </head>
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
-      <div class="subtitle">Espace Administrateur</div>
+      <div class="subtitle">Admin — Validation annonces</div>
     </div>
     <nav style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-      <a class="btn" href="../index.html">← Site</a>
+      <a class="btn" href="../index.html">← Accueil</a>
+      <a class="btn" href="reports.html">🚩 Signalements</a>
+      <a class="btn" href="ratings.html">⭐ Notes</a>
     </nav>
   </div>
 </header>
 
 <main class="container page">
-  <h2 style="margin:0">Commandes administrateur</h2>
-  <div class="meta" style="margin-top:6px">Accès réservé aux comptes avec <b>role = "admin"</b>.</div>
-
-  <div class="cards">
-    <div class="card">
-      <div class="icon">✅</div>
-      <div class="title">Validation des annonces</div>
-      <div class="meta">Valider / pending / removed + fix ownerUid.</div>
-      <div style="margin-top:12px">
-        <button class="btn" id="openAnnonces">Ouvrir</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="icon">🚩</div>
-      <div class="title">Signalements</div>
-      <div class="meta">Voir les annonces signalées.</div>
-      <div style="margin-top:12px">
-        <button class="btn" id="openReports">Ouvrir</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="icon">⭐</div>
-      <div class="title">Notes & étoiles</div>
-      <div class="meta">Voir les notes, top annonces, reset moyenne.</div>
-      <div style="margin-top:12px">
-        <button class="btn" id="openRatings">Ouvrir</button>
-      </div>
-    </div>
+  <div class="meta">
+    Ici tu valides les annonces <span class="tag">status = pending</span> → <span class="tag">active</span>
   </div>
 
-  <div class="meta" id="msg" style="margin-top:14px"></div>
+  <div id="msg" class="meta" style="margin-top:10px"></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Titre</th>
+        <th>Ville</th>
+        <th>Durée</th>
+        <th>Prix</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
 </main>
 
 <script type="module">
+  import { db, auth } from "../auth/firebase.js";
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import {
+    collection, query, where, orderBy, getDocs,
+    doc, updateDoc, deleteDoc
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+  const rows = document.getElementById("rows");
   const msg = document.getElementById("msg");
-  const go = (url) => { window.location.href = url; };
 
-  document.getElementById("openAnnonces").onclick = () => go("./annonces.html");
-  document.getElementById("openReports").onclick  = () => go("./reports.html");
-  document.getElementById("openRatings").onclick  = () => go("./ratings.html");
+  let currentUser = null;
+  onAuthStateChanged(auth, (u)=>{ currentUser = u || null; });
 
-  // Petit diagnostic si annonces.html manque (donne une info claire)
-  fetch("./annonces.html", { method:"HEAD" })
-    .then(r => { if(!r.ok) msg.textContent = "⚠️ annonces.html introuvable (404). Vérifie qu’il existe dans /admin/."; })
-    .catch(()=>{});
+  function setMsg(t){ msg.textContent = t; }
+
+  async function load(){
+    setMsg("⏳ Chargement…");
+    rows.innerHTML = "";
+
+    const qy = query(
+      collection(db, "annonces_location"),
+      where("status", "==", "pending"),
+      orderBy("createdAt", "desc")
+    );
+
+    const snap = await getDocs(qy);
+
+    if(snap.empty){
+      setMsg("✅ Aucune annonce en attente.");
+      return;
+    }
+    setMsg(`✅ ${snap.size} annonce(s) en attente.`);
+
+    snap.forEach((d)=>{
+      const a = d.data();
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td>${a.titre || a.title || "-"}</td>
+        <td>${a.ville || "-"}</td>
+        <td>${a.duree || "-"}</td>
+        <td>${(a.prix ?? "-")}€</td>
+        <td>${a.status || "-"}</td>
+        <td style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn ok">Valider</button>
+          <button class="btn danger">Refuser</button>
+        </td>
+      `;
+
+      const [btnOk, btnNo] = tr.querySelectorAll("button");
+
+      btnOk.onclick = async ()=>{
+        if(!confirm("Valider cette annonce ?")) return;
+        try{
+          await updateDoc(doc(db, "annonces_location", d.id), { status:"active" });
+          await load();
+        }catch(e){
+          console.error(e);
+          alert("❌ Impossible de valider (rules / pas admin).");
+        }
+      };
+
+      btnNo.onclick = async ()=>{
+        if(!confirm("Refuser (supprimer) cette annonce ?")) return;
+        try{
+          await deleteDoc(doc(db, "annonces_location", d.id));
+          await load();
+        }catch(e){
+          console.error(e);
+          alert("❌ Impossible de refuser (rules / pas admin).");
+        }
+      };
+
+      rows.appendChild(tr);
+    });
+  }
+
+  load();
 </script>
 
 <script type="module" src="../auth/status.js"></script>
