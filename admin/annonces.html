@@ -6,22 +6,15 @@
   <title>WAUKLINK — Admin (Annonces)</title>
   <link rel="stylesheet" href="../style.css?v=1" />
   <style>
-    .page{padding:22px 0}
+    .page{padding:24px 0}
     .meta{opacity:.85;font-size:13px}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:12px 0}
-    .kpi{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:16px;padding:14px}
-    .kpi .n{font-size:26px;font-weight:900}
-    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0}
-    input,select{padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.2);color:#fff}
-    table{width:100%;border-collapse:collapse;margin-top:10px}
-    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.15);text-align:left;vertical-align:top}
+    table{width:100%;border-collapse:collapse;margin-top:14px}
+    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.15);text-align:left}
     th{opacity:.8}
     .btn{padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;cursor:pointer}
     .ok{border-color:rgba(80,255,160,.35);background:rgba(80,255,160,.12)}
-    .warn{border-color:rgba(255,190,80,.45);background:rgba(255,190,80,.12)}
     .danger{border-color:rgba(255,80,80,.5);background:rgba(255,80,80,.15)}
-    .tag{display:inline-block;padding:3px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14);font-size:12px;opacity:.9}
-    .muted{opacity:.7}
+    .tag{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14);font-size:12px;opacity:.9}
   </style>
 </head>
 <body>
@@ -30,44 +23,31 @@
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
-      <div class="subtitle">Admin — Modération des annonces</div>
+      <div class="subtitle">Admin — Validation annonces</div>
     </div>
-    <nav style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-      <a class="btn" href="index.html">Dashboard</a>
+    <nav style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <a class="btn" href="../index.html">← Accueil</a>
       <a class="btn" href="reports.html">🚩 Signalements</a>
       <a class="btn" href="ratings.html">⭐ Notes</a>
-      <a class="btn" href="../index.html">← Site</a>
     </nav>
   </div>
 </header>
 
 <main class="container page">
-  <div class="grid">
-    <div class="kpi"><div class="meta">Chargées</div><div class="n" id="kAll">0</div></div>
-    <div class="kpi"><div class="meta">Active</div><div class="n" id="kActive">0</div></div>
-    <div class="kpi"><div class="meta">Pending</div><div class="n" id="kPending">0</div></div>
-    <div class="kpi"><div class="meta">Orphelines (owner manquant)</div><div class="n" id="kOrph">0</div></div>
+  <div class="meta">
+    Ici tu valides les annonces <span class="tag">status = pending</span> → <span class="tag">active</span>
   </div>
 
-  <div class="toolbar">
-    <input id="q" placeholder="Recherche: titre, ville, type, email, owner..." style="min-width:260px;flex:1" />
-    <select id="filter">
-      <option value="all">Tous status</option>
-      <option value="pending">Pending</option>
-      <option value="active">Active</option>
-      <option value="removed">Removed</option>
-    </select>
-    <button class="btn" id="reload">↻ Recharger</button>
-    <span class="meta" id="msg"></span>
-  </div>
+  <div id="msg" class="meta" style="margin-top:10px"></div>
 
   <table>
     <thead>
       <tr>
-        <th>Date</th>
-        <th>Annonce</th>
+        <th>Titre</th>
+        <th>Ville</th>
+        <th>Durée</th>
+        <th>Prix</th>
         <th>Status</th>
-        <th>Owner</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -79,170 +59,79 @@
   import { db, auth } from "../auth/firebase.js";
   import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
   import {
-    collection, getDocs, doc, updateDoc, deleteField, orderBy, query
+    collection, query, where, orderBy, getDocs,
+    doc, updateDoc, deleteDoc
   } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
   const rows = document.getElementById("rows");
   const msg = document.getElementById("msg");
-  const qInput = document.getElementById("q");
-  const filter = document.getElementById("filter");
-  const reloadBtn = document.getElementById("reload");
-
-  const kAll = document.getElementById("kAll");
-  const kActive = document.getElementById("kActive");
-  const kPending = document.getElementById("kPending");
-  const kOrph = document.getElementById("kOrph");
 
   let currentUser = null;
   onAuthStateChanged(auth, (u)=>{ currentUser = u || null; });
 
-  function setMsg(t){ msg.textContent = t || ""; }
-  function esc(s){ return String(s ?? "").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])); }
-  function fmtDate(ts){
-    try{
-      const d = ts?.toDate ? ts.toDate() : (ts?.seconds ? new Date(ts.seconds*1000) : null);
-      if(!d) return "-";
-      return d.toLocaleString("fr-FR");
-    }catch{ return "-"; }
-  }
-
-  // ✅ Normalisation owner: accepte ownerId OU ownerUid, et force ownerUid
-  async function fixOwnerUid(docId, data){
-    const owner = data.ownerUid || data.ownerId || "";
-    if(!owner){
-      alert("❌ Aucun ownerId/ownerUid trouvé.");
-      return;
-    }
-    await updateDoc(doc(db,"annonces_location", docId), {
-      ownerUid: owner,
-      ownerId: deleteField()
-    });
-  }
-
-  async function setStatus(docId, status){
-    await updateDoc(doc(db,"annonces_location", docId), { status });
-  }
+  function setMsg(t){ msg.textContent = t; }
 
   async function load(){
     setMsg("⏳ Chargement…");
     rows.innerHTML = "";
 
-    const snap = await getDocs(query(
-      collection(db,"annonces_location"),
-      orderBy("createdAt","desc")
-    ));
+    const qy = query(
+      collection(db, "annonces_location"),
+      where("status", "==", "pending"),
+      orderBy("createdAt", "desc")
+    );
 
-    const all = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    const snap = await getDocs(qy);
 
-    // KPI
-    kAll.textContent = all.length;
-    kActive.textContent = all.filter(x=>x.status==="active").length;
-    kPending.textContent = all.filter(x=>x.status==="pending").length;
-    kOrph.textContent = all.filter(x=>!(x.ownerUid || x.ownerId)).length;
-
-    // filtre + recherche
-    const f = filter.value;
-    const s = (qInput.value || "").toLowerCase().trim();
-
-    const shown = all.filter(a=>{
-      if(f !== "all" && (a.status||"") !== f) return false;
-      if(!s) return true;
-      const blob = [
-        a.titre, a.title, a.ville, a.type, a.contactEmail,
-        a.ownerUid, a.ownerId, a.status, a.duree, a.prix
-      ].join(" ").toLowerCase();
-      return blob.includes(s);
-    });
-
-    if(!shown.length){
-      setMsg("✅ Rien à afficher.");
+    if(snap.empty){
+      setMsg("✅ Aucune annonce en attente.");
       return;
     }
-    setMsg(`✅ ${shown.length} ligne(s).`);
+    setMsg(`✅ ${snap.size} annonce(s) en attente.`);
 
-    shown.forEach(a=>{
-      const owner = a.ownerUid || a.ownerId || "";
-      const ownerOk = !!a.ownerUid; // on veut ownerUid
+    snap.forEach((d)=>{
+      const a = d.data();
       const tr = document.createElement("tr");
 
       tr.innerHTML = `
-        <td class="muted">${esc(fmtDate(a.createdAt))}</td>
-        <td>
-          <div style="font-weight:900">${esc(a.titre || a.title || "-")}</div>
-          <div class="meta">${esc(a.ville||"-")} • ${esc(a.type||"-")} • ${esc(a.duree||"-")} • ${(a.prix ?? "-")}€</div>
-          <div class="meta">Email: ${esc(a.contactEmail||"-")}</div>
-          <div class="meta">DocId: ${esc(a.id)}</div>
-        </td>
-        <td>
-          <span class="tag">${esc(a.status||"-")}</span>
-        </td>
-        <td>
-          <div style="font-weight:900">${esc(owner || "-")}</div>
-          <div class="meta">${ownerOk ? "ownerUid ✅" : (owner ? "ownerId ⚠️" : "❌ aucun owner")}</div>
-        </td>
+        <td>${a.titre || a.title || "-"}</td>
+        <td>${a.ville || "-"}</td>
+        <td>${a.duree || "-"}</td>
+        <td>${(a.prix ?? "-")}€</td>
+        <td>${a.status || "-"}</td>
         <td style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn ok">Valider</button>
-          <button class="btn warn">Pending</button>
-          <button class="btn danger">Removed</button>
-          <button class="btn">Fix ownerUid</button>
+          <button class="btn danger">Refuser</button>
         </td>
       `;
 
-      const [bOk, bPen, bRem, bFix] = tr.querySelectorAll("button");
+      const [btnOk, btnNo] = tr.querySelectorAll("button");
 
-      bOk.onclick = async ()=>{
+      btnOk.onclick = async ()=>{
+        if(!confirm("Valider cette annonce ?")) return;
         try{
-          // ✅ avant validation: si ownerId -> ownerUid
-          if(!a.ownerUid && a.ownerId){
-            await fixOwnerUid(a.id, a);
-          }
-          await setStatus(a.id, "active");
+          await updateDoc(doc(db, "annonces_location", d.id), { status:"active" });
           await load();
         }catch(e){
           console.error(e);
-          alert("❌ Action refusée (rules/permissions) ou erreur. Voir Console F12.");
+          alert("❌ Impossible de valider (rules / pas admin).");
         }
       };
 
-      bPen.onclick = async ()=>{
+      btnNo.onclick = async ()=>{
+        if(!confirm("Refuser (supprimer) cette annonce ?")) return;
         try{
-          if(!confirm("Mettre en pending ?")) return;
-          await setStatus(a.id, "pending");
+          await deleteDoc(doc(db, "annonces_location", d.id));
           await load();
         }catch(e){
           console.error(e);
-          alert("❌ Action refusée (rules/permissions) ou erreur. Voir Console F12.");
-        }
-      };
-
-      bRem.onclick = async ()=>{
-        try{
-          if(!confirm("Mettre en removed ?")) return;
-          await setStatus(a.id, "removed");
-          await load();
-        }catch(e){
-          console.error(e);
-          alert("❌ Action refusée (rules/permissions) ou erreur. Voir Console F12.");
-        }
-      };
-
-      bFix.onclick = async ()=>{
-        try{
-          await fixOwnerUid(a.id, a);
-          await load();
-        }catch(e){
-          console.error(e);
-          alert("❌ Fix ownerUid refusé (rules/permissions). Voir Console F12.");
+          alert("❌ Impossible de refuser (rules / pas admin).");
         }
       };
 
       rows.appendChild(tr);
     });
   }
-
-  reloadBtn.onclick = load;
-  filter.onchange = load;
-  qInput.oninput = () => { /* filtre instant */ load(); };
 
   load();
 </script>
