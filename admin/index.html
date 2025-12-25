@@ -13,6 +13,7 @@
     .btn{padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;cursor:pointer}
     .title{font-weight:900;font-size:16px}
     .icon{font-size:22px;margin-bottom:6px}
+    .hidden{display:none!important}
   </style>
 </head>
 <body>
@@ -20,7 +21,7 @@
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
-      <div class="subtitle">Espace Administrateur</div>
+      <div class="subtitle">Espace Admin / Modération</div>
     </div>
     <nav style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
       <a class="btn" href="../index.html">← Site</a>
@@ -29,11 +30,13 @@
 </header>
 
 <main class="container page">
-  <h2 style="margin:0">Commandes administrateur</h2>
-  <div class="meta" style="margin-top:6px">Accès réservé aux comptes admin.</div>
+  <h2 style="margin:0">Tableau de bord</h2>
+  <div class="meta" id="adminMeta" style="margin-top:6px">Vérification du rôle…</div>
 
   <div class="cards">
-    <div class="card">
+
+    <!-- Visible ADMIN + MODERATOR -->
+    <div class="card" data-minrole="moderator">
       <div class="icon">✅</div>
       <div class="title">Validation des annonces</div>
       <div class="meta">Valider pending → active</div>
@@ -42,7 +45,8 @@
       </div>
     </div>
 
-    <div class="card">
+    <!-- Visible ADMIN + MODERATOR -->
+    <div class="card" data-minrole="moderator">
       <div class="icon">🚩</div>
       <div class="title">Signalements</div>
       <div class="meta">Voir les signalements</div>
@@ -51,7 +55,8 @@
       </div>
     </div>
 
-    <div class="card">
+    <!-- Visible ADMIN seulement -->
+    <div class="card" data-minrole="admin">
       <div class="icon">⭐</div>
       <div class="title">Notes</div>
       <div class="meta">Voir les notes</div>
@@ -59,13 +64,24 @@
         <a class="btn" href="./ratings.html" style="text-decoration:none;display:inline-block">Ouvrir</a>
       </div>
     </div>
+
+    <!-- Exemple ADMIN seulement (optionnel) -->
+    <div class="card" data-minrole="admin">
+      <div class="icon">🗑️</div>
+      <div class="title">Actions dangereuses</div>
+      <div class="meta">Réservé admin (suppression, etc.)</div>
+      <div style="margin-top:12px">
+        <a class="btn" href="./danger.html" style="text-decoration:none;display:inline-block">Ouvrir</a>
+      </div>
+    </div>
+
   </div>
 </main>
 
-<!-- Barre en haut à droite (email + boutons) -->
+<!-- Barre login en haut à droite (si tu l’utilises ailleurs) -->
 <script type="module" src="../auth/status.js"></script>
 
-<!-- ✅ Script ADMIN (celui qui fait fonctionner la page admin) -->
-<script type="module" src="./admin.js?v=1"></script>
+<!-- ✅ Script qui applique les rôles -->
+<script type="module" src="./admin.js?v=2"></script>
 </body>
 </html>
