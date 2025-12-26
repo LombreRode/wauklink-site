@@ -6,18 +6,24 @@ const msg = document.getElementById("msg");
 
 async function readRole(uid) {
   const snap = await getDoc(doc(db, "users", uid));
-  return { exists: snap.exists(), role: snap.exists() ? String(snap.data()?.role || "") : "" };
+  const data = snap.exists() ? snap.data() : null;
+  return {
+    exists: snap.exists(),
+    role: snap.exists() ? String(data?.role || "") : "",
+    data
+  };
 }
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    sessionStorage.setItem("afterLoginGo", "/wauklink-site/admin/portal.html");
-    msg.textContent = "Connexion nécessaire…";
-    location.replace("../auth/login.html");
+    msg.textContent = "NOT LOGGED";
     return;
   }
 
   const r = await readRole(user.uid);
+
+  // ✅ IMPORTANT: ça affiche TOUT ce qu'il y a dans ton doc users/<uid>
+  console.log("USERS DOC DATA =", r.data);
 
   msg.textContent =
     `EMAIL: ${user.email}\n` +
