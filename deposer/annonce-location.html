@@ -6,96 +6,76 @@
   <title>WAUKLINK — Déposer une annonce</title>
   <link rel="stylesheet" href="../style.css?v=1" />
   <style>
-    .wrap{padding:24px 0}
-    .card{max-width:820px;margin:auto;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:16px;padding:18px}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .row-1{grid-template-columns:1fr}
-    input, textarea, select{
-      width:100%;padding:10px 12px;border-radius:12px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(0,0,0,.2);color:#fff
-    }
-    textarea{min-height:120px;resize:vertical}
-    .btn{padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.06);color:#fff;cursor:pointer}
-    .meta{opacity:.85;font-size:13px}
-    .ok{border-color:rgba(80,255,160,.35);background:rgba(80,255,160,.12)}
-    .tag{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14);font-size:12px}
-    .thumb{
-      width:84px;height:84px;object-fit:cover;border-radius:12px;
-      border:1px solid rgba(255,255,255,.14);
-    }
+    .page{padding:24px 0}
+    .card{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:16px;padding:14px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .btn{padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;cursor:pointer}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    input, textarea, select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.2);color:#fff}
+    label{display:block;font-weight:800;margin:10px 0 6px}
+    .meta{opacity:.85;font-size:13px;white-space:pre-line}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:12px}
+    .photo{border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px;background:rgba(255,255,255,.04)}
+    .photo img{width:100%;height:140px;object-fit:cover;border-radius:10px;border:1px solid rgba(255,255,255,.12)}
+    .hr{border:none;height:1px;background:rgba(255,255,255,.12);margin:16px 0}
   </style>
 </head>
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
       <div class="subtitle">Déposer une annonce</div>
     </div>
-    <nav>
-      <a class="btn" href="../index.html">← Retour</a>
+    <nav class="row">
+      <a class="btn" href="../index.html" style="text-decoration:none">← Accueil</a>
+      <a class="btn" href="../annonces/index.html" style="text-decoration:none">📋 Annonces</a>
     </nav>
   </div>
 </header>
 
-<main class="container wrap">
+<main class="container page">
   <div class="card">
-    <div class="meta" style="margin-bottom:12px">
-      Toutes les annonces sont vérifiées par un admin avant publication.
-      <span class="tag">Validation requise</span>
-    </div>
+    <div class="meta" id="msg">Chargement…</div>
 
     <form id="form">
-      <div class="row">
-        <input id="titre" placeholder="Titre de l’annonce" required />
-        <input id="ville" placeholder="Ville" required />
+      <label>Titre</label>
+      <input id="titre" required placeholder="Ex: Peinture + petits travaux" />
+
+      <label>Ville</label>
+      <input id="ville" required placeholder="Ex: Paris" />
+
+      <label>Type</label>
+      <input id="type" required placeholder="Ex: Travaux" />
+
+      <label>Prix (€)</label>
+      <input id="prix" type="number" min="0" step="1" required value="0" />
+
+      <label>Description</label>
+      <textarea id="description" rows="5" placeholder="Décris ton service / besoin..."></textarea>
+
+      <hr class="hr">
+
+      <div class="row" style="justify-content:space-between;align-items:flex-start">
+        <div>
+          <div style="font-weight:900">Photos</div>
+          <div class="meta">Elles seront envoyées sur Firebase Storage (plus Cloudinary).</div>
+        </div>
+        <div class="row">
+          <input id="files" type="file" accept="image/*" multiple />
+        </div>
       </div>
 
-      <!-- ✅ Type de location (durée) -->
-      <div class="row">
-        <select id="duree" required>
-          <option value="">Type de location</option>
-          <option value="saisonniere">Location saisonnière</option>
-          <option value="annuelle">Location annuelle</option>
-        </select>
+      <div id="preview" class="grid"></div>
 
-        <select id="type" required>
-          <option value="">Type de bien</option>
-          <option value="Appartement">Appartement</option>
-          <option value="Maison">Maison</option>
-          <option value="Studio">Studio</option>
-          <option value="Chambre">Chambre</option>
-        </select>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" id="btnPublish" type="submit">✅ Publier l’annonce</button>
       </div>
 
-      <div class="row">
-        <input id="surface" type="number" placeholder="Surface (m²)" />
-        <input id="prix" type="number" placeholder="Prix (€)" required />
+      <div class="meta" style="margin-top:10px">
+        Astuce : tu peux publier sans photo, puis modifier après.
       </div>
-
-      <div class="row">
-        <input id="contactEmail" type="email" placeholder="Email de contact" required />
-        <input type="text" placeholder="(optionnel) Téléphone" id="contactPhone" style="display:none" />
-      </div>
-
-      <div class="row-1">
-        <textarea id="description" placeholder="Description détaillée" required></textarea>
-      </div>
-
-      <!-- PHOTOS -->
-      <div class="row-1" style="margin-top:12px">
-        <div class="meta">Photos (max 6)</div>
-        <input id="photosInput" type="file" accept="image/*" multiple />
-        <div id="photosPreview" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"></div>
-      </div>
-
-      <div class="row-1" style="margin-top:12px">
-        <button class="btn ok" id="submitBtn" type="submit">📤 Déposer l’annonce</button>
-      </div>
-
-      <div id="msg" class="meta" style="margin-top:10px"></div>
     </form>
   </div>
 </main>
@@ -103,145 +83,144 @@
 <script type="module">
   import { auth, db } from "../auth/firebase.js";
   import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-  import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  /* ================================
-     CLOUDINARY — CONFIG FINALE
-     ================================ */
-  const CLOUD_NAME = "dxozdzsla";
-  const UPLOAD_PRESET = "wauklink_unsigned";
+  import {
+    collection, addDoc, doc, updateDoc, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  const form = document.getElementById("form");
+  import {
+    getStorage, ref, uploadBytes, getDownloadURL
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
+
+  const storage = getStorage();
+
   const msg = document.getElementById("msg");
-  const submitBtn = document.getElementById("submitBtn");
+  const form = document.getElementById("form");
+  const btnPublish = document.getElementById("btnPublish");
 
-  const duree = document.getElementById("duree");
   const titre = document.getElementById("titre");
   const ville = document.getElementById("ville");
   const type = document.getElementById("type");
-  const surface = document.getElementById("surface");
   const prix = document.getElementById("prix");
-  const contactEmail = document.getElementById("contactEmail");
   const description = document.getElementById("description");
+  const files = document.getElementById("files");
+  const preview = document.getElementById("preview");
 
-  const photosInput = document.getElementById("photosInput");
-  const photosPreview = document.getElementById("photosPreview");
+  function show(t){ msg.textContent = t; }
+  function esc(s){
+    return String(s ?? "").replace(/[&<>"']/g, m=>({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[m]));
+  }
 
-  let currentUser = null;
-  let selectedFiles = [];
+  function pathFor(annonceId, index, file){
+    const ext = (file?.name?.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g,"");
+    return `annonces_location/${annonceId}/p${index+1}.${ext || "jpg"}`;
+  }
 
-  function setMsg(t){ msg.textContent = t; }
+  function renderPreview(fileList){
+    preview.innerHTML = "";
+    const arr = Array.from(fileList || []).slice(0, 8);
+    if (!arr.length) return;
 
-  function previewFiles(files){
-    photosPreview.innerHTML = "";
-    files.slice(0,6).forEach(file=>{
-      const img=document.createElement("img");
-      img.className="thumb";
-      img.src=URL.createObjectURL(file);
-      photosPreview.appendChild(img);
+    arr.forEach((f, i) => {
+      const div = document.createElement("div");
+      div.className = "photo";
+      const url = URL.createObjectURL(f);
+      div.innerHTML = `
+        <img src="${esc(url)}" alt="preview ${i+1}">
+        <div class="meta" style="margin-top:8px">#${i+1} • ${esc(f.name)}</div>
+      `;
+      preview.appendChild(div);
     });
   }
 
-  async function uploadOne(file){
-    const url=`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
-    const fd=new FormData();
-    fd.append("file",file);
-    fd.append("upload_preset",UPLOAD_PRESET);
-    const res=await fetch(url,{method:"POST",body:fd});
-    if(!res.ok) throw new Error("Upload Cloudinary échoué");
-    const data=await res.json();
-    if(!data?.secure_url) throw new Error("Cloudinary: secure_url manquant");
-    return data.secure_url;
-  }
+  files.addEventListener("change", () => renderPreview(files.files));
 
-  async function uploadAll(files){
-    const limited = files.slice(0,6);
-    const urls=[];
-    for(let i=0;i<limited.length;i++){
-      setMsg(`⏳ Upload photo ${i+1}/${limited.length}…`);
-      urls.push(await uploadOne(limited[i]));
-    }
-    return urls;
-  }
+  let currentUser = null;
 
-  onAuthStateChanged(auth,(user)=>{
-    if(!user){
-      setMsg("❌ Vous devez être connecté pour déposer une annonce.");
-      form.style.display="none";
+  onAuthStateChanged(auth, (u) => {
+    currentUser = u || null;
+    if (!currentUser) {
+      show("❌ Non connecté. Redirection…");
+      setTimeout(() => location.href = "../auth/login.html", 400);
       return;
     }
-    currentUser=user;
-    setMsg("");
+    show("✅ Connecté. Tu peux publier une annonce.");
   });
 
-  photosInput.addEventListener("change",()=>{
-    selectedFiles=[...photosInput.files].slice(0,6);
-    previewFiles(selectedFiles);
-  });
+  async function createAnnonceBase(){
+    // 1) Crée le doc Firestore (sans photos pour l’instant)
+    const data = {
+      titre: titre.value.trim(),
+      ville: ville.value.trim(),
+      type: type.value.trim(),
+      prix: Number(prix.value || 0),
+      description: description.value.trim(),
+      ownerUid: currentUser.uid,
+      ownerEmail: currentUser.email || "",
+      status: "active",
+      photos: [],
+      photoPaths: [],
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
 
-  form.addEventListener("submit",async(e)=>{
+    const refDoc = await addDoc(collection(db, "annonces_location"), data);
+    return refDoc.id;
+  }
+
+  async function uploadPhotosAndAttach(annonceId, fileList){
+    const arr = Array.from(fileList || []).slice(0, 8);
+    if (!arr.length) return;
+
+    const urls = [];
+    const paths = [];
+
+    for (let i = 0; i < arr.length; i++) {
+      const f = arr[i];
+      const p = pathFor(annonceId, i, f);
+      const sref = ref(storage, p);
+
+      await uploadBytes(sref, f, { contentType: f.type || "image/jpeg" });
+      const url = await getDownloadURL(sref);
+
+      paths.push(p);
+      urls.push(url);
+    }
+
+    await updateDoc(doc(db, "annonces_location", annonceId), {
+      photos: urls,
+      photoPaths: paths,
+      updatedAt: serverTimestamp()
+    });
+  }
+
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    if(!currentUser) return;
+    if (!currentUser) return;
 
-    if(!duree.value){
-      setMsg("❌ Choisis le type de location (saisonnière ou annuelle).");
-      return;
-    }
+    btnPublish.disabled = true;
+    try {
+      show("⏳ Création de l’annonce…");
+      const annonceId = await createAnnonceBase();
 
-    submitBtn.disabled=true;
-    submitBtn.style.opacity=".7";
+      show("⏳ Upload des photos…");
+      await uploadPhotosAndAttach(annonceId, files.files);
 
-    try{
-      setMsg("⏳ Préparation…");
-
-      let photos=[];
-      if(selectedFiles.length){
-        photos=await uploadAll(selectedFiles);
-      }
-
-      setMsg("⏳ Envoi de l’annonce…");
-
-      await addDoc(collection(db,"annonces_location"),{
-        // ✅ clé pour filtrer ensuite
-        duree: duree.value, // "saisonniere" | "annuelle"
-
-        titre:titre.value.trim(),
-        ville:ville.value.trim(),
-        type:type.value,
-        surface:Number(surface.value||0),
-        prix:Number(prix.value),
-        description:description.value.trim(),
-        contactEmail:contactEmail.value.trim(),
-
-        photos,
-        status:"pending",
-        ownerUid:currentUser.uid,
-        createdAt:serverTimestamp(),
-        ratingAvg:0,
-        ratingCount:0
-      });
-
-      setMsg("✅ Annonce envoyée ! Redirection…");
-
-      // ✅ redirection vers la bonne “carte”
-      const target = `../annonces/location.html?duree=${encodeURIComponent(duree.value)}`;
-      setTimeout(()=>{ window.location.href = target; }, 700);
-
-      form.reset();
-      photosPreview.innerHTML="";
-      selectedFiles=[];
-
-    }catch(err){
+      show("✅ Annonce publiée !");
+      // Redirige vers la page d’édition (pratique)
+      setTimeout(() => {
+        location.href = `../annonce_edit.html?id=${encodeURIComponent(annonceId)}`;
+      }, 400);
+    } catch (err) {
       console.error(err);
-      setMsg("❌ Erreur lors de l’envoi. Ouvre la console (F12).");
-    }finally{
-      submitBtn.disabled=false;
-      submitBtn.style.opacity="1";
+      show("❌ Erreur (console). Vérifie les rules Storage et ownerUid.");
+    } finally {
+      btnPublish.disabled = false;
     }
   });
 </script>
 
-<script type="module" src="../auth/status.js"></script>
-<script type="module" src="../auth/user_sync.js"></script>
 </body>
 </html>
