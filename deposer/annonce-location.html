@@ -27,6 +27,7 @@
     }
   </style>
 </head>
+
 <body>
 <header class="topbar">
   <div class="container topbar-row">
@@ -35,7 +36,8 @@
       <div class="subtitle">Déposer une annonce</div>
     </div>
     <nav>
-      <a class="btn" href="../index.html">← Retour</a>
+      <!-- ✅ on met href en JS (GitHub Pages safe) -->
+      <a class="btn" id="btnRetour" href="#">← Retour</a>
     </nav>
   </div>
 </header>
@@ -59,6 +61,7 @@
           <option value="saisonniere">Location saisonnière</option>
           <option value="annuelle">Location annuelle</option>
         </select>
+
         <select id="type" required>
           <option value="">Type de bien</option>
           <option value="Appartement">Appartement</option>
@@ -99,16 +102,21 @@
 </main>
 
 <script type="module">
-  import { auth, db } from "../auth/firebase.js";
-  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-  import {
-    collection, addDoc, doc, updateDoc, serverTimestamp
-  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-  import {
-    getStorage, ref, uploadBytes, getDownloadURL
-  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
+  // ✅ IMPORTANT : storage vient de TON firebase.js (getStorage(app))
+  import { auth, db, storage } from "../auth/firebase.js";
 
-  const storage = getStorage();
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import { collection, addDoc, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
+
+  // ✅ GitHub Pages : récupère /wauklink-site
+  function basePath() {
+    const parts = location.pathname.split("/").filter(Boolean);
+    return parts.length ? `/${parts[0]}` : "";
+  }
+
+  // ✅ fixe le bouton Retour (ne dépend plus de ../)
+  document.getElementById("btnRetour").href = `${basePath()}/index.html`;
 
   const form = document.getElementById("form");
   const msg = document.getElementById("msg");
@@ -148,7 +156,6 @@
   }
 
   function storagePath(annonceId, index, file){
-    // ex: annonces_location/ABC/p1.jpg
     return `annonces_location/${annonceId}/p${index+1}.${safeExt(file)}`;
   }
 
@@ -186,6 +193,7 @@
 
   photosInput.addEventListener("change",()=>{
     selectedFiles=[...photosInput.files].slice(0,6);
+    setMsg(`📸 Photos sélectionnées : ${selectedFiles.length}`);
     previewFiles(selectedFiles);
   });
 
@@ -204,9 +212,9 @@
     try{
       setMsg("⏳ Création de l’annonce…");
 
-      // 1) Créer l'annonce d'abord (IMPORTANT pour les rules Storage: ownerUid existe)
+      // 1) créer l’annonce d’abord
       const annonceRef = await addDoc(collection(db,"annonces_location"),{
-        duree: duree.value, // "saisonniere" | "annuelle"
+        duree: duree.value,
         titre: titre.value.trim(),
         ville: ville.value.trim(),
         type: type.value,
@@ -227,7 +235,7 @@
 
       const annonceId = annonceRef.id;
 
-      // 2) Upload photos -> Storage
+      // 2) upload photos
       let photos = [];
       let photoPaths = [];
       if(selectedFiles.length){
@@ -236,7 +244,7 @@
         photoPaths = res.paths;
       }
 
-      // 3) Update Firestore avec URLs+paths
+      // 3) update annonce
       setMsg("⏳ Finalisation…");
       await updateDoc(doc(db,"annonces_location", annonceId),{
         photos,
@@ -244,18 +252,18 @@
         updatedAt: serverTimestamp()
       });
 
+      // ✅ REDIRECTION GITHUB PAGES OK
       setMsg("✅ Annonce envoyée ! Redirection…");
-      const target = `../annonces/location.html?duree=${encodeURIComponent(duree.value)}`;
+      const target = `${basePath()}/annonces/location.html?duree=${encodeURIComponent(duree.value)}`;
       setTimeout(()=>{ window.location.href = target; }, 700);
 
       form.reset();
       photosPreview.innerHTML="";
       selectedFiles=[];
-
     }catch(err){
       console.error(err);
       setMsg("❌ Erreur lors de l’envoi. Ouvre la console (F12).");
-      alert("Erreur : " + (err?.message || err));
+      alert("Erreur : " + (err?.code || "") + " " + (err?.message || err));
     }finally{
       submitBtn.disabled=false;
       submitBtn.style.opacity="1";
