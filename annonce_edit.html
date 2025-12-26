@@ -25,7 +25,6 @@
   </style>
 </head>
 <body>
-
 <header class="topbar">
   <div class="container topbar-row">
     <div>
@@ -75,8 +74,9 @@
         <div>
           <div style="font-weight:900">Photos</div>
           <div class="meta">
+            - Max 6 photos.
             - “Remplacer toutes les photos” supprime les anciennes + upload les nouvelles.
-            - “Supprimer une photo” est autorisé pour OWNER ou ADMIN (selon tes rules Storage).
+            - “Supprimer” est autorisé pour OWNER / ADMIN / MODERATOR (si tes rules Storage le permettent).
           </div>
         </div>
         <div class="row">
@@ -91,17 +91,10 @@
 </main>
 
 <script type="module">
-  // ✅ Ton projet utilise déjà auth/firebase.js
-  import { auth, db } from "./auth/firebase.js";
+  import { auth, db, storage } from "./auth/firebase.js";
   import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-
-  import {
-    doc, getDoc, updateDoc, serverTimestamp
-  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
-  import {
-    getStorage, ref, uploadBytes, getDownloadURL, deleteObject
-  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
+  import { doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  import { ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
   const msg = document.getElementById("msg");
   const form = document.getElementById("form");
@@ -120,9 +113,8 @@
   const btnReplaceAll = document.getElementById("btnReplaceAll");
   const photosEl = document.getElementById("photos");
 
-  const storage = getStorage();
+  function show(t){ msg.textContent = t || ""; }
 
-  function show(t){ msg.textContent = t; }
   function esc(s){
     return String(s ?? "").replace(/[&<>"']/g, m=>({
       "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
@@ -145,19 +137,24 @@
 
   function ownerUid(data){
     // compat ancien champ ownerId
-    return data?.ownerUid ?? data?.ownerId ?? "";
+    return (data && (data.ownerUid || data.ownerId)) ? (data.ownerUid || data.ownerId) : "";
   }
 
   async function loadRole(uid){
     const uref = doc(db, "users", uid);
     const usnap = await getDoc(uref);
     const data = usnap.exists() ? usnap.data() : {};
-    return String(data?.role || "").toLowerCase();
+    return String(data && data.role ? data.role : "").toLowerCase();
+  }
+
+  function safeExt(file){
+    const ext = (file?.name?.split(".").pop() || "jpg").toLowerCase();
+    const clean = ext.replace(/[^a-z0-9]/g,"");
+    return clean || "jpg";
   }
 
   function storagePath(annonceId, index, file){
-    const ext = (file?.name?.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g,"");
-    return `annonces_location/${annonceId}/p${index+1}.${ext || "jpg"}`;
+    return `annonces_location/${annonceId}/p${index+1}.${safeExt(file)}`;
   }
 
   function renderPhotos(urls, paths){
@@ -184,11 +181,20 @@
         </div>
         <div class="meta" style="margin-top:8px;opacity:.7">${esc(path)}</div>
       `;
+
       div.querySelector("[data-del]").addEventListener("click", async () => {
         if (!canEditPhotos) return;
         if (!confirm("Supprimer cette photo ?")) return;
-        await deletePhotoAtIndex(idx);
+        try {
+          show("⏳ Suppression…");
+          await deletePhotoAtIndex(idx);
+          show("✅ Photo supprimée.");
+        } catch (e) {
+          console.error(e);
+          show("❌ " + (e?.message || "Erreur suppression"));
+        }
       });
+
       photosEl.appendChild(div);
     });
   }
@@ -203,6 +209,7 @@
 
     annonceData = snap.data() || {};
     const o = ownerUid(annonceData);
+
     ownerPill.textContent = `owner: ${o || "?"}`;
 
     // champs
@@ -212,13 +219,13 @@
     prix.value = annonceData.prix ?? 0;
     description.value = annonceData.description || "";
 
-    // droit photos : owner OU admin
-    canEditPhotos = !!currentUser && (o === currentUser.uid || currentRole === "admin");
+    // droits photos : owner OU admin OU moderator
+    canEditPhotos = !!currentUser && (o === currentUser.uid || currentRole === "admin" || currentRole === "moderator");
+
     canPill.textContent = `photos: ${canEditPhotos ? "OK" : "NO"}`;
     btnReplaceAll.disabled = !canEditPhotos;
 
     renderPhotos(annonceData.photos || [], annonceData.photoPaths || []);
-
     form.classList.remove("hidden");
     show(`✅ Annonce chargée: ${annonceId}`);
   }
@@ -234,14 +241,10 @@
     });
   }
 
-  // ✅ Remplacer TOUTES les photos :
-  // - supprime les anciennes (photoPaths)
-  // - upload les nouvelles (p1, p2, ...)
-  // - met à jour photos[] + photoPaths[]
   async function replaceAllPhotos(fileList){
     if (!canEditPhotos) throw new Error("Pas autorisé pour les photos");
 
-    const arr = Array.from(fileList).slice(0, 8);
+    const arr = Array.from(fileList).slice(0, 6); // ✅ max 6
     if (!arr.length) throw new Error("Aucun fichier");
 
     // supprimer anciennes
@@ -253,15 +256,13 @@
     // upload nouvelles
     const newUrls = [];
     const newPaths = [];
-
     for (let i = 0; i < arr.length; i++) {
       const f = arr[i];
+      show(`⏳ Upload photo ${i+1}/${arr.length}…`);
       const p = storagePath(annonceId, i, f);
       const sref = ref(storage, p);
-
       await uploadBytes(sref, f, { contentType: f.type || "image/jpeg" });
       const url = await getDownloadURL(sref);
-
       newPaths.push(p);
       newUrls.push(url);
     }
@@ -276,7 +277,6 @@
     await reloadAnnonce();
   }
 
-  // ✅ Supprimer 1 photo (Storage + Firestore)
   async function deletePhotoAtIndex(idx){
     if (!canEditPhotos) throw new Error("Pas autorisé pour les photos");
 
@@ -300,9 +300,9 @@
     await reloadAnnonce();
   }
 
-  // Auth
   onAuthStateChanged(auth, async (u) => {
     currentUser = u || null;
+
     if (!currentUser) {
       show("❌ Non connecté. Redirection…");
       setTimeout(() => location.href = "./auth/login.html", 400);
