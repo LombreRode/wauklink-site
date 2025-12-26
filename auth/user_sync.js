@@ -1,4 +1,3 @@
-// auth/user_sync.js
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
@@ -6,8 +5,6 @@ import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs
 onAuthStateChanged(auth, async (user) => {
   if (!user) return;
 
-  // IMPORTANT: on ne touche JAMAIS à "role" ici.
-  // Et on MERGE pour ne pas écraser les champs existants.
   await setDoc(
     doc(db, "users", user.uid),
     {
