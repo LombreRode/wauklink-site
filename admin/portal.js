@@ -7,10 +7,7 @@ const msg = document.getElementById("msg");
 async function readRole(uid) {
   try {
     const snap = await getDoc(doc(db, "users", uid));
-    return {
-      exists: snap.exists(),
-      role: snap.exists() ? String(snap.data()?.role || "") : ""
-    };
+    return { exists: snap.exists(), role: snap.exists() ? String(snap.data()?.role || "") : "" };
   } catch (e) {
     return { exists: false, role: "", err: String(e?.message || e) };
   }
@@ -18,7 +15,10 @@ async function readRole(uid) {
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    msg.textContent = "NOT LOGGED";
+    // ✅ pas connecté -> login + retour auto
+    sessionStorage.setItem("afterLoginGo", "/wauklink-site/admin/portal.html");
+    msg.textContent = "Connexion nécessaire… redirection vers login";
+    location.replace("../auth/login.html");
     return;
   }
 
@@ -33,4 +33,5 @@ onAuthStateChanged(auth, async (user) => {
 
   if (r.role === "admin") location.replace("./index.html");
   else if (r.role === "moderator") location.replace("./moderation.html");
+  else msg.textContent += `\n⛔ Accès refusé (pas admin/modérateur).`;
 });
