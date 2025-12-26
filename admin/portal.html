@@ -9,11 +9,14 @@
 <body>
   <div class="container" style="padding:24px">
     <h2>Accès Administration</h2>
-    <p id="msg" style="opacity:.85">Vérification en cours…</p>
+
+    <!-- ✅ affiche correctement les retours à la ligne -->
+    <p id="msg" style="opacity:.85; white-space:pre-line">Vérification en cours…</p>
+
     <p><a href="../index.html">← Retour au site</a></p>
   </div>
 
-  <!-- ⚠️ IMPORTANT : on charge le JS ici -->
-  <script type="module" src="./portal.js?v=3"></script>
+  <!-- ✅ cache-bust fort -->
+  <script type="module" src="./portal.js?v=777"></script>
 </body>
 </html>
