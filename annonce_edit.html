@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WAUKLINK — Modifier annonce</title>
+  <link rel="stylesheet" href="./style.css?v=1" />
+  <style>
+    .page{padding:24px 0}
+    .card{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:16px;padding:14px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .btn{padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;cursor:pointer}
+    .btn-danger{border:1px solid rgba(255,80,80,.45);background:rgba(255,80,80,.12)}
+    .btn-warn{border:1px solid rgba(245,158,11,.45);background:rgba(245,158,11,.12)}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    input, textarea{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.2);color:#fff}
+    label{display:block;font-weight:800;margin:10px 0 6px}
+    .meta{opacity:.85;font-size:13px;white-space:pre-line}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:12px}
+    .photo{border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px;background:rgba(255,255,255,.04)}
+    .photo img{width:100%;height:140px;object-fit:cover;border-radius:10px;border:1px solid rgba(255,255,255,.12)}
+    .hidden{display:none!important}
+    .hr{border:none;height:1px;background:rgba(255,255,255,.12);margin:16px 0}
+    .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.14);font-size:12px;opacity:.95}
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Modifier une annonce</div>
+    </div>
+    <nav class="row">
+      <a class="btn" href="./index.html" style="text-decoration:none">← Accueil</a>
+      <a class="btn" href="./admin/annonces.html" style="text-decoration:none">🛠️ Admin</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container page">
+  <div class="card">
+    <div class="meta" id="msg">Chargement…</div>
+
+    <div class="row" style="margin:10px 0 0">
+      <span class="pill" id="rolePill">role: ?</span>
+      <span class="pill" id="ownerPill">owner: ?</span>
+      <span class="pill" id="canPill">photos: ?</span>
+    </div>
+
+    <form id="form" class="hidden">
+      <label>Titre</label>
+      <input id="titre" required />
+
+      <label>Ville</label>
+      <input id="ville" required />
+
+      <label>Type</label>
+      <input id="type" required />
+
+      <label>Prix (€)</label>
+      <input id="prix" type="number" min="0" step="1" required />
+
+      <label>Description</label>
+      <textarea id="description" rows="5"></textarea>
+
+      <div class="row" style="margin-top:12px">
+        <button class="btn" type="submit">💾 Enregistrer texte</button>
+      </div>
+
+      <hr class="hr">
+
+      <div class="row" style="justify-content:space-between;align-items:flex-start">
+        <div>
+          <div style="font-weight:900">Photos</div>
+          <div class="meta">
+            - “Remplacer toutes les photos” supprime les anciennes + upload les nouvelles.
+            - “Supprimer une photo” est autorisé pour OWNER ou ADMIN (selon tes rules Storage).
+          </div>
+        </div>
+        <div class="row">
+          <input id="files" type="file" accept="image/*" multiple />
+          <button class="btn btn-warn" type="button" id="btnReplaceAll">🔁 Remplacer toutes les photos</button>
+        </div>
+      </div>
+
+      <div id="photos" class="grid"></div>
+    </form>
+  </div>
+</main>
+
+<script type="module">
+  // ✅ Ton projet utilise déjà auth/firebase.js
+  import { auth, db } from "./auth/firebase.js";
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+  import {
+    doc, getDoc, updateDoc, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+  import {
+    getStorage, ref, uploadBytes, getDownloadURL, deleteObject
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
+
+  const msg = document.getElementById("msg");
+  const form = document.getElementById("form");
+
+  const rolePill = document.getElementById("rolePill");
+  const ownerPill = document.getElementById("ownerPill");
+  const canPill = document.getElementById("canPill");
+
+  const titre = document.getElementById("titre");
+  const ville = document.getElementById("ville");
+  const type = document.getElementById("type");
+  const prix = document.getElementById("prix");
+  const description = document.getElementById("description");
+
+  const files = document.getElementById("files");
+  const btnReplaceAll = document.getElementById("btnReplaceAll");
+  const photosEl = document.getElementById("photos");
+
+  const storage = getStorage();
+
+  function show(t){ msg.textContent = t; }
+  function esc(s){
+    return String(s ?? "").replace(/[&<>"']/g, m=>({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[m]));
+  }
+
+  // annonceId depuis ?id=XXXX
+  const annonceId = new URLSearchParams(location.search).get("id");
+  if (!annonceId) {
+    show("❌ annonceId manquant. Exemple : annonce_edit.html?id=ABC123");
+    throw new Error("Missing annonceId");
+  }
+
+  const annonceRef = doc(db, "annonces_location", annonceId);
+
+  let currentUser = null;
+  let currentRole = "";
+  let annonceData = null;
+  let canEditPhotos = false;
+
+  function ownerUid(data){
+    // compat ancien champ ownerId
+    return data?.ownerUid ?? data?.ownerId ?? "";
+  }
+
+  async function loadRole(uid){
+    const uref = doc(db, "users", uid);
+    const usnap = await getDoc(uref);
+    const data = usnap.exists() ? usnap.data() : {};
+    return String(data?.role || "").toLowerCase();
+  }
+
+  function storagePath(annonceId, index, file){
+    const ext = (file?.name?.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g,"");
+    return `annonces_location/${annonceId}/p${index+1}.${ext || "jpg"}`;
+  }
+
+  function renderPhotos(urls, paths){
+    photosEl.innerHTML = "";
+    const u = Array.isArray(urls) ? urls : [];
+    const p = Array.isArray(paths) ? paths : [];
+
+    if (!u.length) {
+      photosEl.innerHTML = `<div class="meta">Aucune photo.</div>`;
+      return;
+    }
+
+    u.forEach((url, idx) => {
+      const path = p[idx] || "";
+      const div = document.createElement("div");
+      div.className = "photo";
+      div.innerHTML = `
+        <img src="${esc(url)}" alt="photo ${idx+1}">
+        <div class="row" style="margin-top:10px;justify-content:space-between">
+          <div class="meta">#${idx+1}</div>
+          <button class="btn btn-danger" type="button" data-del="${idx}" ${canEditPhotos ? "" : "disabled"}>
+            🗑️ Supprimer
+          </button>
+        </div>
+        <div class="meta" style="margin-top:8px;opacity:.7">${esc(path)}</div>
+      `;
+      div.querySelector("[data-del]").addEventListener("click", async () => {
+        if (!canEditPhotos) return;
+        if (!confirm("Supprimer cette photo ?")) return;
+        await deletePhotoAtIndex(idx);
+      });
+      photosEl.appendChild(div);
+    });
+  }
+
+  async function reloadAnnonce(){
+    const snap = await getDoc(annonceRef);
+    if (!snap.exists()) {
+      show("❌ Annonce introuvable.");
+      form.classList.add("hidden");
+      return;
+    }
+
+    annonceData = snap.data() || {};
+    const o = ownerUid(annonceData);
+    ownerPill.textContent = `owner: ${o || "?"}`;
+
+    // champs
+    titre.value = annonceData.titre || "";
+    ville.value = annonceData.ville || "";
+    type.value = annonceData.type || "";
+    prix.value = annonceData.prix ?? 0;
+    description.value = annonceData.description || "";
+
+    // droit photos : owner OU admin
+    canEditPhotos = !!currentUser && (o === currentUser.uid || currentRole === "admin");
+    canPill.textContent = `photos: ${canEditPhotos ? "OK" : "NO"}`;
+    btnReplaceAll.disabled = !canEditPhotos;
+
+    renderPhotos(annonceData.photos || [], annonceData.photoPaths || []);
+
+    form.classList.remove("hidden");
+    show(`✅ Annonce chargée: ${annonceId}`);
+  }
+
+  async function saveText(){
+    await updateDoc(annonceRef, {
+      titre: titre.value.trim(),
+      ville: ville.value.trim(),
+      type: type.value.trim(),
+      prix: Number(prix.value || 0),
+      description: description.value.trim(),
+      updatedAt: serverTimestamp()
+    });
+  }
+
+  // ✅ Remplacer TOUTES les photos :
+  // - supprime les anciennes (photoPaths)
+  // - upload les nouvelles (p1, p2, ...)
+  // - met à jour photos[] + photoPaths[]
+  async function replaceAllPhotos(fileList){
+    if (!canEditPhotos) throw new Error("Pas autorisé pour les photos");
+
+    const arr = Array.from(fileList).slice(0, 8);
+    if (!arr.length) throw new Error("Aucun fichier");
+
+    // supprimer anciennes
+    const oldPaths = Array.isArray(annonceData.photoPaths) ? annonceData.photoPaths : [];
+    for (const p of oldPaths) {
+      try { await deleteObject(ref(storage, p)); } catch(_) {}
+    }
+
+    // upload nouvelles
+    const newUrls = [];
+    const newPaths = [];
+
+    for (let i = 0; i < arr.length; i++) {
+      const f = arr[i];
+      const p = storagePath(annonceId, i, f);
+      const sref = ref(storage, p);
+
+      await uploadBytes(sref, f, { contentType: f.type || "image/jpeg" });
+      const url = await getDownloadURL(sref);
+
+      newPaths.push(p);
+      newUrls.push(url);
+    }
+
+    // maj firestore
+    await updateDoc(annonceRef, {
+      photos: newUrls,
+      photoPaths: newPaths,
+      updatedAt: serverTimestamp()
+    });
+
+    await reloadAnnonce();
+  }
+
+  // ✅ Supprimer 1 photo (Storage + Firestore)
+  async function deletePhotoAtIndex(idx){
+    if (!canEditPhotos) throw new Error("Pas autorisé pour les photos");
+
+    const urls = Array.isArray(annonceData.photos) ? annonceData.photos.slice() : [];
+    const paths = Array.isArray(annonceData.photoPaths) ? annonceData.photoPaths.slice() : [];
+
+    const p = paths[idx];
+    if (!p) throw new Error("photoPaths manquant (impossible de supprimer proprement)");
+
+    await deleteObject(ref(storage, p));
+
+    urls.splice(idx, 1);
+    paths.splice(idx, 1);
+
+    await updateDoc(annonceRef, {
+      photos: urls,
+      photoPaths: paths,
+      updatedAt: serverTimestamp()
+    });
+
+    await reloadAnnonce();
+  }
+
+  // Auth
+  onAuthStateChanged(auth, async (u) => {
+    currentUser = u || null;
+    if (!currentUser) {
+      show("❌ Non connecté. Redirection…");
+      setTimeout(() => location.href = "./auth/login.html", 400);
+      return;
+    }
+
+    try {
+      currentRole = await loadRole(currentUser.uid);
+      rolePill.textContent = `role: ${currentRole || ""}`;
+    } catch {
+      currentRole = "";
+      rolePill.textContent = "role: ?";
+    }
+
+    await reloadAnnonce();
+  });
+
+  // Save texte
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    try {
+      show("⏳ Enregistrement du texte…");
+      await saveText();
+      show("✅ Texte enregistré.");
+      await reloadAnnonce();
+    } catch (err) {
+      console.error(err);
+      show("❌ Erreur enregistrement texte (console).");
+    }
+  });
+
+  // Replace all photos
+  btnReplaceAll.addEventListener("click", async () => {
+    const fl = files.files;
+    if (!fl || !fl.length) return alert("Choisis des photos d’abord.");
+    if (!confirm("Remplacer TOUTES les photos ? (les anciennes seront supprimées)")) return;
+
+    btnReplaceAll.disabled = true;
+    try {
+      show("⏳ Remplacement des photos…");
+      await replaceAllPhotos(fl);
+      files.value = "";
+      show("✅ Photos remplacées.");
+    } catch (err) {
+      console.error(err);
+      show("❌ " + (err?.message || "Erreur upload (rules Storage ?)"));
+    } finally {
+      btnReplaceAll.disabled = !canEditPhotos;
+    }
+  });
+</script>
+
+</body>
+</html>
