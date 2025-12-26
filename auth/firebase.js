@@ -8,7 +8,11 @@ const firebaseConfig = {
   apiKey: "AIzaSyA6GuK8h2YGgbWaRC8ybBlQa5LO67cdePM",
   authDomain: "wauklink-9b61f.firebaseapp.com",
   projectId: "wauklink-9b61f",
-  storageBucket: "wauklink-9b61f.appspot.com",
+
+  // ✅ mets le bucket EXACT affiché dans Firebase > Storage
+  // si chez toi c’est firebasestorage.app, laisse ça :
+  storageBucket: "wauklink-9b61f.firebasestorage.app",
+
   messagingSenderId: "398288789090",
   appId: "1:398288789090:web:3354b4a385fea88af1fb3b",
 };
