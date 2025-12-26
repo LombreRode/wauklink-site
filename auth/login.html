@@ -35,6 +35,7 @@
       >
 
       <input
+        id="password"
         type="password"
         name="password"
         placeholder="Mot de passe"
@@ -50,6 +51,11 @@
       Pas de compte ? <a href="register.html">Créer un compte</a>
     </div>
 
+    <!-- ✅ Mot de passe oublié -->
+    <div class="small" style="margin-top:10px;">
+      <a href="#" id="forgot">Mot de passe oublié ?</a>
+    </div>
+
     <div id="msg"></div>
   </div>
 </div>
@@ -62,11 +68,13 @@
     signInWithEmailAndPassword,
     onAuthStateChanged,
     setPersistence,
-    browserLocalPersistence
+    browserLocalPersistence,
+    sendPasswordResetEmail
   } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
   const form = document.getElementById("loginForm");
   const msg = document.getElementById("msg");
+  const forgot = document.getElementById("forgot");
 
   function show(text, ok=false){
     msg.style.display = "block";
@@ -92,6 +100,7 @@
     }
   });
 
+  // ✅ Connexion
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     show("⏳ Connexion en cours…", true);
@@ -104,6 +113,25 @@
       await signInWithEmailAndPassword(auth, email, password);
       show("✅ Connexion réussie !", true);
       setTimeout(goAfterLogin, 500);
+    } catch (err) {
+      console.error(err);
+      show("❌ " + (err.code || "") + " — " + err.message);
+    }
+  });
+
+  // ✅ Mot de passe oublié (reset par email)
+  forgot.addEventListener("click", async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById("email").value.trim();
+    if (!email) {
+      show("❌ Entre ton email d’abord, puis clique sur « Mot de passe oublié ».");
+      return;
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      show("📧 Email de réinitialisation envoyé. Vérifie ta boîte mail (et spam).", true);
     } catch (err) {
       console.error(err);
       show("❌ " + (err.code || "") + " — " + err.message);
