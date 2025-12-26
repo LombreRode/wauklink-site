@@ -22,6 +22,8 @@
     .hidden{display:none!important}
     .hr{border:none;height:1px;background:rgba(255,255,255,.12);margin:16px 0}
     .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.14);font-size:12px;opacity:.95}
+    .pill-ok{border-color:rgba(80,255,160,.35);background:rgba(80,255,160,.12)}
+    .pill-warn{border-color:rgba(245,158,11,.45);background:rgba(245,158,11,.12)}
   </style>
 </head>
 <body>
@@ -43,8 +45,10 @@
     <div class="meta" id="msg">Chargement…</div>
 
     <div class="row" style="margin:10px 0 0">
+      <span class="pill" id="statusPill">status: ?</span>
       <span class="pill" id="rolePill">role: ?</span>
       <span class="pill" id="ownerPill">owner: ?</span>
+      <span class="pill" id="textPill">texte: ?</span>
       <span class="pill" id="canPill">photos: ?</span>
     </div>
 
@@ -65,7 +69,7 @@
       <textarea id="description" rows="5"></textarea>
 
       <div class="row" style="margin-top:12px">
-        <button class="btn" type="submit">💾 Enregistrer texte</button>
+        <button class="btn" type="submit" id="btnSaveText">💾 Enregistrer texte</button>
       </div>
 
       <hr class="hr">
@@ -76,7 +80,7 @@
           <div class="meta">
             - Max 6 photos.
             - “Remplacer toutes les photos” supprime les anciennes + upload les nouvelles.
-            - “Supprimer” est autorisé pour OWNER / ADMIN / MODERATOR (si tes rules Storage le permettent).
+            - “Supprimer” enlève Storage + Firestore.
           </div>
         </div>
         <div class="row">
@@ -99,8 +103,10 @@
   const msg = document.getElementById("msg");
   const form = document.getElementById("form");
 
+  const statusPill = document.getElementById("statusPill");
   const rolePill = document.getElementById("rolePill");
   const ownerPill = document.getElementById("ownerPill");
+  const textPill = document.getElementById("textPill");
   const canPill = document.getElementById("canPill");
 
   const titre = document.getElementById("titre");
@@ -109,19 +115,18 @@
   const prix = document.getElementById("prix");
   const description = document.getElementById("description");
 
+  const btnSaveText = document.getElementById("btnSaveText");
   const files = document.getElementById("files");
   const btnReplaceAll = document.getElementById("btnReplaceAll");
   const photosEl = document.getElementById("photos");
 
   function show(t){ msg.textContent = t || ""; }
-
   function esc(s){
     return String(s ?? "").replace(/[&<>"']/g, m=>({
       "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
     }[m]));
   }
 
-  // annonceId depuis ?id=XXXX
   const annonceId = new URLSearchParams(location.search).get("id");
   if (!annonceId) {
     show("❌ annonceId manquant. Exemple : annonce_edit.html?id=ABC123");
@@ -133,10 +138,11 @@
   let currentUser = null;
   let currentRole = "";
   let annonceData = null;
+
   let canEditPhotos = false;
+  let canEditText = false;
 
   function ownerUid(data){
-    // compat ancien champ ownerId
     return (data && (data.ownerUid || data.ownerId)) ? (data.ownerUid || data.ownerId) : "";
   }
 
@@ -144,7 +150,7 @@
     const uref = doc(db, "users", uid);
     const usnap = await getDoc(uref);
     const data = usnap.exists() ? usnap.data() : {};
-    return String(data && data.role ? data.role : "").toLowerCase();
+    return String(data?.role || "").toLowerCase();
   }
 
   function safeExt(file){
@@ -155,6 +161,13 @@
 
   function storagePath(annonceId, index, file){
     return `annonces_location/${annonceId}/p${index+1}.${safeExt(file)}`;
+  }
+
+  function setPill(el, text, mode){
+    el.textContent = text;
+    el.classList.remove("pill-ok","pill-warn");
+    if (mode === "ok") el.classList.add("pill-ok");
+    if (mode === "warn") el.classList.add("pill-warn");
   }
 
   function renderPhotos(urls, paths){
@@ -199,6 +212,13 @@
     });
   }
 
+  function lockTextUI(locked){
+    const inputs = [titre, ville, type, prix, description];
+    inputs.forEach(el => el.disabled = locked);
+    btnSaveText.disabled = locked;
+    setPill(textPill, "texte: " + (locked ? "BLOQUÉ" : "OK"), locked ? "warn" : "ok");
+  }
+
   async function reloadAnnonce(){
     const snap = await getDoc(annonceRef);
     if (!snap.exists()) {
@@ -208,8 +228,10 @@
     }
 
     annonceData = snap.data() || {};
+    const status = String(annonceData.status || "");
     const o = ownerUid(annonceData);
 
+    setPill(statusPill, "status: " + (status || "?"), status === "active" ? "ok" : "warn");
     ownerPill.textContent = `owner: ${o || "?"}`;
 
     // champs
@@ -219,10 +241,21 @@
     prix.value = annonceData.prix ?? 0;
     description.value = annonceData.description || "";
 
-    // droits photos : owner OU admin OU moderator
-    canEditPhotos = !!currentUser && (o === currentUser.uid || currentRole === "admin" || currentRole === "moderator");
+    // droits
+    const isOwner = !!currentUser && (o === currentUser.uid);
+    const isAdmin = currentRole === "admin";
+    const isMod = currentRole === "moderator";
 
-    canPill.textContent = `photos: ${canEditPhotos ? "OK" : "NO"}`;
+    canEditPhotos = !!currentUser && (isOwner || isAdmin || isMod);
+    // pending: owner peut texte; active: texte BLOQUÉ (même si owner)
+    canEditText = !!currentUser && isOwner && status === "pending";
+
+    setPill(canPill, "photos: " + (canEditPhotos ? "OK" : "NO"), canEditPhotos ? "ok" : "warn");
+
+    // UI lock texte selon status
+    lockTextUI(!canEditText);
+
+    // boutons photos
     btnReplaceAll.disabled = !canEditPhotos;
 
     renderPhotos(annonceData.photos || [], annonceData.photoPaths || []);
@@ -244,16 +277,14 @@
   async function replaceAllPhotos(fileList){
     if (!canEditPhotos) throw new Error("Pas autorisé pour les photos");
 
-    const arr = Array.from(fileList).slice(0, 6); // ✅ max 6
+    const arr = Array.from(fileList).slice(0, 6);
     if (!arr.length) throw new Error("Aucun fichier");
 
-    // supprimer anciennes
     const oldPaths = Array.isArray(annonceData.photoPaths) ? annonceData.photoPaths : [];
     for (const p of oldPaths) {
       try { await deleteObject(ref(storage, p)); } catch(_) {}
     }
 
-    // upload nouvelles
     const newUrls = [];
     const newPaths = [];
     for (let i = 0; i < arr.length; i++) {
@@ -267,7 +298,6 @@
       newUrls.push(url);
     }
 
-    // maj firestore
     await updateDoc(annonceRef, {
       photos: newUrls,
       photoPaths: newPaths,
@@ -302,7 +332,6 @@
 
   onAuthStateChanged(auth, async (u) => {
     currentUser = u || null;
-
     if (!currentUser) {
       show("❌ Non connecté. Redirection…");
       setTimeout(() => location.href = "./auth/login.html", 400);
@@ -320,9 +349,9 @@
     await reloadAnnonce();
   });
 
-  // Save texte
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    if (!canEditText) return alert("Texte bloqué (annonce publiée).");
     try {
       show("⏳ Enregistrement du texte…");
       await saveText();
@@ -334,7 +363,6 @@
     }
   });
 
-  // Replace all photos
   btnReplaceAll.addEventListener("click", async () => {
     const fl = files.files;
     if (!fl || !fl.length) return alert("Choisis des photos d’abord.");
@@ -354,6 +382,5 @@
     }
   });
 </script>
-
 </body>
 </html>
