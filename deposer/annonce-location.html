@@ -27,7 +27,6 @@
     }
   </style>
 </head>
-
 <body>
 <header class="topbar">
   <div class="container topbar-row">
@@ -36,8 +35,7 @@
       <div class="subtitle">Déposer une annonce</div>
     </div>
     <nav>
-      <!-- ✅ on met href en JS (GitHub Pages safe) -->
-      <a class="btn" id="btnRetour" href="#">← Retour</a>
+      <a class="btn" href="../index.html">← Retour</a>
     </nav>
   </div>
 </header>
@@ -78,7 +76,7 @@
 
       <div class="row">
         <input id="contactEmail" type="email" placeholder="Email de contact" required />
-        <input type="text" placeholder="(optionnel) Téléphone" id="contactPhone" style="display:none" />
+        <input id="contactPhone" type="text" placeholder="(optionnel) Téléphone" />
       </div>
 
       <div class="row-1">
@@ -102,21 +100,12 @@
 </main>
 
 <script type="module">
-  // ✅ IMPORTANT : storage vient de TON firebase.js (getStorage(app))
-  import { auth, db, storage } from "../auth/firebase.js";
-
+  import { auth, db } from "../auth/firebase.js";
   import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
   import { collection, addDoc, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-  import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
+  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
-  // ✅ GitHub Pages : récupère /wauklink-site
-  function basePath() {
-    const parts = location.pathname.split("/").filter(Boolean);
-    return parts.length ? `/${parts[0]}` : "";
-  }
-
-  // ✅ fixe le bouton Retour (ne dépend plus de ../)
-  document.getElementById("btnRetour").href = `${basePath()}/index.html`;
+  const storage = getStorage();
 
   const form = document.getElementById("form");
   const msg = document.getElementById("msg");
@@ -129,6 +118,7 @@
   const surface = document.getElementById("surface");
   const prix = document.getElementById("prix");
   const contactEmail = document.getElementById("contactEmail");
+  const contactPhone = document.getElementById("contactPhone");
   const description = document.getElementById("description");
 
   const photosInput = document.getElementById("photosInput");
@@ -137,7 +127,7 @@
   let currentUser = null;
   let selectedFiles = [];
 
-  function setMsg(t){ msg.textContent = t; }
+  function setMsg(t){ msg.textContent = t || ""; }
 
   function previewFiles(files){
     photosPreview.innerHTML = "";
@@ -156,6 +146,7 @@
   }
 
   function storagePath(annonceId, index, file){
+    // ex: annonces_location/ABC/p1.jpg
     return `annonces_location/${annonceId}/p${index+1}.${safeExt(file)}`;
   }
 
@@ -163,21 +154,16 @@
     const limited = files.slice(0,6);
     const urls = [];
     const paths = [];
-
     for(let i=0;i<limited.length;i++){
       const f = limited[i];
       setMsg(`⏳ Upload photo ${i+1}/${limited.length}…`);
-
       const p = storagePath(annonceId, i, f);
       const sref = ref(storage, p);
-
       await uploadBytes(sref, f, { contentType: f.type || "image/jpeg" });
       const url = await getDownloadURL(sref);
-
       paths.push(p);
       urls.push(url);
     }
-
     return { urls, paths };
   }
 
@@ -193,7 +179,6 @@
 
   photosInput.addEventListener("change",()=>{
     selectedFiles=[...photosInput.files].slice(0,6);
-    setMsg(`📸 Photos sélectionnées : ${selectedFiles.length}`);
     previewFiles(selectedFiles);
   });
 
@@ -212,7 +197,7 @@
     try{
       setMsg("⏳ Création de l’annonce…");
 
-      // 1) créer l’annonce d’abord
+      // 1) Créer l'annonce d'abord (IMPORTANT: ownerUid existe pour Storage Rules)
       const annonceRef = await addDoc(collection(db,"annonces_location"),{
         duree: duree.value,
         titre: titre.value.trim(),
@@ -222,6 +207,7 @@
         prix: Number(prix.value||0),
         description: description.value.trim(),
         contactEmail: contactEmail.value.trim(),
+        contactPhone: contactPhone.value.trim(),
         photos: [],
         photoPaths: [],
         status: "pending",
@@ -235,7 +221,7 @@
 
       const annonceId = annonceRef.id;
 
-      // 2) upload photos
+      // 2) Upload photos -> Storage
       let photos = [];
       let photoPaths = [];
       if(selectedFiles.length){
@@ -244,7 +230,7 @@
         photoPaths = res.paths;
       }
 
-      // 3) update annonce
+      // 3) Update Firestore avec URLs + paths
       setMsg("⏳ Finalisation…");
       await updateDoc(doc(db,"annonces_location", annonceId),{
         photos,
@@ -252,18 +238,18 @@
         updatedAt: serverTimestamp()
       });
 
-      // ✅ REDIRECTION GITHUB PAGES OK
       setMsg("✅ Annonce envoyée ! Redirection…");
-      const target = `${basePath()}/annonces/location.html?duree=${encodeURIComponent(duree.value)}`;
+      const target = `../annonces/location.html?duree=${encodeURIComponent(duree.value)}`;
       setTimeout(()=>{ window.location.href = target; }, 700);
 
       form.reset();
       photosPreview.innerHTML="";
       selectedFiles=[];
+
     }catch(err){
       console.error(err);
       setMsg("❌ Erreur lors de l’envoi. Ouvre la console (F12).");
-      alert("Erreur : " + (err?.code || "") + " " + (err?.message || err));
+      alert("Erreur : " + (err?.message || err));
     }finally{
       submitBtn.disabled=false;
       submitBtn.style.opacity="1";
