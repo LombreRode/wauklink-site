@@ -19,7 +19,6 @@
     .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.14);font-size:12px;opacity:.95}
     .pill-open{border-color:rgba(245,158,11,.45);background:rgba(245,158,11,.12)}
     .pill-closed{border-color:rgba(80,255,160,.35);background:rgba(80,255,160,.10)}
-    .pill-disabled{border-color:rgba(255,80,80,.45);background:rgba(255,80,80,.10)}
     .search{width:min(520px,100%);padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.2);color:#fff}
     .grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px}
     .item{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);border-radius:16px;padding:12px}
@@ -38,9 +37,9 @@
     .closeX{background:transparent;border:1px solid rgba(255,255,255,.14);border-radius:12px;color:#fff;padding:6px 10px;cursor:pointer}
     .hr{height:1px;background:rgba(255,255,255,.12);margin:14px 0}
     .note{padding:10px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.18)}
+    .hidden{display:none!important}
   </style>
 </head>
-
 <body>
 <header class="topbar">
   <div class="container topbar-row">
@@ -61,9 +60,8 @@
     <div class="top">
       <div>
         <div style="font-weight:900;font-size:18px">Signalements</div>
-        <div class="meta" id="adminStatus">Vérification admin…</div>
+        <div class="meta" id="adminStatus">Vérification…</div>
       </div>
-
       <div class="row">
         <input id="q" class="search" placeholder="Rechercher (titre, ville, email, raison…)" />
         <select id="filter" class="btn" style="padding:10px 12px">
@@ -76,7 +74,7 @@
     </div>
 
     <div class="note meta">
-      Astuce : “Désactiver l’annonce” passe l’annonce en <b>status: disabled</b> (elle ne s’affiche plus côté public).
+      Astuce : “Bloquer l’annonce” met <b>status: blocked</b> (elle ne s’affiche plus côté public, si ton public filtre bien).
     </div>
 
     <div id="list" class="grid"></div>
@@ -102,14 +100,12 @@
 
 <script type="module">
   import { db, auth } from "../auth/firebase.js";
-  import {
-    signOut,
-    onAuthStateChanged
-  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import { requireModeration } from "./_shared/guard.js";
 
+  import { signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
   import {
-    collection, query, where, orderBy, limit, startAfter, getDocs,
-    doc, getDoc, updateDoc, deleteDoc
+    collection, query, orderBy, limit, startAfter, startAt, getDocs,
+    doc, updateDoc, deleteDoc
   } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
   // ---------- UI ----------
@@ -119,7 +115,6 @@
   const filterSel = document.getElementById("filter");
   const btnRefresh = document.getElementById("btnRefresh");
   const btnLogout = document.getElementById("btnLogout");
-
   const prevBtn = document.getElementById("prev");
   const nextBtn = document.getElementById("next");
   const pageInfo = document.getElementById("pageInfo");
@@ -129,12 +124,17 @@
   const dlgTitle = document.getElementById("dlgTitle");
   const dlgMeta = document.getElementById("dlgMeta");
   const dlgBody = document.getElementById("dlgBody");
-
   dlgClose.addEventListener("click", () => dlg.close());
+
+  btnLogout.addEventListener("click", async () => {
+    try { await signOut(auth); } catch(e){ console.error(e); }
+  });
 
   // ---------- Helpers ----------
   function esc(s){
-    return String(s ?? "").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
+    return String(s ?? "").replace(/[&<>"']/g, m=>({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[m]));
   }
   function fmtDate(ts){
     try {
@@ -149,51 +149,18 @@
     return `<span class="pill pill-open">open</span>`;
   }
 
-  // ---------- Admin check ----------
+  // ---------- Role / Access ----------
+  let currentRole = "";
   let currentUser = null;
-  let isAdmin = false;
 
-  async function checkAdmin(uid){
-    const uref = doc(db, "users", uid);
-    const snap = await getDoc(uref);
-    if (!snap.exists()) return false;
-    const data = snap.data() || {};
-    return data.isAdmin === true || String(data.role || "").toLowerCase() === "admin";
-  }
-
-  onAuthStateChanged(auth, async (u) => {
-    currentUser = u || null;
-    if (!currentUser) {
-      adminStatus.textContent = "❌ Non connecté. Redirection…";
-      setTimeout(() => window.location.href = "../auth/login.html", 400);
-      return;
-    }
-    try {
-      isAdmin = await checkAdmin(currentUser.uid);
-      if (!isAdmin) {
-        adminStatus.textContent = "❌ Accès refusé (admin uniquement).";
-        list.innerHTML = `<div class="meta">Tu n’es pas admin. Vérifie <b>users/${esc(currentUser.uid)}</b> → <b>isAdmin:true</b> (ou <b>role:'admin'</b>).</div>`;
-        prevBtn.disabled = true;
-        nextBtn.disabled = true;
-        return;
-      }
-      adminStatus.textContent = `✅ Admin OK — ${currentUser.email || ""}`;
-      await loadPage("stay");
-    } catch (e) {
-      console.error(e);
-      adminStatus.textContent = "❌ Erreur check admin (voir console).";
-    }
-  });
-
-  btnLogout.addEventListener("click", async () => {
-    try { await signOut(auth); } catch(e){ console.error(e); }
-  });
-
-  // ---------- Pagination state ----------
+  // ---------- Pagination ----------
   const PER_PAGE = 20;
   let page = 1;
   let lastDocSnap = null;
-  let cursorStack = [];
+  // on stocke le 1er doc de chaque page, pour revenir en arrière proprement
+  let firstDocByPage = [null];
+
+  // ---------- Data ----------
   let rawItems = [];
   let viewItems = [];
 
@@ -201,22 +168,17 @@
   async function setReportStatus(reportId, status){
     await updateDoc(doc(db, "reports", reportId), { status });
   }
-
-  async function disableAnnonce(annonceId){
-    await updateDoc(doc(db, "annonces_location", annonceId), { status: "disabled" });
+  async function blockAnnonce(annonceId){
+    // IMPORTANT: on utilise "blocked" car c'est autorisé dans tes rules moderator/admin
+    await updateDoc(doc(db, "annonces_location", annonceId), { status: "blocked" });
   }
-
-  async function deleteAnnonce(annonceId){
-    await deleteDoc(doc(db, "annonces_location", annonceId));
-  }
-
   async function deleteReport(reportId){
     await deleteDoc(doc(db, "reports", reportId));
   }
 
   function openDetailModal(r){
     dlgTitle.textContent = "Détail signalement";
-    dlgMeta.textContent = `Report: ${r.id} • ${fmtDate(r.createdAt)} • ${r.status || "open"}`;
+    dlgMeta.textContent = `Report: ${r.id} • ${fmtDate(r.createdAt)} • ${String(r.status || "open")}`;
     dlgBody.innerHTML = `
       <div class="cols">
         <div class="kvc"><div class="k">Annonce ID</div><div class="v">${esc(r.annonceId || "—")}</div></div>
@@ -228,9 +190,7 @@
         <div class="kvc"><div class="k">Reporter email</div><div class="v">${esc(r.reporterEmail || "—")}</div></div>
         <div class="kvc"><div class="k">Reporter UID</div><div class="v">${esc(r.reporterUid || "—")}</div></div>
       </div>
-
       <div class="hr"></div>
-
       <div>
         <div class="k">Raison</div>
         <div style="margin-top:6px;white-space:pre-wrap">${esc(r.reason || "—")}</div>
@@ -271,11 +231,6 @@
   function renderList(items){
     list.innerHTML = "";
 
-    if (!isAdmin) {
-      list.innerHTML = `<div class="meta">Admin requis.</div>`;
-      return;
-    }
-
     if (!items.length) {
       list.innerHTML = `<div class="meta">Aucun signalement pour ce filtre.</div>`;
       return;
@@ -306,11 +261,12 @@
 
           <div class="row">
             <button class="btn" data-action="detail">🧾 Détail</button>
-            ${st === "open"
+            ${
+              st === "open"
               ? `<button class="btn btn-ok" data-action="close">✅ Clore</button>`
               : `<button class="btn btn-warn" data-action="reopen">↩ Réouvrir</button>`
             }
-            <button class="btn btn-warn" data-action="disable">🚫 Désactiver annonce</button>
+            <button class="btn btn-warn" data-action="block">🚫 Bloquer annonce</button>
             <button class="btn btn-danger" data-action="delReport">🗑️ Suppr. report</button>
           </div>
         </div>
@@ -341,13 +297,13 @@
         } catch (e) { console.error(e); alert("❌ Erreur (rules)."); }
       });
 
-      el.querySelector('[data-action="disable"]').addEventListener("click", async () => {
+      el.querySelector('[data-action="block"]').addEventListener("click", async () => {
         if (!r.annonceId) return alert("Annonce ID manquant.");
-        if (!confirm("Désactiver l’annonce ? (elle disparaît du public)")) return;
+        if (!confirm("Bloquer l’annonce ? (status: blocked)")) return;
         try {
-          await disableAnnonce(r.annonceId);
-          alert("✅ Annonce désactivée (status: disabled).");
-        } catch (e) { console.error(e); alert("❌ Erreur désactivation (rules)."); }
+          await blockAnnonce(r.annonceId);
+          alert("✅ Annonce bloquée (status: blocked).");
+        } catch (e) { console.error(e); alert("❌ Erreur blocage (rules)."); }
       });
 
       el.querySelector('[data-action="delReport"]').addEventListener("click", async () => {
@@ -359,20 +315,14 @@
         } catch (e) { console.error(e); alert("❌ Erreur suppression (rules)."); }
       });
 
-      // Option “supprimer annonce” (très fort) via double confirm dans le détail
-      // -> tu peux l’utiliser depuis le popup en ajoutant un bouton si tu veux.
-
       list.appendChild(el);
     });
   }
 
   // ---------- Load (Firestore) ----------
   async function loadPage(direction="stay"){
-    if (!isAdmin) return;
-
     const baseRef = collection(db, "reports");
 
-    // On trie par createdAt desc (comme tes autres pages)
     let qy = query(baseRef, orderBy("createdAt", "desc"), limit(PER_PAGE));
 
     if (direction === "next" && lastDocSnap) {
@@ -380,10 +330,9 @@
     }
 
     if (direction === "prev") {
-      cursorStack.pop();
-      const prevCursor = cursorStack[cursorStack.length - 1] || null;
-      if (prevCursor) {
-        qy = query(baseRef, orderBy("createdAt", "desc"), startAfter(prevCursor), limit(PER_PAGE));
+      const prevFirst = firstDocByPage[page - 2] || null; // page-2 car page commence à 1
+      if (prevFirst) {
+        qy = query(baseRef, orderBy("createdAt", "desc"), startAt(prevFirst), limit(PER_PAGE));
       } else {
         qy = query(baseRef, orderBy("createdAt", "desc"), limit(PER_PAGE));
       }
@@ -396,14 +345,13 @@
     lastDocSnap = docs.length ? docs[docs.length - 1] : null;
 
     if (direction === "next") {
-      if (docs.length) cursorStack.push(docs[0]);
       page++;
+      if (docs.length) firstDocByPage[page - 1] = docs[0];
     } else if (direction === "prev") {
       page = Math.max(1, page - 1);
     } else {
       page = 1;
-      cursorStack = [];
-      if (docs.length) cursorStack.push(docs[0]);
+      firstDocByPage = [docs.length ? docs[0] : null];
     }
 
     pageInfo.textContent = `Page ${page}`;
@@ -417,13 +365,33 @@
   qInput.addEventListener("input", () => applySearchAndFilter());
   filterSel.addEventListener("change", () => applySearchAndFilter());
   btnRefresh.addEventListener("click", () => loadPage("stay"));
-
   nextBtn.addEventListener("click", () => loadPage("next"));
   prevBtn.addEventListener("click", () => loadPage("prev"));
 
+  // ---------- ACCESS (même logique que tout le reste) ----------
+  requireModeration({
+    redirectTo: "../auth/login.html",
+    onLoading: () => {
+      adminStatus.textContent = "Vérification…";
+      list.innerHTML = "";
+      prevBtn.disabled = true;
+      nextBtn.disabled = true;
+    },
+    onOk: (user, role) => {
+      currentUser = user;
+      currentRole = role;
+      adminStatus.textContent = `✅ Accès autorisé • ${user.email || "ok"} • role: ${role}`;
+      loadPage("stay");
+    },
+    onFail: (why, role) => {
+      adminStatus.textContent = `⛔ Accès refusé (${why})`;
+      list.innerHTML = `<div class="meta">ROLE: "${esc(role || "")}"</div>`;
+      prevBtn.disabled = true;
+      nextBtn.disabled = true;
+    }
+  });
 </script>
 
 <script type="module" src="../auth/status.js"></script>
-<script type="module" src="../auth/user_sync.js"></script>
 </body>
 </html>
