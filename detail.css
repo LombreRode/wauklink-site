@@ -1,10 +1,12 @@
 *{ box-sizing:border-box; }
+
 body{
   margin:0;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   background:#0b1224;
   color:#f8fafc;
 }
+
 .container{ max-width:900px; margin:0 auto; padding:0 16px; }
 
 .topbar{
@@ -16,6 +18,7 @@ body{
   align-items:center;
   gap:14px;
 }
+
 .back{
   color:#fff;
   text-decoration:none;
@@ -41,6 +44,7 @@ body{
   gap:14px;
   align-items:flex-start;
 }
+
 .icon{
   width:56px;
   height:56px;
@@ -49,12 +53,14 @@ body{
   padding:10px;
   object-fit:contain;
 }
+
 .segment{
   font-size:11px;
   letter-spacing:.6px;
   text-transform:uppercase;
   color:#a7f3d0;
 }
+
 .title{ margin:6px 0 6px; font-size:26px; }
 .desc{ margin:0; color:#e5e7eb; opacity:.92; }
 
@@ -68,6 +74,7 @@ body{
 .h2{ margin:0 0 6px; font-size:18px; }
 
 label{ display:block; margin-top:10px; font-size:14px; }
+
 input, textarea{
   width:100%;
   margin-top:6px;
@@ -80,10 +87,12 @@ input, textarea{
 }
 textarea{ min-height:110px; resize:vertical; }
 
+/* ✅ rangée de boutons (haut + form) */
 .actions{
   display:flex;
-  justify-content:flex-end;
   gap:10px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
   margin-top:14px;
 }
 
@@ -93,9 +102,24 @@ textarea{ min-height:110px; resize:vertical; }
   border-radius:10px;
   cursor:pointer;
   font-weight:900;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
 }
+
 .primary{ background:#ff7b9c; color:#fff; }
 .secondary{ background:rgba(255,255,255,0.12); color:#fff; }
+
+/* ✅ bouton signaler (si tu veux un style plus “danger”) */
+.btn-danger{
+  background: rgba(255,80,80,.14);
+  color:#fff;
+  border:1px solid rgba(255,80,80,.35);
+}
+
+/* ✅ IMPORTANT : pour cacher le bouton Modifier photos */
+.hidden{ display:none !important; }
 
 .note{
   margin-top:12px;
