@@ -1,102 +1,35 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Admin — Notes & Étoiles</title>
-  <link rel="stylesheet" href="../style.css" />
-  <style>
-    .page{padding:24px}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.15)}
-    th{text-align:left;opacity:.8}
-    .stars{color:gold;font-size:16px}
-    .btn{
-      padding:6px 10px;border-radius:10px;
-      border:1px solid rgba(255,255,255,.2);
-      background:rgba(255,255,255,.08);
-      color:#fff;cursor:pointer
-    }
-    .danger{
-      border-color:rgba(255,80,80,.5);
-      background:rgba(255,80,80,.15)
-    }
-  </style>
+  <meta charset="utf-8">
+  <title>Admin — Notes</title>
 </head>
 <body>
-
-<header class="topbar">
-  <div class="container topbar-row">
-    <h1>Admin — Notes</h1>
-    <nav>
-      <a href="index.html">← Admin</a>
-    </nav>
-  </div>
-</header>
-
-<main class="page container">
-  <p class="meta">Gestion des notes des annonces</p>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Annonce</th>
-        <th>Ville</th>
-        <th>Note</th>
-        <th>Avis</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody id="rows"></tbody>
-  </table>
-</main>
+<h1>Notes annonces</h1>
+<div id="list"></div>
 
 <script type="module">
-  import { db } from "../auth/firebase.js";
+  import { db } from "../_shared/firebase.js";
+  import { requireAdmin } from "../_shared/guard.js";
   import {
-    collection, getDocs, updateDoc, doc
+    collection,getDocs,doc,updateDoc
   } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  const rows = document.getElementById("rows");
-
-  function renderStars(avg){
-    const full = Math.round(avg || 0);
-    return "★★★★★☆☆☆☆☆".slice(5-full,10-full);
-  }
+  const list=document.getElementById("list");
 
   async function load(){
-    const snap = await getDocs(collection(db,"annonces_location"));
-    rows.innerHTML = "";
-
+    const snap=await getDocs(collection(db,"annonces_location"));
+    list.innerHTML="";
     snap.forEach(d=>{
-      const a = d.data();
-      const tr = document.createElement("tr");
-
-      tr.innerHTML = `
-        <td>${a.titre || "-"}</td>
-        <td>${a.ville || "-"}</td>
-        <td class="stars">${renderStars(a.ratingAvg)} (${a.ratingAvg || 0})</td>
-        <td>${a.ratingCount || 0}</td>
-        <td>
-          <button class="btn danger">Réinitialiser</button>
-        </td>
-      `;
-
-      tr.querySelector("button").onclick = async ()=>{
-        if(!confirm("Réinitialiser la note ?")) return;
-        await updateDoc(doc(db,"annonces_location",d.id),{
-          ratingAvg:0,
-          ratingCount:0
-        });
-        load();
-      };
-
-      rows.appendChild(tr);
+      const a=d.data();
+      const div=document.createElement("div");
+      div.innerHTML=`${a.titre||"Annonce"} (${a.ratingAvg||0}) <button>Reset</button>`;
+      div.querySelector("button").onclick=()=>updateDoc(doc(db,"annonces_location",d.id),{ratingAvg:0,ratingCount:0});
+      list.appendChild(div);
     });
   }
 
-  load();
+  requireAdmin({redirectTo:"../index.html",onOk:load});
 </script>
-
 </body>
 </html>
