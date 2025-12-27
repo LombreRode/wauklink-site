@@ -1,87 +1,21 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WAUKLINK — Admin</title>
-  <link rel="stylesheet" href="../style.css?v=1" />
-  <style>
-    .page{padding:24px 0}
-    .meta{opacity:.85;font-size:13px}
-    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:14px}
-    .card{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:18px;padding:16px}
-    .btn{padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;cursor:pointer}
-    .title{font-weight:900;font-size:16px}
-    .icon{font-size:22px;margin-bottom:6px}
-    .hidden{display:none!important}
-  </style>
+  <meta charset="utf-8">
+  <title>Admin — Dashboard</title>
+  <link rel="stylesheet" href="../style.css">
 </head>
 <body>
-<header class="topbar">
-  <div class="container topbar-row">
-    <div>
-      <h1>WAUKLINK</h1>
-      <div class="subtitle">Espace Admin / Modération</div>
-    </div>
-    <nav style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-      <a class="btn" href="../index.html">← Site</a>
-    </nav>
-  </div>
-</header>
+  <h1>Admin</h1>
 
-<main class="container page">
-  <h2 style="margin:0">Tableau de bord</h2>
-  <div class="meta" id="adminMeta" style="margin-top:6px">Vérification du rôle…</div>
+  <ul>
+    <li><a href="./annonces.html">🛠️ Annonces</a></li>
+    <li><a href="./reports.html">🚩 Signalements</a></li>
+    <li><a href="./ratings.html">⭐ Notes</a></li>
+    <li><a href="./users.html">👤 Utilisateurs</a></li>
+  </ul>
 
-  <div class="cards">
-
-    <!-- Visible ADMIN + MODERATOR -->
-    <div class="card" data-minrole="moderator">
-      <div class="icon">✅</div>
-      <div class="title">Validation des annonces</div>
-      <div class="meta">Valider pending → active</div>
-      <div style="margin-top:12px">
-        <a class="btn" href="./annonces.html" style="text-decoration:none;display:inline-block">Ouvrir</a>
-      </div>
-    </div>
-
-    <!-- Visible ADMIN + MODERATOR -->
-    <div class="card" data-minrole="moderator">
-      <div class="icon">🚩</div>
-      <div class="title">Signalements</div>
-      <div class="meta">Voir les signalements</div>
-      <div style="margin-top:12px">
-        <a class="btn" href="./reports.html" style="text-decoration:none;display:inline-block">Ouvrir</a>
-      </div>
-    </div>
-
-    <!-- Visible ADMIN seulement -->
-    <div class="card" data-minrole="admin">
-      <div class="icon">⭐</div>
-      <div class="title">Notes</div>
-      <div class="meta">Voir les notes</div>
-      <div style="margin-top:12px">
-        <a class="btn" href="./ratings.html" style="text-decoration:none;display:inline-block">Ouvrir</a>
-      </div>
-    </div>
-
-    <!-- Exemple ADMIN seulement (optionnel) -->
-    <div class="card" data-minrole="admin">
-      <div class="icon">🗑️</div>
-      <div class="title">Actions dangereuses</div>
-      <div class="meta">Réservé admin (suppression, etc.)</div>
-      <div style="margin-top:12px">
-        <a class="btn" href="./danger.html" style="text-decoration:none;display:inline-block">Ouvrir</a>
-      </div>
-    </div>
-
-  </div>
-</main>
-
-<!-- Barre login en haut à droite (si tu l’utilises ailleurs) -->
-<script type="module" src="../auth/status.js"></script>
-
-<!-- ✅ Script qui applique les rôles -->
-<script type="module" src="./admin.js?v=2"></script>
+  <script type="module" src="../auth/status.js"></script>
+  <script type="module" src="./admin.js"></script>
 </body>
 </html>
