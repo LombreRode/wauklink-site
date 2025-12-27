@@ -16,6 +16,7 @@
   </style>
 </head>
 <body>
+
 <div class="container">
   <div class="card">
     <h1>Inscription</h1>
@@ -47,12 +48,17 @@
 </div>
 
 <script type="module">
-  // ✅ IMPORTANT : met à jour /users/{uid} (lastLoginAt) dès que le user est connecté
+  // ✅ synchro user (ok, fichier dans /auth)
   import "./user_sync.js";
 
-  import { auth, db } from "./firebase.js";
-  import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-  import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  // ✅ firebase CENTRALISÉ
+  import { auth, db } from "../_shared/firebase.js";
+
+  import { createUserWithEmailAndPassword } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+  import { doc, setDoc, serverTimestamp } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
   const msg = document.getElementById("msg");
   const form = document.getElementById("registerForm");
@@ -64,7 +70,7 @@
     msg.textContent = text;
   }
 
-  // Anti autofill (optionnel)
+  // anti-autofill
   window.addEventListener("load", () => {
     const emailEl = document.getElementById("email");
     if (emailEl) emailEl.value = "";
@@ -81,7 +87,6 @@
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
 
-      // ✅ Profil Firestore (registre users)
       await setDoc(
         doc(db, "users", cred.user.uid),
         {
@@ -93,6 +98,7 @@
           adresse: String(data.get("adresse") || "").trim(),
           cp: String(data.get("cp") || "").trim(),
           ville: String(data.get("ville") || "").trim(),
+          role: "user",
           cguAccepted: true,
           createdAt: serverTimestamp(),
           lastLoginAt: serverTimestamp()
@@ -111,5 +117,6 @@
     }
   });
 </script>
+
 </body>
 </html>
