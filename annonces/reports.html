@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>WAUKLINK — Signalements</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- CSS global -->
+  <link rel="stylesheet" href="../style.css" />
+
+  <style>
+    body {
+      background:#0f1115;
+      color:#fff;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    }
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 16px;
+    }
+    h1 {
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      opacity: .7;
+      margin-bottom: 24px;
+    }
+    .card {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .meta {
+      font-size: 13px;
+      opacity: .7;
+    }
+    .empty {
+      opacity:.6;
+      text-align:center;
+      margin-top:40px;
+    }
+    .btn {
+      display:inline-block;
+      margin-top:20px;
+      padding:10px 14px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      text-decoration:none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Signalements</h1>
+    <div class="subtitle">
+      Liste des annonces signalées par les utilisateurs
+    </div>
+
+    <div id="list"></div>
+
+    <div id="empty" class="empty" style="display:none">
+      Aucun signalement pour le moment.
+    </div>
+
+    <a href="../index.html" class="btn">← Retour accueil</a>
+  </div>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { auth, db } from "../auth/firebase.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    const list = document.getElementById("list");
+    const empty = document.getElementById("empty");
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        alert("Connexion requise");
+        window.location.href = "../auth/login.html";
+        return;
+      }
+
+      try {
+        const q = query(
+          collection(db, "reports"),
+          orderBy("createdAt", "desc")
+        );
+
+        const snap = await getDocs(q);
+
+        if (snap.empty) {
+          empty.style.display = "block";
+          return;
+        }
+
+        snap.forEach(doc => {
+          const r = doc.data();
+          const div = document.createElement("div");
+          div.className = "card";
+          div.innerHTML = `
+            <div><strong>Annonce :</strong> ${r.annonceId || "-"}</div>
+            <div><strong>Motif :</strong> ${r.reason || "-"}</div>
+            <div class="meta">
+              Signalé par ${r.reporterEmail || "inconnu"}
+            </div>
+          `;
+          list.appendChild(div);
+        });
+
+      } catch (e) {
+        console.error(e);
+        alert("Erreur chargement signalements");
+      }
+    });
+  </script>
+</body>
+</html>
