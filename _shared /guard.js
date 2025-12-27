@@ -1,40 +1,78 @@
-// /_shared/guard.js
+// _shared/guard.js
 import { auth, db } from "./firebase.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { onAuthStateChanged } from
+  "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { doc, getDoc } from
+  "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-async function getRole(uid) {
-  const snap = await getDoc(doc(db, "users", uid));
-  return snap.exists() ? String(snap.data()?.role || "") : "";
+/* =========================
+   AUTH SIMPLE
+========================= */
+export function isAuthed(cb){
+  onAuthStateChanged(auth, user => {
+    cb(!!user);
+  });
 }
 
-// GUARD ADMIN / MODERATOR
-export function requireModeration(opts = {}) {
-  const redirectTo = opts.redirectTo ?? "../index.html";
-  const onOk = opts.onOk ?? (() => {});
-  const onFail = opts.onFail ?? (() => {});
-  const onLoading = opts.onLoading ?? (() => {});
+/* =========================
+   ROLE UTILITAIRE
+========================= */
+async function getRole(uid){
+  try{
+    const snap = await getDoc(doc(db,"users",uid));
+    if(!snap.exists()) return "user";
+    return snap.data().role || "user";
+  }catch(e){
+    console.error("ROLE ERROR", e);
+    return "user";
+  }
+}
 
-  onLoading();
-
-  return onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      onFail("NOT_LOGGED");
-      return location.replace(redirectTo);
+/* =========================
+   MODÉRATION (admin + moderator)
+========================= */
+export function requireModeration({
+  redirectTo,
+  onOk,
+  onFail,
+  onLoading
+}){
+  onLoading?.();
+  onAuthStateChanged(auth, async user=>{
+    if(!user){
+      onFail?.("not-auth","");
+      location.href = redirectTo;
+      return;
     }
-
-    let role = "";
-    try {
-      role = await getRole(user.uid);
-    } catch (e) {
-      console.error("getRole error:", e);
+    const role = await getRole(user.uid);
+    if(role === "admin" || role === "moderator"){
+      onOk?.(user, role);
+    }else{
+      onFail?.("forbidden", role);
+      location.href = redirectTo;
     }
+  });
+}
 
-    if (role !== "admin" && role !== "moderator") {
-      onFail("NO_ROLE", role);
-      return location.replace(redirectTo);
+/* =========================
+   ADMIN SEUL
+========================= */
+export function requireAdmin({
+  redirectTo,
+  onOk,
+  onLoading
+}){
+  onLoading?.();
+  onAuthStateChanged(auth, async user=>{
+    if(!user){
+      location.href = redirectTo;
+      return;
     }
-
-    onOk(user, role);
+    const role = await getRole(user.uid);
+    if(role === "admin"){
+      onOk?.(user);
+    }else{
+      location.href = redirectTo;
+    }
   });
 }
