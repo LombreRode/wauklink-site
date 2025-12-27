@@ -2,76 +2,48 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Connexion – WAUKLINK</title>
-  <link rel="stylesheet" href="auth.css">
-  <style>
-    #msg{
-      margin-top:12px;
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.14);
-      display:none;
-    }
-  </style>
+  <link rel="stylesheet" href="./auth.css">
 </head>
 <body>
 
-<div class="container">
-  <div class="card">
-    <h1>Connexion</h1>
+<div class="container card">
+  <h1>Connexion</h1>
 
-    <form id="loginForm" autocomplete="off">
-      <input id="email" type="email" placeholder="Email" required>
-      <input id="password" type="password" placeholder="Mot de passe" required>
-      <button class="btn" type="submit">Se connecter</button>
-    </form>
+  <form id="loginForm">
+    <input id="email" type="email" placeholder="Email" required>
+    <input id="password" type="password" placeholder="Mot de passe" required>
+    <button class="btn" type="submit">Se connecter</button>
+  </form>
 
-    <div class="small" style="margin-top:12px;">
-      Pas de compte ? <a href="register.html">Créer un compte</a>
-    </div>
+  <p class="small">
+    Pas de compte ? <a href="./register.html">Créer un compte</a>
+  </p>
 
-    <div id="msg"></div>
-  </div>
+  <p id="msg" class="msg"></p>
 </div>
 
 <script type="module">
-  // 🔥 FIREBASE CENTRALISÉ (CHEMIN CRITIQUE)
   import { auth } from "../_shared/firebase.js";
   import { signInWithEmailAndPassword } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
   const form = document.getElementById("loginForm");
-  const emailInput = document.getElementById("email");
-  const passwordInput = document.getElementById("password");
-  const msg = document.getElementById("msg");
-
-  function show(text, ok=false){
-    msg.style.display = "block";
-    msg.style.borderColor = ok ? "rgba(34,197,94,.35)" : "rgba(239,68,68,.35)";
-    msg.style.background = ok ? "rgba(34,197,94,.10)" : "rgba(239,68,68,.10)";
-    msg.textContent = text;
-  }
+  const msg  = document.getElementById("msg");
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    show("⏳ Connexion…", true);
+    msg.textContent = "Connexion…";
 
     try {
       await signInWithEmailAndPassword(
         auth,
-        emailInput.value.trim(),
-        passwordInput.value.trim()
+        email.value.trim(),
+        password.value.trim()
       );
-
-      show("✅ Connecté ! Redirection…", true);
-      setTimeout(() => {
-        window.location.href = "../index.html";
-      }, 400);
-
+      location.href = "../index.html";
     } catch (err) {
-      console.error(err);
-      show("❌ " + err.code);
+      msg.textContent = "❌ " + err.message;
     }
   });
 </script>
