@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>WAUKLINK — Urgence</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="../style.css?v=1" />
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Demande d’urgence</div>
+    </div>
+    <nav>
+      <a class="btn" href="../index.html">← Retour</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container" style="padding:24px 0">
+  <div class="card" style="max-width:720px;margin:auto">
+    <p class="meta">
+      Une demande d’urgence est traitée en priorité par nos équipes.
+    </p>
+
+    <form id="form">
+      <input id="titre" placeholder="Titre (ex: Fuite d’eau urgente)" required />
+      <input id="ville" placeholder="Ville" required />
+
+      <select id="type" required>
+        <option value="">Type d’urgence</option>
+        <option value="plomberie">Plomberie</option>
+        <option value="electricite">Électricité</option>
+        <option value="serrurerie">Serrurerie</option>
+        <option value="autre">Autre</option>
+      </select>
+
+      <textarea id="description" placeholder="Décris précisément le problème" required></textarea>
+
+      <input id="contactEmail" type="email" placeholder="Email de contact" required />
+      <input id="contactPhone" placeholder="Téléphone (optionnel)" />
+
+      <button class="btn btn-danger" id="submitBtn">🚨 Envoyer l’urgence</button>
+      <div id="msg" class="meta"></div>
+    </form>
+  </div>
+</main>
+
+<!-- ================= JS ================= -->
+<script type="module">
+  import { auth, db } from "../_shared/firebase.js";
+  import { onAuthStateChanged } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import {
+    collection, addDoc, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+  const form = document.getElementById("form");
+  const msg = document.getElementById("msg");
+  const submitBtn = document.getElementById("submitBtn");
+
+  let user = null;
+
+  function setMsg(t){ msg.textContent = t || ""; }
+
+  onAuthStateChanged(auth, u=>{
+    if(!u){
+      setMsg("❌ Connexion requise pour envoyer une urgence.");
+      form.style.display = "none";
+      return;
+    }
+    user = u;
+  });
+
+  form.onsubmit = async e=>{
+    e.preventDefault();
+    if(!user) return;
+
+    submitBtn.disabled = true;
+
+    try{
+      setMsg("⏳ Envoi en cours…");
+
+      await addDoc(collection(db,"urgences"),{
+        titre: titre.value.trim(),
+        ville: ville.value.trim(),
+        type: type.value,
+        description: description.value.trim(),
+        contactEmail: contactEmail.value.trim(),
+        contactPhone: contactPhone.value.trim(),
+        ownerUid: user.uid,
+        ownerEmail: user.email || "",
+        status: "pending",
+        createdAt: serverTimestamp()
+      });
+
+      setMsg("✅ Urgence envoyée. Nous vous contactons rapidement.");
+      form.reset();
+
+    }catch(err){
+      console.error(err);
+      setMsg("❌ Erreur lors de l’envoi (voir console).");
+    }finally{
+      submitBtn.disabled = false;
+    }
+  };
+</script>
+
+<script type="module" src="../auth/status.js"></script>
+<script type="module" src="../auth/user_sync.js"></script>
+
+</body>
+</html>
