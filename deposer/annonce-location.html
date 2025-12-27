@@ -5,29 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>WAUKLINK — Déposer une annonce</title>
   <link rel="stylesheet" href="../style.css?v=1" />
-  <style>
-    .wrap{padding:24px 0}
-    .card{max-width:820px;margin:auto;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:16px;padding:18px}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .row-1{grid-template-columns:1fr}
-    input, textarea, select{
-      width:100%;padding:10px 12px;border-radius:12px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(0,0,0,.2);color:#fff
-    }
-    textarea{min-height:120px;resize:vertical}
-    .btn{padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.06);color:#fff;cursor:pointer}
-    .meta{opacity:.85;font-size:13px;white-space:pre-line}
-    .ok{border-color:rgba(80,255,160,.35);background:rgba(80,255,160,.12)}
-    .tag{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14);font-size:12px}
-    .thumb{
-      width:84px;height:84px;object-fit:cover;border-radius:12px;
-      border:1px solid rgba(255,255,255,.14);
-    }
-  </style>
 </head>
+
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
     <div>
@@ -42,14 +23,13 @@
 
 <main class="container wrap">
   <div class="card">
-    <div class="meta" style="margin-bottom:12px">
-      Toutes les annonces sont vérifiées par un admin avant publication.
-      <span class="tag">Validation requise</span>
-    </div>
+    <p class="meta">
+      Toutes les annonces sont vérifiées par un administrateur avant publication.
+    </p>
 
     <form id="form">
       <div class="row">
-        <input id="titre" placeholder="Titre de l’annonce" required />
+        <input id="titre" placeholder="Titre" required />
         <input id="ville" placeholder="Ville" required />
       </div>
 
@@ -59,13 +39,12 @@
           <option value="saisonniere">Location saisonnière</option>
           <option value="annuelle">Location annuelle</option>
         </select>
-
         <select id="type" required>
           <option value="">Type de bien</option>
-          <option value="Appartement">Appartement</option>
-          <option value="Maison">Maison</option>
-          <option value="Studio">Studio</option>
-          <option value="Chambre">Chambre</option>
+          <option>Appartement</option>
+          <option>Maison</option>
+          <option>Studio</option>
+          <option>Chambre</option>
         </select>
       </div>
 
@@ -75,189 +54,120 @@
       </div>
 
       <div class="row">
-        <input id="contactEmail" type="email" placeholder="Email de contact" required />
-        <input id="contactPhone" type="text" placeholder="(optionnel) Téléphone" />
+        <input id="contactEmail" type="email" placeholder="Email contact" required />
+        <input id="contactPhone" placeholder="Téléphone (optionnel)" />
       </div>
 
-      <div class="row-1">
-        <textarea id="description" placeholder="Description détaillée" required></textarea>
-      </div>
+      <textarea id="description" placeholder="Description" required></textarea>
 
-      <!-- PHOTOS -->
-      <div class="row-1" style="margin-top:12px">
-        <div class="meta">Photos (max 6) — Stockées sur Firebase Storage</div>
+      <div>
         <input id="photosInput" type="file" accept="image/*" multiple />
-        <div id="photosPreview" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"></div>
+        <div id="photosPreview"></div>
       </div>
 
-      <div class="row-1" style="margin-top:12px">
-        <button class="btn ok" id="submitBtn" type="submit">📤 Déposer l’annonce</button>
-      </div>
-
-      <div id="msg" class="meta" style="margin-top:10px"></div>
+      <button class="btn ok" id="submitBtn">📤 Publier</button>
+      <div id="msg" class="meta"></div>
     </form>
   </div>
 </main>
 
+<!-- ================= JS ================= -->
 <script type="module">
-  import { auth, db } from "../auth/firebase.js";
-  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-  import { collection, addDoc, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
-
-  const storage = getStorage();
+  import { auth, db, storage } from "../_shared/firebase.js";
+  import { onAuthStateChanged } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import {
+    collection, addDoc, doc, updateDoc, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  import {
+    ref, uploadBytes, getDownloadURL
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
   const form = document.getElementById("form");
   const msg = document.getElementById("msg");
-  const submitBtn = document.getElementById("submitBtn");
-
-  const duree = document.getElementById("duree");
-  const titre = document.getElementById("titre");
-  const ville = document.getElementById("ville");
-  const type = document.getElementById("type");
-  const surface = document.getElementById("surface");
-  const prix = document.getElementById("prix");
-  const contactEmail = document.getElementById("contactEmail");
-  const contactPhone = document.getElementById("contactPhone");
-  const description = document.getElementById("description");
-
   const photosInput = document.getElementById("photosInput");
   const photosPreview = document.getElementById("photosPreview");
-
-  let currentUser = null;
-  let selectedFiles = [];
+  let user = null;
+  let files = [];
 
   function setMsg(t){ msg.textContent = t || ""; }
 
-  function previewFiles(files){
-    photosPreview.innerHTML = "";
-    files.slice(0,6).forEach(file=>{
-      const img=document.createElement("img");
-      img.className="thumb";
-      img.src=URL.createObjectURL(file);
-      photosPreview.appendChild(img);
-    });
-  }
-
-  function safeExt(file){
-    const ext = (file?.name?.split(".").pop() || "jpg").toLowerCase();
-    const clean = ext.replace(/[^a-z0-9]/g,"");
-    return clean || "jpg";
-  }
-
-  function storagePath(annonceId, index, file){
-    // ex: annonces_location/ABC/p1.jpg
-    return `annonces_location/${annonceId}/p${index+1}.${safeExt(file)}`;
-  }
-
-  async function uploadAllToStorage(annonceId, files){
-    const limited = files.slice(0,6);
-    const urls = [];
-    const paths = [];
-    for(let i=0;i<limited.length;i++){
-      const f = limited[i];
-      setMsg(`⏳ Upload photo ${i+1}/${limited.length}…`);
-      const p = storagePath(annonceId, i, f);
-      const sref = ref(storage, p);
-      await uploadBytes(sref, f, { contentType: f.type || "image/jpeg" });
-      const url = await getDownloadURL(sref);
-      paths.push(p);
-      urls.push(url);
-    }
-    return { urls, paths };
-  }
-
-  onAuthStateChanged(auth,(user)=>{
-    if(!user){
-      setMsg("❌ Vous devez être connecté pour déposer une annonce.");
+  onAuthStateChanged(auth, u=>{
+    if(!u){
+      setMsg("❌ Connexion requise.");
       form.style.display="none";
       return;
     }
-    currentUser=user;
-    setMsg("");
+    user = u;
   });
 
-  photosInput.addEventListener("change",()=>{
-    selectedFiles=[...photosInput.files].slice(0,6);
-    previewFiles(selectedFiles);
-  });
+  photosInput.onchange = ()=>{
+    files = [...photosInput.files].slice(0,6);
+    photosPreview.innerHTML="";
+    files.forEach(f=>{
+      const img=document.createElement("img");
+      img.src=URL.createObjectURL(f);
+      img.style.width="80px";
+      img.style.borderRadius="10px";
+      photosPreview.appendChild(img);
+    });
+  };
 
-  form.addEventListener("submit",async(e)=>{
+  form.onsubmit = async e=>{
     e.preventDefault();
-    if(!currentUser) return;
-
-    if(!duree.value){
-      setMsg("❌ Choisis le type de location (saisonnière ou annuelle).");
-      return;
-    }
-
-    submitBtn.disabled=true;
-    submitBtn.style.opacity=".7";
+    if(!user) return;
 
     try{
-      setMsg("⏳ Création de l’annonce…");
+      setMsg("⏳ Création…");
 
-      // 1) Créer l'annonce d'abord (IMPORTANT: ownerUid existe pour Storage Rules)
       const annonceRef = await addDoc(collection(db,"annonces_location"),{
+        titre: titre.value,
+        ville: ville.value,
         duree: duree.value,
-        titre: titre.value.trim(),
-        ville: ville.value.trim(),
         type: type.value,
         surface: Number(surface.value||0),
-        prix: Number(prix.value||0),
-        description: description.value.trim(),
-        contactEmail: contactEmail.value.trim(),
-        contactPhone: contactPhone.value.trim(),
+        prix: Number(prix.value),
+        description: description.value,
+        contactEmail: contactEmail.value,
+        contactPhone: contactPhone.value,
+        ownerUid: user.uid,
+        ownerEmail: user.email,
+        status: "pending",
         photos: [],
         photoPaths: [],
-        status: "pending",
-        ownerUid: currentUser.uid,
-        ownerEmail: currentUser.email || "",
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
         ratingAvg: 0,
-        ratingCount: 0
-      });
-
-      const annonceId = annonceRef.id;
-
-      // 2) Upload photos -> Storage
-      let photos = [];
-      let photoPaths = [];
-      if(selectedFiles.length){
-        const res = await uploadAllToStorage(annonceId, selectedFiles);
-        photos = res.urls;
-        photoPaths = res.paths;
-      }
-
-      // 3) Update Firestore avec URLs + paths
-      setMsg("⏳ Finalisation…");
-      await updateDoc(doc(db,"annonces_location", annonceId),{
-        photos,
-        photoPaths,
+        ratingCount: 0,
+        createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
 
-      setMsg("✅ Annonce envoyée ! Redirection…");
-      const target = `../annonces/location.html?duree=${encodeURIComponent(duree.value)}`;
-      setTimeout(()=>{ window.location.href = target; }, 700);
+      const urls=[], paths=[];
+      for(let i=0;i<files.length;i++){
+        const path=`annonces_location/${annonceRef.id}/p${i+1}.jpg`;
+        const r=ref(storage,path);
+        await uploadBytes(r,files[i]);
+        urls.push(await getDownloadURL(r));
+        paths.push(path);
+      }
 
-      form.reset();
-      photosPreview.innerHTML="";
-      selectedFiles=[];
+      await updateDoc(doc(db,"annonces_location",annonceRef.id),{
+        photos: urls,
+        photoPaths: paths,
+        updatedAt: serverTimestamp()
+      });
 
-    }catch(err){
-      console.error(err);
-      setMsg("❌ Erreur lors de l’envoi. Ouvre la console (F12).");
-      alert("Erreur : " + (err?.message || err));
-    }finally{
-      submitBtn.disabled=false;
-      submitBtn.style.opacity="1";
+      setMsg("✅ Annonce envoyée !");
+      setTimeout(()=>location.href="../annonces/location.html?duree="+duree.value,700);
+
+    }catch(e){
+      console.error(e);
+      setMsg("❌ Erreur (voir console)");
     }
-  });
+  };
 </script>
 
 <script type="module" src="../auth/status.js"></script>
 <script type="module" src="../auth/user_sync.js"></script>
+
 </body>
 </html>
