@@ -13,18 +13,8 @@
     <h1>Connexion</h1>
 
     <form id="loginForm">
-      <input
-        id="email"
-        type="email"
-        placeholder="Email"
-        required
-      >
-      <input
-        id="password"
-        type="password"
-        placeholder="Mot de passe"
-        required
-      >
+      <input id="email" type="email" placeholder="Email" required>
+      <input id="password" type="password" placeholder="Mot de passe" required>
       <button type="submit">Se connecter</button>
     </form>
 
@@ -37,6 +27,7 @@
 </div>
 
 <script type="module">
+  // 🔥 ICI EST LA CLÉ
   import { auth } from "./firebase.js";
   import {
     signInWithEmailAndPassword
@@ -49,11 +40,12 @@
     e.preventDefault();
     msg.textContent = "";
 
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value.trim();
-
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      await signInWithEmailAndPassword(
+        auth,
+        email.value.trim(),
+        password.value.trim()
+      );
       window.location.href = "../index.html";
     } catch (err) {
       console.error(err);
