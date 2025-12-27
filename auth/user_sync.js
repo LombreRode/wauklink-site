@@ -11,7 +11,7 @@ onAuthStateChanged(auth, async (user) => {
     doc(db, "users", user.uid),
     {
       email: user.email,
-      updatedAt: serverTimestamp()
+      lastLoginAt: serverTimestamp()
     },
     { merge: true }
   );
