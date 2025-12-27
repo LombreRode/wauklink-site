@@ -1,26 +1,24 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WAUKLINK — Modération</title>
-  <link rel="stylesheet" href="../style.css?v=1" />
+  <meta charset="utf-8">
+  <title>Modération</title>
+  <link rel="stylesheet" href="../style.css">
 </head>
 <body>
-  <div class="container" style="padding:24px">
-    <h2>Modération</h2>
-    <p id="msg" style="opacity:.85; white-space:pre-line">Vérification…</p>
-    <p><a class="btn" href="../index.html">← Retour au site</a></p>
-  </div>
+  <h1>Modération</h1>
+  <p id="msg">Chargement…</p>
+
+  <a href="../index.html">← Retour site</a>
 
   <script type="module">
-    import { requireModeration } from "./_shared/guard.js";
+    import { requireModeration } from "../_shared/guard.js";
     const msg = document.getElementById("msg");
 
     requireModeration({
       redirectTo: "../index.html",
-      onOk: (_user, role) => {
-        msg.textContent = `✅ Accès autorisé • role: ${role}`;
+      onOk: (_u, role) => {
+        msg.textContent = `Accès autorisé (${role})`;
       }
     });
   </script>
