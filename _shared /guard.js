@@ -1,4 +1,5 @@
-import { auth, db } from "../../auth/firebase.js";
+// /_shared/guard.js
+import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
@@ -7,6 +8,7 @@ async function getRole(uid) {
   return snap.exists() ? String(snap.data()?.role || "") : "";
 }
 
+// GUARD ADMIN / MODERATOR
 export function requireModeration(opts = {}) {
   const redirectTo = opts.redirectTo ?? "../index.html";
   const onOk = opts.onOk ?? (() => {});
@@ -25,7 +27,7 @@ export function requireModeration(opts = {}) {
     try {
       role = await getRole(user.uid);
     } catch (e) {
-      console.error("guard getRole error:", e);
+      console.error("getRole error:", e);
     }
 
     if (role !== "admin" && role !== "moderator") {
