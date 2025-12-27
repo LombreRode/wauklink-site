@@ -4,22 +4,18 @@ const msg = document.getElementById("msg");
 
 requireModeration({
   redirectTo: "../auth/login.html",
-
   onLoading: () => {
-    msg.textContent = "Vérification en cours…";
+    msg.textContent = "Vérification du rôle…";
   },
-
   onOk: (_user, role) => {
-    msg.textContent = `✅ Accès autorisé • rôle : ${role}\nRedirection…`;
-
+    msg.textContent = `Accès autorisé (${role}) – redirection…`;
     if (role === "admin") {
       location.replace("./index.html");
     } else {
       location.replace("./moderation.html");
     }
   },
-
-  onFail: (why, role) => {
-    msg.textContent = `⛔ Accès refusé (${why})\nRôle : ${role || "aucun"}`;
+  onFail: () => {
+    msg.textContent = "⛔ Accès refusé";
   }
 });
