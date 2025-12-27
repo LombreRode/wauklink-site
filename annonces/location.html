@@ -1,553 +1,58 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WAUKLINK — Annonces Location</title>
-  <link rel="stylesheet" href="../style.css?v=1" />
-  <style>
-    .page { padding: 24px 0; }
-    .top{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
-    .meta{opacity:.85;font-size:13px}
-    .badge{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14);font-size:12px;opacity:.9}
-    .search{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.2);color:#fff}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:14px}
-    .card{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:16px;padding:14px;cursor:pointer}
-    .row{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-    .price{font-weight:900}
-    .stars{font-size:13px;opacity:.9;margin-top:6px}
-    .pager{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:16px}
-    .btn{padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;cursor:pointer}
-    .btn:disabled{opacity:.5;cursor:not-allowed}
-    .btn-danger{
-      padding:10px 12px;border-radius:12px;cursor:pointer;
-      border:1px solid rgba(255,80,80,.45);
-      background: rgba(255,80,80,.12);
-      color:#fff;
-    }
-    .btn-danger:hover{ filter:brightness(1.12); }
-    dialog{border:none;border-radius:18px;padding:0;max-width:760px;width:min(92vw,760px);background:#0b1220;color:#fff}
-    .modalTop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;border-bottom:1px solid rgba(255,255,255,.14);padding:16px}
-    .modalBody{padding:16px}
-    .modalActions{display:flex;gap:10px;flex-wrap:wrap;padding:16px;border-top:1px solid rgba(255,255,255,.14);align-items:center}
-    .closeX{background:transparent;border:1px solid rgba(255,255,255,.14);border-radius:12px;color:#fff;padding:6px 10px;cursor:pointer}
-    .photos{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:10px}
-    .ph{border:1px solid rgba(255,255,255,.14);border-radius:14px;overflow:hidden;background:rgba(255,255,255,.04);aspect-ratio:4/3}
-    .ph img{width:100%;height:100%;object-fit:cover;display:block}
-    .kv{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
-    .kvc{border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px;background:rgba(255,255,255,.04)}
-    .k{opacity:.75;font-size:12px}
-    .v{font-weight:900}
-  </style>
+  <meta charset="utf-8">
+  <title>Locations</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../style.css">
 </head>
 <body>
-<header class="topbar">
-  <div class="container topbar-row">
-    <div>
-      <h1>WAUKLINK</h1>
-      <div class="subtitle" id="subTitle">Annonces • Location</div>
-    </div>
-    <nav style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-      <a href="../index.html" style="text-decoration:underline;opacity:.9;">← Accueil</a>
-      <a href="../pricing.html" style="text-decoration:underline;opacity:.9;">Tarifs</a>
-      <a href="../legal/index.html" style="text-decoration:underline;opacity:.9;">CGU</a>
-    </nav>
-  </div>
-</header>
 
-<main class="container page">
-  <div class="top">
-    <h2 style="margin:0" id="pageTitle">Offres Location</h2>
-    <span class="badge" id="pageBadge">20 annonces / page</span>
-  </div>
-  <p class="meta" id="pageMeta">Clique sur une annonce pour voir le détail.</p>
-
-  <input id="q" class="search" placeholder="Rechercher : ville, type (studio, T2…), prix…" />
-  <div id="list" class="grid"></div>
-
-  <div class="pager">
-    <button id="prev" class="btn" disabled>◀ Précédent</button>
-    <span id="pageInfo" class="meta">Page 1</span>
-    <button id="next" class="btn" disabled>Suivant ▶</button>
-  </div>
-</main>
-
-<footer class="footer">
-  © WAUKLINK —
-  <a href="../legal/privacy.html">Confidentialité</a> |
-  <a href="../legal/mentions-legales.html">Mentions légales</a>
-</footer>
-
-<dialog id="detailDlg">
-  <div class="modalTop">
-    <div>
-      <div id="dTitle" style="font-weight:900;font-size:18px"></div>
-      <div id="dMeta" class="meta"></div>
-      <div id="dStars" class="stars"></div>
-    </div>
-    <button class="closeX" id="closeDlg">✕</button>
-  </div>
-
-  <div class="modalBody">
-    <div class="kv">
-      <div class="kvc"><div class="k">Prix</div><div class="v" id="dPrice"></div></div>
-      <div class="kvc"><div class="k">Type</div><div class="v" id="dType"></div></div>
-      <div class="kvc"><div class="k">Ville</div><div class="v" id="dVille"></div></div>
-      <div class="kvc"><div class="k">Surface</div><div class="v" id="dSurface"></div></div>
-    </div>
-
-    <div style="margin-top:12px">
-      <div class="k">Description</div>
-      <div id="dDesc" style="margin-top:6px;white-space:pre-wrap"></div>
-    </div>
-
-    <div style="margin-top:14px">
-      <div class="k">Photos (max 6)</div>
-      <div id="dPhotos" class="photos"></div>
-    </div>
-  </div>
-
-  <div class="modalActions">
-    <a id="btnMail" class="btn" href="#" style="text-decoration:none">✉ Joindre par mail</a>
-    <a id="btnTel" class="btn" href="#" style="text-decoration:none;display:none">📞 Appeler</a>
-    <button id="btnReport" class="btn-danger">🚩 Signaler</button>
-
-    <!-- ⭐ Note (utilisateur) -->
-    <div id="rateWrap" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <span class="meta">Noter :</span>
-      <div id="rateStars" style="display:flex;gap:6px"></div>
-      <span id="rateMsg" class="meta"></span>
-    </div>
-
-    <!-- ✅ Texte: seulement si pending (owner/mod/admin) -->
-    <button id="btnEdit" class="btn" style="display:none">✏️ Modifier</button>
-    <button id="btnDelete" class="btn" style="display:none">🗑️ Supprimer</button>
-
-    <!-- ✅ Photos: seulement si active (owner/mod/admin) -->
-    <button id="btnEditPhotos" class="btn" style="display:none">🖼️ Modifier photos</button>
-
-    <button id="backBtn" class="btn">↩ Retour aux annonces</button>
-    <span id="statusLine" class="meta" style="width:100%"></span>
-  </div>
-</dialog>
+<h1>Locations</h1>
+<div id="list">Chargement…</div>
 
 <script type="module">
-  // ====== CONFIG ======
-  const PER_PAGE = 20;
-
-  // ====== PARAMS (duree) ======
-  const params = new URLSearchParams(window.location.search);
-  const dureeParam = (params.get("duree") || "").trim().toLowerCase(); // "saisonniere" | "annuelle" | ""
-  const allowedDuree = (dureeParam === "saisonniere" || dureeParam === "annuelle") ? dureeParam : "";
-  const dureeLabel = allowedDuree === "saisonniere"
-    ? "Location saisonnière"
-    : allowedDuree === "annuelle"
-      ? "Location annuelle"
-      : "Location (toutes)";
-
-  // ====== UI TITLES ======
-  const subTitle = document.getElementById("subTitle");
-  const pageTitle = document.getElementById("pageTitle");
-  const pageMeta = document.getElementById("pageMeta");
-  const pageBadge = document.getElementById("pageBadge");
-
-  document.title = `WAUKLINK — ${dureeLabel}`;
-  subTitle.textContent = `Annonces • ${dureeLabel}`;
-  pageTitle.textContent = (allowedDuree ? `Offres • ${dureeLabel}` : "Offres Location (toutes durées)");
-  pageBadge.textContent = `${PER_PAGE} annonces / page`;
-  pageMeta.textContent =
-    allowedDuree
-      ? `Tu es dans : ${dureeLabel}. Clique sur une annonce pour voir le détail.`
-      : `Clique sur une annonce pour voir le détail.`;
-
-  // ====== IMPORTS ======
-  import { db, auth } from "../auth/firebase.js";
-  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import { db } from "../_shared/firebase.js";
   import {
-    collection, query, where, orderBy, limit, startAfter, getDocs,
-    doc, deleteDoc, addDoc, serverTimestamp,
-    runTransaction, getDoc, setDoc
+    collection, query, where, getDocs
   } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  // ====== UI ======
-  const list = document.getElementById("list");
-  const qInput = document.getElementById("q");
-  const prevBtn = document.getElementById("prev");
-  const nextBtn = document.getElementById("next");
-  const pageInfo = document.getElementById("pageInfo");
+  const list=document.getElementById("list");
+  const duree=new URLSearchParams(location.search).get("duree");
 
-  const dlg = document.getElementById("detailDlg");
-  const closeDlg = document.getElementById("closeDlg");
-  const backBtn = document.getElementById("backBtn");
+  async function load(){
+    let q = collection(db,"annonces_location");
+    let conditions = [ where("status","==","active") ];
 
-  const dTitle = document.getElementById("dTitle");
-  const dMeta = document.getElementById("dMeta");
-  const dStars = document.getElementById("dStars");
-  const dPrice = document.getElementById("dPrice");
-  const dType = document.getElementById("dType");
-  const dVille = document.getElementById("dVille");
-  const dSurface = document.getElementById("dSurface");
-  const dDesc = document.getElementById("dDesc");
-  const dPhotos = document.getElementById("dPhotos");
-
-  const btnMail = document.getElementById("btnMail");
-  const btnTel = document.getElementById("btnTel");
-  const btnEdit = document.getElementById("btnEdit");
-  const btnDelete = document.getElementById("btnDelete");
-  const btnEditPhotos = document.getElementById("btnEditPhotos");
-  const btnReport = document.getElementById("btnReport");
-  const statusLine = document.getElementById("statusLine");
-
-  const rateStars = document.getElementById("rateStars");
-  const rateMsg = document.getElementById("rateMsg");
-  const rateWrap = document.getElementById("rateWrap");
-
-  // ====== STATE ======
-  let page = 1;
-  let lastDoc = null;
-  let cursorStack = [];
-  let currentItems = [];
-  let currentUser = null;
-  let currentRole = ""; // admin | moderator | ""
-  let currentDetail = null;
-
-  onAuthStateChanged(auth, async (u) => {
-    currentUser = u || null;
-    currentRole = "";
-    if (currentUser) {
-      try {
-        const us = await getDoc(doc(db, "users", currentUser.uid));
-        currentRole = String(us.exists() ? (us.data()?.role || "") : "").toLowerCase();
-      } catch {}
+    if (duree){
+      conditions.push(where("duree","==",duree));
     }
-  });
 
-  // ====== HELPERS ======
-  function esc(s){
-    return String(s ?? "").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
-  }
-  function stars(avg=0, count=0){
-    const a = Math.max(0, Math.min(5, Number(avg||0)));
-    const full = Math.round(a);
-    const s = "★★★★★☆☆☆☆☆".slice(5-full, 10-full);
-    return `${s}  ${a.toFixed(1)}/5 (${count} avis)`;
-  }
+    const snap = await getDocs(query(q,...conditions));
+    list.innerHTML="";
 
-  function renderList(items){
-    list.innerHTML = "";
-    if(!items.length){
-      list.innerHTML = `<div class="meta">Aucune annonce pour l’instant.</div>`;
+    if (snap.empty){
+      list.textContent="Aucune annonce.";
       return;
     }
-    items.forEach((a, idx) => {
-      const el = document.createElement("div");
-      el.className = "card";
-      el.innerHTML = `
-        <div class="row">
-          <div>
-            <div style="font-weight:900">${esc(a.titre)}</div>
-            <div class="meta">${esc(a.ville)} • ${esc(a.type)} • ${esc(a.surface || "")} ${a.duree ? "• "+esc(a.duree) : ""}</div>
-            <div class="stars">${esc(stars(a.ratingAvg || 0, a.ratingCount || 0))}</div>
-          </div>
-          <div class="price">${esc(a.prix)}€</div>
-        </div>
-        <div class="meta" style="margin-top:10px;opacity:.8">Cliquer pour ouvrir →</div>
+
+    snap.forEach(d=>{
+      const a=d.data();
+      const div=document.createElement("div");
+      div.className="card";
+      div.innerHTML=`
+        <h3>${a.titre}</h3>
+        <p>${a.ville}</p>
+        <p>${a.prix} €</p>
+        <small>${a.duree}</small>
       `;
-      el.addEventListener("click", () => openDetail(idx));
-      list.appendChild(el);
+      list.appendChild(div);
     });
   }
 
-  function closeDetail(){ if(dlg.open) dlg.close(); }
-  closeDlg.addEventListener("click", closeDetail);
-  backBtn.addEventListener("click", closeDetail);
-
-  // ====== REPORTS ======
-  async function sendReport(annonce){
-    const reason = prompt("Pourquoi signalez-vous cette annonce ? (min 5 caractères)");
-    if (!reason || reason.trim().length < 5) {
-      alert("Motif trop court (min 5 caractères).");
-      return;
-    }
-    try {
-      await addDoc(collection(db, "reports"), {
-        annonceId: annonce.id,
-        annonceOwnerUid: annonce.ownerUid || annonce.ownerId || null,
-        annonceTitre: annonce.titre || null,
-        annonceVille: annonce.ville || null,
-        annonceType: annonce.type || null,
-        annoncePrix: annonce.prix ?? null,
-        reason: reason.trim(),
-        reporterUid: currentUser ? currentUser.uid : null,
-        reporterEmail: currentUser ? currentUser.email : null,
-        status: "open",
-        createdAt: serverTimestamp()
-      });
-      alert("✅ Signalement envoyé. Merci !");
-    } catch (e) {
-      console.error(e);
-      alert("❌ Impossible d’envoyer le signalement (rules/connexion).");
-    }
-  }
-
-  // ====== RATING (⭐) ======
-  function renderRateStars(lockedValue = 0, disabled = false){
-    rateStars.innerHTML = "";
-    for(let i=1;i<=5;i++){
-      const b = document.createElement("button");
-      b.className = "btn";
-      b.type = "button";
-      b.textContent = (i <= lockedValue) ? "★" : "☆";
-      b.style.padding = "8px 10px";
-      b.style.fontSize = "18px";
-      b.disabled = disabled;
-      b.onclick = async () => { await submitRating(i); };
-      rateStars.appendChild(b);
-    }
-  }
-
-  async function loadMyRating(annonceId){
-    if(!currentUser) return 0;
-    const ratingRef = doc(db, "annonces_location", annonceId, "ratings", currentUser.uid);
-    const snap = await getDoc(ratingRef);
-    if(!snap.exists()) return 0;
-    return Number(snap.data()?.value || 0);
-  }
-
-  async function submitRating(value){
-    if(!currentDetail) return;
-    if(!currentUser){
-      alert("🔒 Connecte-toi pour noter.");
-      window.location.href = "../auth/login.html";
-      return;
-    }
-    const owner = currentDetail.ownerUid ?? currentDetail.ownerId ?? "";
-    if(owner && currentUser.uid === owner){
-      rateMsg.textContent = "⛔ Tu ne peux pas noter ta propre annonce.";
-      renderRateStars(0, true);
-      return;
-    }
-    try{
-      rateMsg.textContent = "⏳ Enregistrement…";
-      renderRateStars(value, true);
-
-      const annonceRef = doc(db, "annonces_location", currentDetail.id);
-      const ratingRef = doc(db, "annonces_location", currentDetail.id, "ratings", currentUser.uid);
-
-      await runTransaction(db, async (tx) => {
-        const existing = await tx.get(ratingRef);
-        if(existing.exists()) throw new Error("ALREADY_RATED");
-
-        const snap = await tx.get(annonceRef);
-        if(!snap.exists()) throw new Error("NOT_FOUND");
-
-        const a = snap.data() || {};
-        const avg = Number(a.ratingAvg || 0);
-        const count = Number(a.ratingCount || 0);
-        const newCount = count + 1;
-        const newAvg = ((avg * count) + value) / newCount;
-
-        tx.set(ratingRef, { value, createdAt: serverTimestamp() });
-        tx.update(annonceRef, { ratingAvg: newAvg, ratingCount: newCount });
-      });
-
-      rateMsg.textContent = `✅ Merci ! Note enregistrée : ${value}/5`;
-      renderRateStars(value, true);
-      await loadPage("stay");
-    } catch(e){
-      console.error(e);
-      if(String(e?.message || "").includes("ALREADY_RATED")){
-        const myVal = await loadMyRating(currentDetail.id).catch(()=>0);
-        rateMsg.textContent = `✅ Déjà noté : ${myVal}/5`;
-        renderRateStars(myVal || 0, true);
-      } else {
-        rateMsg.textContent = "❌ Erreur (rules / connexion / index).";
-        renderRateStars(0, false);
-      }
-    }
-  }
-
-  // ====== DETAIL ======
-  async function openDetail(index){
-    const a = currentItems[index];
-    if(!a) return;
-    currentDetail = a;
-
-    dTitle.textContent = a.titre || "Annonce";
-    const dureeTxt = a.duree ? ` • ${a.duree}` : "";
-    dMeta.textContent = `${a.ville || ""} • ${a.type || ""}${dureeTxt}`;
-    dStars.textContent = stars(a.ratingAvg || 0, a.ratingCount || 0);
-
-    dPrice.textContent = (a.prix ?? "") + "€";
-    dType.textContent = a.type ?? "";
-    dVille.textContent = a.ville ?? "";
-    dSurface.textContent = a.surface ?? "-";
-    dDesc.textContent = a.description ?? "—";
-
-    // Photos
-    dPhotos.innerHTML = "";
-    const photos = Array.isArray(a.photos) ? a.photos.filter(Boolean).slice(0, 6) : [];
-    if(photos.length === 0){
-      dPhotos.innerHTML = `<div class="meta">Aucune photo.</div>`;
-    } else {
-      photos.forEach((url) => {
-        const ph = document.createElement("div");
-        ph.className = "ph";
-        ph.innerHTML = `<img src="${esc(url)}" alt="Photo annonce">`;
-        dPhotos.appendChild(ph);
-      });
-    }
-
-    // Contact
-    const mail = (a.contactEmail || "").trim();
-    const tel = (a.contactPhone || "").trim();
-    const subject = encodeURIComponent("WAUKLINK — Contact annonce : " + (a.titre || ""));
-    const body = encodeURIComponent(
-      `Bonjour,\n\nJe vous contacte au sujet de votre annonce : ${a.titre || ""}\nVille : ${a.ville || ""}\n\nMon message :\n`
-    );
-
-    btnMail.href = mail ? `mailto:${mail}?subject=${subject}&body=${body}` : "#";
-    btnMail.style.opacity = mail ? "1" : ".5";
-    btnMail.onclick = (e) => { if(!mail){ e.preventDefault(); alert("Email non disponible sur cette annonce."); } };
-
-    if(tel){
-      btnTel.href = `tel:${tel}`;
-      btnTel.style.display = "inline-block";
-    } else {
-      btnTel.style.display = "none";
-    }
-
-    // Signaler
-    btnReport.onclick = async () => { await sendReport(currentDetail); };
-
-    // ====== DROITS + VISIBILITÉ (PRO, SANS CASSER LE RESTE) ======
-    const status = String(a.status || "");
-    const owner = a.ownerUid ?? a.ownerId ?? "";
-    const isOwner = !!currentUser && owner && currentUser.uid === owner;
-    const isAdmin = (currentRole === "admin");
-    const isMod = (currentRole === "moderator");
-    const canModerate = isAdmin || isMod;
-
-    statusLine.textContent = `status: ${status || "?"}`;
-
-    // reset
-    btnEdit.style.display = "none";
-    btnDelete.style.display = "none";
-    btnEditPhotos.style.display = "none";
-
-    // PENDING: owner + admin/mod -> peut aller sur annonce_edit (texte + photos)
-    if ((status === "pending") && (isOwner || canModerate)) {
-      btnEdit.style.display = "inline-block";
-      btnDelete.style.display = isAdmin ? "inline-block" : (isOwner ? "inline-block" : "none");
-      btnEdit.onclick = () => { window.location.href = `../annonce_edit.html?id=${a.id}`; };
-
-      btnDelete.onclick = async () => {
-        if (!confirm("Supprimer cette annonce ?")) return;
-        try {
-          await deleteDoc(doc(db, "annonces_location", a.id));
-          alert("✅ Annonce supprimée !");
-          closeDetail();
-          await loadPage("stay");
-        } catch (e) {
-          console.error(e);
-          alert("❌ Impossible de supprimer (permissions / rules).");
-        }
-      };
-    }
-
-    // ACTIVE: owner + admin/mod -> PHOTOS SEULEMENT (annonce_edit applique déjà les rules)
-    if ((status === "active") && (isOwner || canModerate)) {
-      btnEditPhotos.style.display = "inline-block";
-      btnEditPhotos.onclick = () => { window.location.href = `../annonce_edit.html?id=${a.id}`; };
-    }
-
-    // ⭐ UI note
-    rateMsg.textContent = "";
-    rateWrap.style.display = "flex";
-    let myVal = 0;
-    try { myVal = await loadMyRating(a.id); } catch(e) { myVal = 0; }
-    if(myVal > 0){
-      rateMsg.textContent = `✅ Déjà noté : ${myVal}/5`;
-      renderRateStars(myVal, true);
-    } else {
-      renderRateStars(0, false);
-    }
-
-    dlg.showModal();
-  }
-
-  // ====== QUERY BUILDER (active + filtre duree) ======
-  function makeBaseQuery(){
-    const baseRef = collection(db, "annonces_location");
-    const constraints = [ where("status", "==", "active") ];
-    if (allowedDuree) constraints.push(where("duree", "==", allowedDuree));
-    constraints.push(orderBy("createdAt", "desc"));
-    constraints.push(limit(PER_PAGE));
-    return query(baseRef, ...constraints);
-  }
-  function makeNextQuery(){
-    const baseRef = collection(db, "annonces_location");
-    const constraints = [ where("status", "==", "active") ];
-    if (allowedDuree) constraints.push(where("duree", "==", allowedDuree));
-    constraints.push(orderBy("createdAt", "desc"));
-    constraints.push(startAfter(lastDoc));
-    constraints.push(limit(PER_PAGE));
-    return query(baseRef, ...constraints);
-  }
-  function makePrevQuery(){
-    const baseRef = collection(db, "annonces_location");
-    const constraints = [ where("status", "==", "active") ];
-    if (allowedDuree) constraints.push(where("duree", "==", allowedDuree));
-    constraints.push(orderBy("createdAt", "desc"));
-    cursorStack.pop();
-    const prevCursor = cursorStack[cursorStack.length - 1] || null;
-    if (prevCursor) constraints.push(startAfter(prevCursor));
-    constraints.push(limit(PER_PAGE));
-    return query(baseRef, ...constraints);
-  }
-
-  // ====== LOAD PAGE ======
-  async function loadPage(direction = "stay"){
-    let qy = makeBaseQuery();
-    if(direction === "next" && lastDoc) qy = makeNextQuery();
-    if(direction === "prev") qy = makePrevQuery();
-
-    const snap = await getDocs(qy);
-    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    lastDoc = snap.docs.length ? snap.docs[snap.docs.length - 1] : null;
-
-    if(direction === "next"){
-      if(snap.docs.length) cursorStack.push(snap.docs[0]);
-      page++;
-    } else if(direction === "prev"){
-      page = Math.max(1, page - 1);
-    } else {
-      page = 1;
-      cursorStack = [];
-      if(snap.docs.length) cursorStack.push(snap.docs[0]);
-    }
-
-    const s = (qInput.value || "").toLowerCase().trim();
-    currentItems = s
-      ? items.filter(a => ((a.titre||"")+" "+(a.ville||"")+" "+(a.type||"")+" "+(a.prix||"")).toLowerCase().includes(s))
-      : items;
-
-    renderList(currentItems);
-    pageInfo.textContent = `Page ${page}`;
-    prevBtn.disabled = page <= 1;
-    nextBtn.disabled = items.length < PER_PAGE;
-  }
-
-  // ====== EVENTS ======
-  qInput.addEventListener("input", () => loadPage("stay"));
-  nextBtn.addEventListener("click", () => loadPage("next"));
-  prevBtn.addEventListener("click", () => loadPage("prev"));
-
-  // ====== BOOT ======
-  await loadPage("stay");
+  load();
 </script>
 
 <script type="module" src="../auth/status.js"></script>
-<script type="module" src="../auth/user_sync.js"></script>
 </body>
 </html>
