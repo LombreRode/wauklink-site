@@ -1,22 +1,17 @@
-<!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Accès Administration</title>
-  <link rel="stylesheet" href="../style.css?v=1" />
-</head>
-<body>
-  <div class="container" style="padding:24px">
-    <h2>Accès Administration</h2>
+<script type="module">
+  import { requireModeration } from "../_shared/guard.js";
 
-    <!-- ✅ affiche correctement les retours à la ligne -->
-    <p id="msg" style="opacity:.85; white-space:pre-line">Vérification en cours…</p>
-
-    <p><a href="../index.html">← Retour au site</a></p>
-  </div>
-
-  <!-- ✅ cache-bust fort -->
-  <script type="module" src="./portal.js?v=777"></script>
-</body>
-</html>
+  requireModeration({
+    redirectTo: "../auth/login.html",
+    onLoading: () => {
+      console.log("Vérification en cours...");
+    },
+    onOk: (user, role) => {
+      console.log("OK admin/mod :", user.email, role);
+      // 👉 ici tu peux afficher le portail admin
+    },
+    onFail: (reason) => {
+      console.warn("Accès refusé :", reason);
+    }
+  });
+</script>
