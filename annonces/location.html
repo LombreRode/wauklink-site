@@ -8,7 +8,7 @@
   <style>
     .page { padding: 24px 0; }
     .top{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
-    .meta{opacity:.85;font-size:13px;white-space:pre-line}
+    .meta{opacity:.85;font-size:13px}
     .badge{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14);font-size:12px;opacity:.9}
     .search{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.2);color:#fff}
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:14px}
@@ -38,16 +38,8 @@
     .kvc{border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px;background:rgba(255,255,255,.04)}
     .k{opacity:.75;font-size:12px}
     .v{font-weight:900}
-
-    /* ⭐ rating UI */
-    .ratingBox{margin-top:16px;border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px;background:rgba(255,255,255,.04)}
-    .ratingStars{font-size:22px;display:flex;gap:6px;margin-top:6px;user-select:none}
-    .ratingStars span{cursor:pointer;line-height:1}
-    .ratingStars span:hover{filter:brightness(1.2)}
-    .hidden{display:none!important}
   </style>
 </head>
-
 <body>
 <header class="topbar">
   <div class="container topbar-row">
@@ -69,6 +61,7 @@
     <span class="badge" id="pageBadge">20 annonces / page</span>
   </div>
   <p class="meta" id="pageMeta">Clique sur une annonce pour voir le détail.</p>
+
   <input id="q" class="search" placeholder="Rechercher : ville, type (studio, T2…), prix…" />
   <div id="list" class="grid"></div>
 
@@ -91,7 +84,6 @@
       <div id="dTitle" style="font-weight:900;font-size:18px"></div>
       <div id="dMeta" class="meta"></div>
       <div id="dStars" class="stars"></div>
-      <div id="statusLine" class="meta" style="margin-top:6px"></div>
     </div>
     <button class="closeX" id="closeDlg">✕</button>
   </div>
@@ -109,15 +101,6 @@
       <div id="dDesc" style="margin-top:6px;white-space:pre-wrap"></div>
     </div>
 
-    <!-- ⭐ NOTE (ancienne UI conservée si tu veux l'utiliser) -->
-    <div class="ratingBox hidden" id="ratingBoxOld">
-      <div class="k">Votre note</div>
-      <div id="ratingStars" class="ratingStars" aria-label="Noter cette annonce">
-        <span data-v="1">☆</span><span data-v="2">☆</span><span data-v="3">☆</span><span data-v="4">☆</span><span data-v="5">☆</span>
-      </div>
-      <div id="ratingMsg" class="meta" style="margin-top:6px"></div>
-    </div>
-
     <div style="margin-top:14px">
       <div class="k">Photos (max 6)</div>
       <div id="dPhotos" class="photos"></div>
@@ -129,23 +112,22 @@
     <a id="btnTel" class="btn" href="#" style="text-decoration:none;display:none">📞 Appeler</a>
     <button id="btnReport" class="btn-danger">🚩 Signaler</button>
 
-    <!-- ⭐ Note (utilisateur) (TA VERSION QUI MARCHE) -->
+    <!-- ⭐ Note (utilisateur) -->
     <div id="rateWrap" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <span class="meta">Noter :</span>
       <div id="rateStars" style="display:flex;gap:6px"></div>
       <span id="rateMsg" class="meta"></span>
     </div>
 
-    <!-- ❌ texte : on garde le bouton mais on le cache TOUJOURS -->
+    <!-- ✅ Texte: seulement si pending (owner/mod/admin) -->
     <button id="btnEdit" class="btn" style="display:none">✏️ Modifier</button>
-
-    <!-- 🗑️ supprimer annonce (seulement pending + owner) -->
     <button id="btnDelete" class="btn" style="display:none">🗑️ Supprimer</button>
 
-    <!-- ✅ photos (seulement active + owner) -->
+    <!-- ✅ Photos: seulement si active (owner/mod/admin) -->
     <button id="btnEditPhotos" class="btn" style="display:none">🖼️ Modifier photos</button>
 
     <button id="backBtn" class="btn">↩ Retour aux annonces</button>
+    <span id="statusLine" class="meta" style="width:100%"></span>
   </div>
 </dialog>
 
@@ -168,6 +150,7 @@
   const pageTitle = document.getElementById("pageTitle");
   const pageMeta = document.getElementById("pageMeta");
   const pageBadge = document.getElementById("pageBadge");
+
   document.title = `WAUKLINK — ${dureeLabel}`;
   subTitle.textContent = `Annonces • ${dureeLabel}`;
   pageTitle.textContent = (allowedDuree ? `Offres • ${dureeLabel}` : "Offres Location (toutes durées)");
@@ -183,7 +166,7 @@
   import {
     collection, query, where, orderBy, limit, startAfter, getDocs,
     doc, deleteDoc, addDoc, serverTimestamp,
-    runTransaction, getDoc
+    runTransaction, getDoc, setDoc
   } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
   // ====== UI ======
@@ -206,16 +189,15 @@
   const dSurface = document.getElementById("dSurface");
   const dDesc = document.getElementById("dDesc");
   const dPhotos = document.getElementById("dPhotos");
-  const statusLine = document.getElementById("statusLine");
 
   const btnMail = document.getElementById("btnMail");
   const btnTel = document.getElementById("btnTel");
-  const btnEdit = document.getElementById("btnEdit");          // toujours caché
-  const btnDelete = document.getElementById("btnDelete");      // pending+owner
-  const btnEditPhotos = document.getElementById("btnEditPhotos"); // active+owner
+  const btnEdit = document.getElementById("btnEdit");
+  const btnDelete = document.getElementById("btnDelete");
+  const btnEditPhotos = document.getElementById("btnEditPhotos");
   const btnReport = document.getElementById("btnReport");
+  const statusLine = document.getElementById("statusLine");
 
-  // ⭐ rating UI (ta version)
   const rateStars = document.getElementById("rateStars");
   const rateMsg = document.getElementById("rateMsg");
   const rateWrap = document.getElementById("rateWrap");
@@ -226,9 +208,19 @@
   let cursorStack = [];
   let currentItems = [];
   let currentUser = null;
+  let currentRole = ""; // admin | moderator | ""
   let currentDetail = null;
 
-  onAuthStateChanged(auth, (u) => { currentUser = u || null; });
+  onAuthStateChanged(auth, async (u) => {
+    currentUser = u || null;
+    currentRole = "";
+    if (currentUser) {
+      try {
+        const us = await getDoc(doc(db, "users", currentUser.uid));
+        currentRole = String(us.exists() ? (us.data()?.role || "") : "").toLowerCase();
+      } catch {}
+    }
+  });
 
   // ====== HELPERS ======
   function esc(s){
@@ -280,7 +272,7 @@
     try {
       await addDoc(collection(db, "reports"), {
         annonceId: annonce.id,
-        annonceOwnerUid: annonce.ownerUid || null,
+        annonceOwnerUid: annonce.ownerUid || annonce.ownerId || null,
         annonceTitre: annonce.titre || null,
         annonceVille: annonce.ville || null,
         annonceType: annonce.type || null,
@@ -329,7 +321,8 @@
       window.location.href = "../auth/login.html";
       return;
     }
-    if(currentDetail.ownerUid && currentUser.uid === currentDetail.ownerUid){
+    const owner = currentDetail.ownerUid ?? currentDetail.ownerId ?? "";
+    if(owner && currentUser.uid === owner){
       rateMsg.textContent = "⛔ Tu ne peux pas noter ta propre annonce.";
       renderRateStars(0, true);
       return;
@@ -337,31 +330,35 @@
     try{
       rateMsg.textContent = "⏳ Enregistrement…";
       renderRateStars(value, true);
+
       const annonceRef = doc(db, "annonces_location", currentDetail.id);
       const ratingRef = doc(db, "annonces_location", currentDetail.id, "ratings", currentUser.uid);
+
       await runTransaction(db, async (tx) => {
         const existing = await tx.get(ratingRef);
-        if(existing.exists()){
-          throw new Error("ALREADY_RATED");
-        }
+        if(existing.exists()) throw new Error("ALREADY_RATED");
+
         const snap = await tx.get(annonceRef);
         if(!snap.exists()) throw new Error("NOT_FOUND");
+
         const a = snap.data() || {};
         const avg = Number(a.ratingAvg || 0);
         const count = Number(a.ratingCount || 0);
         const newCount = count + 1;
         const newAvg = ((avg * count) + value) / newCount;
+
         tx.set(ratingRef, { value, createdAt: serverTimestamp() });
         tx.update(annonceRef, { ratingAvg: newAvg, ratingCount: newCount });
       });
+
       rateMsg.textContent = `✅ Merci ! Note enregistrée : ${value}/5`;
       renderRateStars(value, true);
       await loadPage("stay");
     } catch(e){
       console.error(e);
       if(String(e?.message || "").includes("ALREADY_RATED")){
-        rateMsg.textContent = "✅ Tu as déjà noté cette annonce.";
         const myVal = await loadMyRating(currentDetail.id).catch(()=>0);
+        rateMsg.textContent = `✅ Déjà noté : ${myVal}/5`;
         renderRateStars(myVal || 0, true);
       } else {
         rateMsg.textContent = "❌ Erreur (rules / connexion / index).";
@@ -374,7 +371,6 @@
   async function openDetail(index){
     const a = currentItems[index];
     if(!a) return;
-
     currentDetail = a;
 
     dTitle.textContent = a.titre || "Annonce";
@@ -387,8 +383,6 @@
     dVille.textContent = a.ville ?? "";
     dSurface.textContent = a.surface ?? "-";
     dDesc.textContent = a.description ?? "—";
-
-    statusLine.textContent = "status: " + (a.status || "");
 
     // Photos
     dPhotos.innerHTML = "";
@@ -426,35 +420,46 @@
     // Signaler
     btnReport.onclick = async () => { await sendReport(currentDetail); };
 
-    // ✅ DROITS (pro) : texte jamais modifiable ici
-    const isOwner = !!currentUser && (a.ownerUid === currentUser.uid || a.ownerId === currentUser.uid);
-    const isActive = String(a.status || "") === "active";
-    const isPending = String(a.status || "") === "pending";
+    // ====== DROITS + VISIBILITÉ (PRO, SANS CASSER LE RESTE) ======
+    const status = String(a.status || "");
+    const owner = a.ownerUid ?? a.ownerId ?? "";
+    const isOwner = !!currentUser && owner && currentUser.uid === owner;
+    const isAdmin = (currentRole === "admin");
+    const isMod = (currentRole === "moderator");
+    const canModerate = isAdmin || isMod;
 
-    // bouton texte : toujours caché
+    statusLine.textContent = `status: ${status || "?"}`;
+
+    // reset
     btnEdit.style.display = "none";
-    btnEdit.onclick = null;
+    btnDelete.style.display = "none";
+    btnEditPhotos.style.display = "none";
 
-    // supprimer annonce : seulement PENDING + owner (si tu veux)
-    btnDelete.style.display = (isOwner && isPending) ? "inline-block" : "none";
-    btnDelete.onclick = async () => {
-      if (!confirm("Supprimer cette annonce ?")) return;
-      try {
-        await deleteDoc(doc(db, "annonces_location", a.id));
-        alert("✅ Annonce supprimée !");
-        closeDetail();
-        await loadPage("stay");
-      } catch (e) {
-        console.error(e);
-        alert("❌ Impossible de supprimer (permissions / rules).");
-      }
-    };
+    // PENDING: owner + admin/mod -> peut aller sur annonce_edit (texte + photos)
+    if ((status === "pending") && (isOwner || canModerate)) {
+      btnEdit.style.display = "inline-block";
+      btnDelete.style.display = isAdmin ? "inline-block" : (isOwner ? "inline-block" : "none");
+      btnEdit.onclick = () => { window.location.href = `../annonce_edit.html?id=${a.id}`; };
 
-    // bouton photos : seulement ACTIVE + owner
-    btnEditPhotos.style.display = (isOwner && isActive) ? "inline-block" : "none";
-    btnEditPhotos.onclick = () => {
-      window.location.href = `./photos_edit.html?id=${a.id}`;
-    };
+      btnDelete.onclick = async () => {
+        if (!confirm("Supprimer cette annonce ?")) return;
+        try {
+          await deleteDoc(doc(db, "annonces_location", a.id));
+          alert("✅ Annonce supprimée !");
+          closeDetail();
+          await loadPage("stay");
+        } catch (e) {
+          console.error(e);
+          alert("❌ Impossible de supprimer (permissions / rules).");
+        }
+      };
+    }
+
+    // ACTIVE: owner + admin/mod -> PHOTOS SEULEMENT (annonce_edit applique déjà les rules)
+    if ((status === "active") && (isOwner || canModerate)) {
+      btnEditPhotos.style.display = "inline-block";
+      btnEditPhotos.onclick = () => { window.location.href = `../annonce_edit.html?id=${a.id}`; };
+    }
 
     // ⭐ UI note
     rateMsg.textContent = "";
@@ -471,7 +476,7 @@
     dlg.showModal();
   }
 
-  // ====== QUERY BUILDER (avec filtre duree) ======
+  // ====== QUERY BUILDER (active + filtre duree) ======
   function makeBaseQuery(){
     const baseRef = collection(db, "annonces_location");
     const constraints = [ where("status", "==", "active") ];
@@ -501,7 +506,7 @@
     return query(baseRef, ...constraints);
   }
 
-  // ====== LOAD PAGE (pagination) ======
+  // ====== LOAD PAGE ======
   async function loadPage(direction = "stay"){
     let qy = makeBaseQuery();
     if(direction === "next" && lastDoc) qy = makeNextQuery();
