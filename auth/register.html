@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Inscription – WAUKLINK</title>
+  <title>Connexion – WAUKLINK</title>
   <link rel="stylesheet" href="auth.css">
   <style>
     #msg{
@@ -19,49 +19,32 @@
 
 <div class="container">
   <div class="card">
-    <h1>Inscription</h1>
+    <h1>Connexion</h1>
 
-    <form id="registerForm" autocomplete="off">
-      <input name="prenom" placeholder="Prénom" required>
-      <input name="nom" placeholder="Nom" required>
-      <input name="telephone" placeholder="Téléphone" required>
-      <input name="adresse" placeholder="Adresse postale" required>
-
-      <div class="row">
-        <input name="cp" placeholder="Code postal" required>
-        <input name="ville" placeholder="Ville" required>
-      </div>
-
-      <input id="email" type="email" name="email" placeholder="Email" required autocomplete="off">
-      <input type="password" name="password" placeholder="Mot de passe" required minlength="6" autocomplete="new-password">
-
-      <label style="display:flex;gap:8px;align-items:center;margin-top:10px;">
-        <input type="checkbox" required>
-        J’accepte les <a href="../legal/index.html" target="_blank" rel="noopener">CGU</a>
-      </label>
-
-      <button class="btn" type="submit">Créer mon compte</button>
+    <form id="loginForm" autocomplete="off">
+      <input id="email" type="email" placeholder="Email" required>
+      <input id="password" type="password" placeholder="Mot de passe" required>
+      <button class="btn" type="submit">Se connecter</button>
     </form>
+
+    <div class="small" style="margin-top:12px;">
+      Pas de compte ? <a href="register.html">Créer un compte</a>
+    </div>
 
     <div id="msg"></div>
   </div>
 </div>
 
 <script type="module">
-  // ✅ synchro user (ok, fichier dans /auth)
-  import "./user_sync.js";
-
-  // ✅ firebase CENTRALISÉ
-  import { auth, db } from "../_shared/firebase.js";
-
-  import { createUserWithEmailAndPassword } from
+  // 🔥 FIREBASE CENTRALISÉ (CHEMIN CRITIQUE)
+  import { auth } from "../_shared/firebase.js";
+  import { signInWithEmailAndPassword } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-  import { doc, setDoc, serverTimestamp } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
+  const form = document.getElementById("loginForm");
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
   const msg = document.getElementById("msg");
-  const form = document.getElementById("registerForm");
 
   function show(text, ok=false){
     msg.style.display = "block";
@@ -70,50 +53,25 @@
     msg.textContent = text;
   }
 
-  // anti-autofill
-  window.addEventListener("load", () => {
-    const emailEl = document.getElementById("email");
-    if (emailEl) emailEl.value = "";
-  });
-
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    show("⏳ Création du compte…", true);
-
-    const data = new FormData(form);
-    const email = String(data.get("email") || "").trim();
-    const password = String(data.get("password") || "");
+    show("⏳ Connexion…", true);
 
     try {
-      const cred = await createUserWithEmailAndPassword(auth, email, password);
-
-      await setDoc(
-        doc(db, "users", cred.user.uid),
-        {
-          uid: cred.user.uid,
-          email,
-          prenom: String(data.get("prenom") || "").trim(),
-          nom: String(data.get("nom") || "").trim(),
-          telephone: String(data.get("telephone") || "").trim(),
-          adresse: String(data.get("adresse") || "").trim(),
-          cp: String(data.get("cp") || "").trim(),
-          ville: String(data.get("ville") || "").trim(),
-          role: "user",
-          cguAccepted: true,
-          createdAt: serverTimestamp(),
-          lastLoginAt: serverTimestamp()
-        },
-        { merge: true }
+      await signInWithEmailAndPassword(
+        auth,
+        emailInput.value.trim(),
+        passwordInput.value.trim()
       );
 
-      show("✅ Compte créé ! Redirection…", true);
+      show("✅ Connecté ! Redirection…", true);
       setTimeout(() => {
         window.location.href = "../index.html";
-      }, 700);
+      }, 400);
 
     } catch (err) {
       console.error(err);
-      show("❌ " + (err?.code || "") + " — " + (err?.message || "Erreur inconnue"));
+      show("❌ " + err.code);
     }
   });
 </script>
