@@ -3,384 +3,206 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WAUKLINK — Modifier annonce</title>
-  <link rel="stylesheet" href="./style.css?v=1" />
+  <title>WAUKLINK — Modifier les photos</title>
+
+  <link rel="stylesheet" href="style.css?v=1" />
+
   <style>
-    .page{padding:24px 0}
-    .card{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:16px;padding:14px}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .btn{padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;cursor:pointer}
-    .btn-danger{border:1px solid rgba(255,80,80,.45);background:rgba(255,80,80,.12)}
-    .btn-warn{border:1px solid rgba(245,158,11,.45);background:rgba(245,158,11,.12)}
-    .btn:disabled{opacity:.5;cursor:not-allowed}
-    input, textarea{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.2);color:#fff}
-    label{display:block;font-weight:800;margin:10px 0 6px}
-    .meta{opacity:.85;font-size:13px;white-space:pre-line}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:12px}
-    .photo{border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px;background:rgba(255,255,255,.04)}
-    .photo img{width:100%;height:140px;object-fit:cover;border-radius:10px;border:1px solid rgba(255,255,255,.12)}
-    .hidden{display:none!important}
-    .hr{border:none;height:1px;background:rgba(255,255,255,.12);margin:16px 0}
-    .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.14);font-size:12px;opacity:.95}
-    .pill-ok{border-color:rgba(80,255,160,.35);background:rgba(80,255,160,.12)}
-    .pill-warn{border-color:rgba(245,158,11,.45);background:rgba(245,158,11,.12)}
+    .wrap{ padding:40px 0 80px; }
+    .card{
+      max-width:820px;
+      margin:auto;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:18px;
+      padding:20px;
+      box-shadow:0 18px 40px rgba(0,0,0,.35);
+    }
+    .thumbs{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .thumb{
+      width:110px;
+      height:110px;
+      object-fit:cover;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+    }
+    .meta{
+      font-size:13px;
+      opacity:.8;
+      margin-top:10px;
+    }
+    .actions{
+      display:flex;
+      gap:10px;
+      margin-top:20px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
   </style>
 </head>
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
-      <div class="subtitle">Modifier une annonce</div>
+      <div class="subtitle">Modifier les photos</div>
     </div>
-    <nav class="row">
-      <a class="btn" href="./index.html" style="text-decoration:none">← Accueil</a>
-      <a class="btn" href="./admin/annonces.html" style="text-decoration:none">🛠️ Admin</a>
+    <nav>
+      <a class="btn" href="index.html">← Accueil</a>
     </nav>
   </div>
 </header>
 
-<main class="container page">
+<main class="container wrap">
   <div class="card">
-    <div class="meta" id="msg">Chargement…</div>
+    <h2>Photos de l’annonce</h2>
+    <p class="meta">
+      ✔ Maximum 6 photos<br>
+      ✔ Visible seulement si annonce <b>ACTIVE</b>
+    </p>
 
-    <div class="row" style="margin:10px 0 0">
-      <span class="pill" id="statusPill">status: ?</span>
-      <span class="pill" id="rolePill">role: ?</span>
-      <span class="pill" id="ownerPill">owner: ?</span>
-      <span class="pill" id="textPill">texte: ?</span>
-      <span class="pill" id="canPill">photos: ?</span>
+    <input id="photosInput" type="file" accept="image/*" multiple />
+
+    <div id="preview" class="thumbs"></div>
+
+    <div id="msg" class="meta"></div>
+
+    <div class="actions">
+      <button class="btn" onclick="history.back()">Annuler</button>
+      <button id="saveBtn" class="btn">💾 Enregistrer</button>
     </div>
-
-    <form id="form" class="hidden">
-      <label>Titre</label>
-      <input id="titre" required />
-
-      <label>Ville</label>
-      <input id="ville" required />
-
-      <label>Type</label>
-      <input id="type" required />
-
-      <label>Prix (€)</label>
-      <input id="prix" type="number" min="0" step="1" required />
-
-      <label>Description</label>
-      <textarea id="description" rows="5"></textarea>
-
-      <div class="row" style="margin-top:12px">
-        <button class="btn" type="submit" id="btnSaveText">💾 Enregistrer texte</button>
-      </div>
-
-      <hr class="hr">
-
-      <div class="row" style="justify-content:space-between;align-items:flex-start">
-        <div>
-          <div style="font-weight:900">Photos</div>
-          <div class="meta">
-            - Max 6 photos.
-            - “Remplacer toutes les photos” supprime les anciennes + upload les nouvelles.
-            - “Supprimer” enlève Storage + Firestore.
-          </div>
-        </div>
-        <div class="row">
-          <input id="files" type="file" accept="image/*" multiple />
-          <button class="btn btn-warn" type="button" id="btnReplaceAll">🔁 Remplacer toutes les photos</button>
-        </div>
-      </div>
-
-      <div id="photos" class="grid"></div>
-    </form>
   </div>
 </main>
 
 <script type="module">
-  import { auth, db, storage } from "./auth/firebase.js";
-  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-  import { doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-  import { ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
+  import { auth, db } from "./_shared/firebase.js";
+  import { onAuthStateChanged } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import { doc, getDoc, updateDoc, serverTimestamp } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  import { getStorage, ref, uploadBytes, getDownloadURL } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
+  const params = new URLSearchParams(location.search);
+  const annonceId = params.get("id");
+
+  const input = document.getElementById("photosInput");
+  const preview = document.getElementById("preview");
   const msg = document.getElementById("msg");
-  const form = document.getElementById("form");
+  const saveBtn = document.getElementById("saveBtn");
 
-  const statusPill = document.getElementById("statusPill");
-  const rolePill = document.getElementById("rolePill");
-  const ownerPill = document.getElementById("ownerPill");
-  const textPill = document.getElementById("textPill");
-  const canPill = document.getElementById("canPill");
-
-  const titre = document.getElementById("titre");
-  const ville = document.getElementById("ville");
-  const type = document.getElementById("type");
-  const prix = document.getElementById("prix");
-  const description = document.getElementById("description");
-
-  const btnSaveText = document.getElementById("btnSaveText");
-  const files = document.getElementById("files");
-  const btnReplaceAll = document.getElementById("btnReplaceAll");
-  const photosEl = document.getElementById("photos");
-
-  function show(t){ msg.textContent = t || ""; }
-  function esc(s){
-    return String(s ?? "").replace(/[&<>"']/g, m=>({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-    }[m]));
-  }
-
-  const annonceId = new URLSearchParams(location.search).get("id");
-  if (!annonceId) {
-    show("❌ annonceId manquant. Exemple : annonce_edit.html?id=ABC123");
-    throw new Error("Missing annonceId");
-  }
-
-  const annonceRef = doc(db, "annonces_location", annonceId);
-
+  const storage = getStorage();
+  let files = [];
   let currentUser = null;
-  let currentRole = "";
-  let annonceData = null;
+  let annonce = null;
+  let role = "";
 
-  let canEditPhotos = false;
-  let canEditText = false;
+  function setMsg(t){ msg.textContent = t || ""; }
 
-  function ownerUid(data){
-    return (data && (data.ownerUid || data.ownerId)) ? (data.ownerUid || data.ownerId) : "";
-  }
-
-  async function loadRole(uid){
-    const uref = doc(db, "users", uid);
-    const usnap = await getDoc(uref);
-    const data = usnap.exists() ? usnap.data() : {};
-    return String(data?.role || "").toLowerCase();
+  function previewFiles(list){
+    preview.innerHTML="";
+    list.forEach(f=>{
+      const img=document.createElement("img");
+      img.className="thumb";
+      img.src=URL.createObjectURL(f);
+      preview.appendChild(img);
+    });
   }
 
   function safeExt(file){
-    const ext = (file?.name?.split(".").pop() || "jpg").toLowerCase();
-    const clean = ext.replace(/[^a-z0-9]/g,"");
-    return clean || "jpg";
+    const e=(file.name.split(".").pop()||"jpg").toLowerCase();
+    return e.replace(/[^a-z0-9]/g,"") || "jpg";
   }
 
-  function storagePath(annonceId, index, file){
-    return `annonces_location/${annonceId}/p${index+1}.${safeExt(file)}`;
-  }
+  onAuthStateChanged(auth, async (u)=>{
+    if(!u){
+      alert("Connexion requise");
+      location.href="auth/login.html";
+      return;
+    }
+    currentUser=u;
 
-  function setPill(el, text, mode){
-    el.textContent = text;
-    el.classList.remove("pill-ok","pill-warn");
-    if (mode === "ok") el.classList.add("pill-ok");
-    if (mode === "warn") el.classList.add("pill-warn");
-  }
-
-  function renderPhotos(urls, paths){
-    photosEl.innerHTML = "";
-    const u = Array.isArray(urls) ? urls : [];
-    const p = Array.isArray(paths) ? paths : [];
-
-    if (!u.length) {
-      photosEl.innerHTML = `<div class="meta">Aucune photo.</div>`;
+    const snap = await getDoc(doc(db,"annonces_location",annonceId));
+    if(!snap.exists()){
+      setMsg("❌ Annonce introuvable");
+      saveBtn.disabled=true;
       return;
     }
 
-    u.forEach((url, idx) => {
-      const path = p[idx] || "";
-      const div = document.createElement("div");
-      div.className = "photo";
-      div.innerHTML = `
-        <img src="${esc(url)}" alt="photo ${idx+1}">
-        <div class="row" style="margin-top:10px;justify-content:space-between">
-          <div class="meta">#${idx+1}</div>
-          <button class="btn btn-danger" type="button" data-del="${idx}" ${canEditPhotos ? "" : "disabled"}>
-            🗑️ Supprimer
-          </button>
-        </div>
-        <div class="meta" style="margin-top:8px;opacity:.7">${esc(path)}</div>
-      `;
+    annonce = snap.data();
+    if(annonce.status!=="active"){
+      setMsg("❌ Photos modifiables uniquement si annonce ACTIVE");
+      saveBtn.disabled=true;
+      return;
+    }
 
-      div.querySelector("[data-del]").addEventListener("click", async () => {
-        if (!canEditPhotos) return;
-        if (!confirm("Supprimer cette photo ?")) return;
-        try {
-          show("⏳ Suppression…");
-          await deletePhotoAtIndex(idx);
-          show("✅ Photo supprimée.");
-        } catch (e) {
-          console.error(e);
-          show("❌ " + (e?.message || "Erreur suppression"));
-        }
+    const usnap = await getDoc(doc(db,"users",u.uid));
+    role = usnap.exists() ? usnap.data().role : "";
+
+    const isOwner =
+      annonce.ownerUid === u.uid || annonce.ownerId === u.uid;
+    const allowed =
+      isOwner || role==="admin" || role==="moderator";
+
+    if(!allowed){
+      setMsg("❌ Accès refusé");
+      saveBtn.disabled=true;
+    }
+  });
+
+  input.addEventListener("change",()=>{
+    files=[...input.files].slice(0,6);
+    previewFiles(files);
+  });
+
+  saveBtn.onclick = async ()=>{
+    if(!files.length){
+      setMsg("❌ Aucune photo sélectionnée");
+      return;
+    }
+
+    try{
+      saveBtn.disabled=true;
+      setMsg("⏳ Upload des photos…");
+
+      const urls=[];
+      const paths=[];
+
+      for(let i=0;i<files.length;i++){
+        const f=files[i];
+        const path=`annonces_location/${annonceId}/p${i+1}.${safeExt(f)}`;
+        const r=ref(storage,path);
+        await uploadBytes(r,f,{contentType:f.type});
+        const url=await getDownloadURL(r);
+        urls.push(url);
+        paths.push(path);
+      }
+
+      await updateDoc(doc(db,"annonces_location",annonceId),{
+        photos:urls,
+        photoPaths:paths,
+        updatedAt:serverTimestamp()
       });
 
-      photosEl.appendChild(div);
-    });
-  }
+      setMsg("✅ Photos mises à jour");
+      setTimeout(()=>history.back(),800);
 
-  function lockTextUI(locked){
-    const inputs = [titre, ville, type, prix, description];
-    inputs.forEach(el => el.disabled = locked);
-    btnSaveText.disabled = locked;
-    setPill(textPill, "texte: " + (locked ? "BLOQUÉ" : "OK"), locked ? "warn" : "ok");
-  }
-
-  async function reloadAnnonce(){
-    const snap = await getDoc(annonceRef);
-    if (!snap.exists()) {
-      show("❌ Annonce introuvable.");
-      form.classList.add("hidden");
-      return;
+    }catch(e){
+      console.error(e);
+      setMsg("❌ Erreur upload (voir console)");
+      saveBtn.disabled=false;
     }
-
-    annonceData = snap.data() || {};
-    const status = String(annonceData.status || "");
-    const o = ownerUid(annonceData);
-
-    setPill(statusPill, "status: " + (status || "?"), status === "active" ? "ok" : "warn");
-    ownerPill.textContent = `owner: ${o || "?"}`;
-
-    // champs
-    titre.value = annonceData.titre || "";
-    ville.value = annonceData.ville || "";
-    type.value = annonceData.type || "";
-    prix.value = annonceData.prix ?? 0;
-    description.value = annonceData.description || "";
-
-    // droits
-    const isOwner = !!currentUser && (o === currentUser.uid);
-    const isAdmin = currentRole === "admin";
-    const isMod = currentRole === "moderator";
-
-    canEditPhotos = !!currentUser && (isOwner || isAdmin || isMod);
-    // pending: owner peut texte; active: texte BLOQUÉ (même si owner)
-    canEditText = !!currentUser && isOwner && status === "pending";
-
-    setPill(canPill, "photos: " + (canEditPhotos ? "OK" : "NO"), canEditPhotos ? "ok" : "warn");
-
-    // UI lock texte selon status
-    lockTextUI(!canEditText);
-
-    // boutons photos
-    btnReplaceAll.disabled = !canEditPhotos;
-
-    renderPhotos(annonceData.photos || [], annonceData.photoPaths || []);
-    form.classList.remove("hidden");
-    show(`✅ Annonce chargée: ${annonceId}`);
-  }
-
-  async function saveText(){
-    await updateDoc(annonceRef, {
-      titre: titre.value.trim(),
-      ville: ville.value.trim(),
-      type: type.value.trim(),
-      prix: Number(prix.value || 0),
-      description: description.value.trim(),
-      updatedAt: serverTimestamp()
-    });
-  }
-
-  async function replaceAllPhotos(fileList){
-    if (!canEditPhotos) throw new Error("Pas autorisé pour les photos");
-
-    const arr = Array.from(fileList).slice(0, 6);
-    if (!arr.length) throw new Error("Aucun fichier");
-
-    const oldPaths = Array.isArray(annonceData.photoPaths) ? annonceData.photoPaths : [];
-    for (const p of oldPaths) {
-      try { await deleteObject(ref(storage, p)); } catch(_) {}
-    }
-
-    const newUrls = [];
-    const newPaths = [];
-    for (let i = 0; i < arr.length; i++) {
-      const f = arr[i];
-      show(`⏳ Upload photo ${i+1}/${arr.length}…`);
-      const p = storagePath(annonceId, i, f);
-      const sref = ref(storage, p);
-      await uploadBytes(sref, f, { contentType: f.type || "image/jpeg" });
-      const url = await getDownloadURL(sref);
-      newPaths.push(p);
-      newUrls.push(url);
-    }
-
-    await updateDoc(annonceRef, {
-      photos: newUrls,
-      photoPaths: newPaths,
-      updatedAt: serverTimestamp()
-    });
-
-    await reloadAnnonce();
-  }
-
-  async function deletePhotoAtIndex(idx){
-    if (!canEditPhotos) throw new Error("Pas autorisé pour les photos");
-
-    const urls = Array.isArray(annonceData.photos) ? annonceData.photos.slice() : [];
-    const paths = Array.isArray(annonceData.photoPaths) ? annonceData.photoPaths.slice() : [];
-
-    const p = paths[idx];
-    if (!p) throw new Error("photoPaths manquant (impossible de supprimer proprement)");
-
-    await deleteObject(ref(storage, p));
-
-    urls.splice(idx, 1);
-    paths.splice(idx, 1);
-
-    await updateDoc(annonceRef, {
-      photos: urls,
-      photoPaths: paths,
-      updatedAt: serverTimestamp()
-    });
-
-    await reloadAnnonce();
-  }
-
-  onAuthStateChanged(auth, async (u) => {
-    currentUser = u || null;
-    if (!currentUser) {
-      show("❌ Non connecté. Redirection…");
-      setTimeout(() => location.href = "./auth/login.html", 400);
-      return;
-    }
-
-    try {
-      currentRole = await loadRole(currentUser.uid);
-      rolePill.textContent = `role: ${currentRole || ""}`;
-    } catch {
-      currentRole = "";
-      rolePill.textContent = "role: ?";
-    }
-
-    await reloadAnnonce();
-  });
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    if (!canEditText) return alert("Texte bloqué (annonce publiée).");
-    try {
-      show("⏳ Enregistrement du texte…");
-      await saveText();
-      show("✅ Texte enregistré.");
-      await reloadAnnonce();
-    } catch (err) {
-      console.error(err);
-      show("❌ Erreur enregistrement texte (console).");
-    }
-  });
-
-  btnReplaceAll.addEventListener("click", async () => {
-    const fl = files.files;
-    if (!fl || !fl.length) return alert("Choisis des photos d’abord.");
-    if (!confirm("Remplacer TOUTES les photos ? (les anciennes seront supprimées)")) return;
-
-    btnReplaceAll.disabled = true;
-    try {
-      show("⏳ Remplacement des photos…");
-      await replaceAllPhotos(fl);
-      files.value = "";
-      show("✅ Photos remplacées.");
-    } catch (err) {
-      console.error(err);
-      show("❌ " + (err?.message || "Erreur upload (rules Storage ?)"));
-    } finally {
-      btnReplaceAll.disabled = !canEditPhotos;
-    }
-  });
+  };
 </script>
+
+<script type="module" src="./auth/status.js"></script>
+<script type="module" src="./auth/user_sync.js"></script>
+
 </body>
 </html>
