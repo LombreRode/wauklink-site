@@ -1,58 +1,194 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <title>Admin — Annonces</title>
-  <link rel="stylesheet" href="../style.css">
-</head>
-<body>
-<h1>Annonces à valider</h1>
-<div id="list">Chargement…</div>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WAUKLINK — Admin • Annonces</title>
 
+  <!-- STYLE GLOBAL -->
+  <link rel="stylesheet" href="../style.css?v=1" />
+
+  <style>
+    .page{padding:24px 0}
+    .meta{opacity:.85;font-size:13px}
+    table{width:100%;border-collapse:collapse;margin-top:14px}
+    th,td{
+      padding:10px;
+      border-bottom:1px solid rgba(255,255,255,.15);
+      text-align:left;
+      vertical-align:top;
+    }
+    th{opacity:.8}
+    .row-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .btn{
+      padding:8px 10px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.2);
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      cursor:pointer;
+    }
+    .btn-ok{
+      border-color:rgba(80,255,160,.35);
+      background:rgba(80,255,160,.12);
+    }
+    .btn-danger{
+      border-color:rgba(255,80,80,.45);
+      background:rgba(255,80,80,.15);
+    }
+    .pill{
+      display:inline-block;
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      font-size:12px;
+      opacity:.9;
+    }
+  </style>
+</head>
+
+<body>
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Admin / Modération — Annonces à valider</div>
+    </div>
+    <nav style="display:flex;gap:10px;flex-wrap:wrap">
+      <a class="btn" href="./index.html">← Dashboard</a>
+      <a class="btn" href="./reports.html">🚩 Signalements</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container page">
+  <div class="meta" id="msg">Vérification des droits…</div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Titre</th>
+        <th>Ville</th>
+        <th>Type</th>
+        <th>Prix</th>
+        <th>Owner</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="rows">
+      <tr><td colspan="7" class="meta">Chargement…</td></tr>
+    </tbody>
+  </table>
+</main>
+
+<!-- ================= SCRIPTS ================= -->
 <script type="module">
   import { db } from "../_shared/firebase.js";
   import { requireModeration } from "../_shared/guard.js";
   import {
-    collection, query, where, getDocs, doc, updateDoc
+    collection, query, where, orderBy, getDocs,
+    doc, updateDoc
   } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  const list = document.getElementById("list");
+  const rows = document.getElementById("rows");
+  const msg = document.getElementById("msg");
 
-  async function load() {
-    list.textContent = "Chargement…";
-    const q = query(
+  function setMsg(t){ msg.textContent = t || ""; }
+
+  async function loadPending(){
+    setMsg("⏳ Chargement des annonces en attente…");
+    rows.innerHTML = "";
+
+    const qy = query(
       collection(db, "annonces_location"),
-      where("status", "==", "pending")
+      where("status", "==", "pending"),
+      orderBy("createdAt", "desc")
     );
-    const snap = await getDocs(q);
 
-    list.innerHTML = "";
+    const snap = await getDocs(qy);
+
     if (snap.empty) {
-      list.textContent = "Aucune annonce en attente.";
+      rows.innerHTML = `
+        <tr>
+          <td colspan="7" class="meta">✅ Aucune annonce en attente.</td>
+        </tr>
+      `;
+      setMsg("Tout est à jour.");
       return;
     }
 
+    setMsg(`📋 ${snap.size} annonce(s) en attente de validation`);
+
     snap.forEach(d => {
       const a = d.data();
-      const div = document.createElement("div");
-      div.innerHTML = `
-        <b>${a.titre || "Annonce"}</b>
-        <button>Valider</button>
-        <button>Refuser</button>
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td><b>${a.titre || "Annonce"}</b></td>
+        <td>${a.ville || "-"}</td>
+        <td>${a.type || "-"}</td>
+        <td>${a.prix ?? "-"} €</td>
+        <td class="meta">${a.ownerEmail || a.ownerUid || "-"}</td>
+        <td><span class="pill">${a.status}</span></td>
+        <td>
+          <div class="row-actions">
+            <button class="btn btn-ok">Valider</button>
+            <button class="btn btn-danger">Refuser</button>
+          </div>
+        </td>
       `;
-      const [ok,no] = div.querySelectorAll("button");
-      ok.onclick = () => updateDoc(doc(db,"annonces_location",d.id),{status:"active"}).then(load);
-      no.onclick = () => updateDoc(doc(db,"annonces_location",d.id),{status:"removed"}).then(load);
-      list.appendChild(div);
+
+      const [btnOk, btnNo] = tr.querySelectorAll("button");
+
+      btnOk.onclick = async () => {
+        if (!confirm("Valider cette annonce ?")) return;
+        try {
+          await updateDoc(doc(db, "annonces_location", d.id), {
+            status: "active"
+          });
+          loadPending();
+        } catch (e) {
+          console.error(e);
+          alert("❌ Erreur validation (rules Firestore ?)");
+        }
+      };
+
+      btnNo.onclick = async () => {
+        if (!confirm("Refuser cette annonce ? (status: removed)")) return;
+        try {
+          await updateDoc(doc(db, "annonces_location", d.id), {
+            status: "removed"
+          });
+          loadPending();
+        } catch (e) {
+          console.error(e);
+          alert("❌ Erreur refus (rules Firestore ?)");
+        }
+      };
+
+      rows.appendChild(tr);
     });
   }
 
+  // 🔐 PROTECTION RÔLE
   requireModeration({
     redirectTo: "../index.html",
-    onOk: load
+    onLoading: () => setMsg("🔐 Vérification du rôle…"),
+    onOk: () => loadPending(),
+    onFail: () => {
+      setMsg("⛔ Accès refusé.");
+      rows.innerHTML = "";
+    }
   });
 </script>
 
+<!-- BARRE LOGIN -->
 <script type="module" src="../auth/status.js"></script>
+
 </body>
 </html>
