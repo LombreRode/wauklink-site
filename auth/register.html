@@ -2,115 +2,58 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Inscription – WAUKLINK</title>
-  <link rel="stylesheet" href="auth.css">
-  <style>
-    #msg{
-      margin-top:12px;
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.14);
-      display:none;
-    }
-  </style>
+  <link rel="stylesheet" href="./auth.css">
 </head>
 <body>
 
-<div class="container">
-  <div class="card">
-    <h1>Inscription</h1>
+<div class="container card">
+  <h1>Inscription</h1>
 
-    <form id="registerForm" autocomplete="off">
-      <input name="prenom" placeholder="Prénom" required>
-      <input name="nom" placeholder="Nom" required>
-      <input name="telephone" placeholder="Téléphone" required>
-      <input name="adresse" placeholder="Adresse postale" required>
+  <form id="registerForm">
+    <input name="email" type="email" placeholder="Email" required>
+    <input name="password" type="password" placeholder="Mot de passe" required minlength="6">
+    <button class="btn" type="submit">Créer le compte</button>
+  </form>
 
-      <div class="row">
-        <input name="cp" placeholder="Code postal" required>
-        <input name="ville" placeholder="Ville" required>
-      </div>
-
-      <input id="email" name="email" type="email" placeholder="Email" required autocomplete="off">
-      <input name="password" type="password" placeholder="Mot de passe" required minlength="6" autocomplete="new-password">
-
-      <label style="display:flex;gap:8px;align-items:center;margin-top:10px;">
-        <input type="checkbox" required>
-        J’accepte les <a href="../legal/index.html" target="_blank">CGU</a>
-      </label>
-
-      <button class="btn" type="submit">Créer mon compte</button>
-    </form>
-
-    <div id="msg"></div>
-  </div>
+  <p id="msg" class="msg"></p>
 </div>
 
 <script type="module">
-  // ✅ synchro user (fichier dans /auth)
-  import "./user_sync.js";
-
-  // ✅ Firebase CENTRALISÉ
   import { auth, db } from "../_shared/firebase.js";
-
   import { createUserWithEmailAndPassword } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
   import { doc, setDoc, serverTimestamp } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
   const form = document.getElementById("registerForm");
-  const msg = document.getElementById("msg");
-
-  function show(text, ok=false){
-    msg.style.display = "block";
-    msg.style.borderColor = ok
-      ? "rgba(34,197,94,.35)"
-      : "rgba(239,68,68,.35)";
-    msg.style.background = ok
-      ? "rgba(34,197,94,.10)"
-      : "rgba(239,68,68,.10)";
-    msg.textContent = text;
-  }
+  const msg  = document.getElementById("msg");
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    show("⏳ Création du compte…", true);
+    msg.textContent = "Création du compte…";
 
     const data = new FormData(form);
-    const email = String(data.get("email") || "").trim();
-    const password = String(data.get("password") || "");
 
     try {
-      const cred = await createUserWithEmailAndPassword(auth, email, password);
-
-      await setDoc(
-        doc(db, "users", cred.user.uid),
-        {
-          uid: cred.user.uid,
-          email,
-          prenom: String(data.get("prenom") || "").trim(),
-          nom: String(data.get("nom") || "").trim(),
-          telephone: String(data.get("telephone") || "").trim(),
-          adresse: String(data.get("adresse") || "").trim(),
-          cp: String(data.get("cp") || "").trim(),
-          ville: String(data.get("ville") || "").trim(),
-          role: "user",
-          cguAccepted: true,
-          createdAt: serverTimestamp(),
-          lastLoginAt: serverTimestamp()
-        },
-        { merge: true }
+      const cred = await createUserWithEmailAndPassword(
+        auth,
+        data.get("email"),
+        data.get("password")
       );
 
-      show("✅ Compte créé ! Redirection…", true);
-      setTimeout(() => {
-        window.location.href = "../index.html";
-      }, 700);
+      // 🔥 DOCUMENT USER AVEC ROLE
+      await setDoc(doc(db, "users", cred.user.uid), {
+        uid: cred.user.uid,
+        email: data.get("email"),
+        role: "user",
+        createdAt: serverTimestamp(),
+        lastLoginAt: serverTimestamp()
+      });
 
+      location.href = "../index.html";
     } catch (err) {
-      console.error(err);
-      show("❌ " + (err.code || err.message));
+      msg.textContent = "❌ " + err.message;
     }
   });
 </script>
