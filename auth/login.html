@@ -5,92 +5,59 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Connexion – WAUKLINK</title>
   <link rel="stylesheet" href="auth.css">
-  <style>
-    #msg{
-      margin-top:12px;
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.14);
-      display:none;
-    }
-  </style>
 </head>
 <body>
+
 <div class="container">
   <div class="card">
     <h1>Connexion</h1>
 
-    <form id="loginForm" autocomplete="off">
-      <!-- anti-autofill -->
-      <input type="text" style="display:none">
-      <input type="password" style="display:none">
-
+    <form id="loginForm">
       <input
         id="email"
         type="email"
-        name="email"
         placeholder="Email"
         required
-        autocomplete="off"
       >
-
       <input
         id="password"
         type="password"
-        name="password"
         placeholder="Mot de passe"
         required
-        minlength="6"
-        autocomplete="current-password"
       >
-
-      <button class="btn" type="submit">Se connecter</button>
+      <button type="submit">Se connecter</button>
     </form>
 
     <div class="small" style="margin-top:12px;">
       Pas de compte ? <a href="register.html">Créer un compte</a>
     </div>
 
-    <!-- ✅ Mot de passe oublié -->
-    <div class="small" style="margin-top:10px;">
-      <a href="#" id="forgot">Mot de passe oublié ?</a>
-    </div>
-
-    <div id="msg"></div>
+    <div id="msg" style="margin-top:12px;color:#ffb4b4;"></div>
   </div>
 </div>
 
 <script type="module">
-  import { auth } from "../_shared/firebase.js";
-  import { signInWithEmailAndPassword } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import { auth } from "./firebase.js";
+  import {
+    signInWithEmailAndPassword
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-  const form = document.querySelector("form");
-  const emailInput = document.querySelector("input[type='email']");
-  const passwordInput = document.querySelector("input[type='password']");
-  const button = document.querySelector("button");
+  const form = document.getElementById("loginForm");
+  const msg = document.getElementById("msg");
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    msg.textContent = "";
 
-    const email = emailInput.value.trim();
-    const password = passwordInput.value.trim();
-
-    if (!email || !password) {
-      alert("Email ou mot de passe manquant");
-      return;
-    }
-
-    button.disabled = true;
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
       window.location.href = "../index.html";
     } catch (err) {
       console.error(err);
-      alert("Erreur connexion : " + err.message);
-    } finally {
-      button.disabled = false;
+      msg.textContent = "Erreur connexion : " + err.message;
     }
   });
 </script>
