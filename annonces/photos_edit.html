@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WAUKLINK — Modifier photos</title>
+  <link rel="stylesheet" href="../style.css?v=1" />
+  <style>
+    .page{padding:24px 0}
+    .card{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:16px;padding:14px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .btn{padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;cursor:pointer}
+    .btn-danger{border:1px solid rgba(255,80,80,.45);background:rgba(255,80,80,.12)}
+    .btn-warn{border:1px solid rgba(245,158,11,.45);background:rgba(245,158,11,.12)}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.2);color:#fff}
+    .meta{opacity:.85;font-size:13px;white-space:pre-line}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:12px}
+    .photo{border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px;background:rgba(255,255,255,.04)}
+    .photo img{width:100%;height:140px;object-fit:cover;border-radius:10px;border:1px solid rgba(255,255,255,.12)}
+    .hr{border:none;height:1px;background:rgba(255,255,255,.12);margin:16px 0}
+  </style>
+</head>
+
+<body>
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Modifier photos (annonce publiée)</div>
+    </div>
+    <nav class="row">
+      <a class="btn" href="./location.html" style="text-decoration:none">← Retour annonces</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container page">
+  <div class="card">
+    <div class="meta" id="msg">Chargement…</div>
+
+    <hr class="hr">
+
+    <div class="row" style="justify-content:space-between;align-items:flex-start">
+      <div>
+        <div style="font-weight:900">Photos</div>
+        <div class="meta">Max 6 photos • “Remplacer” supprime les anciennes puis upload les nouvelles.</div>
+      </div>
+      <div class="row">
+        <input id="files" type="file" accept="image/*" multiple />
+        <button class="btn btn-warn" type="button" id="btnReplaceAll">🔁 Remplacer toutes les photos</button>
+      </div>
+    </div>
+
+    <div id="photos" class="grid"></div>
+  </div>
+</main>
+
+<script type="module">
+  import { auth, db, storage } from "../auth/firebase.js";
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import { doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  import { ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
+
+  const msg = document.getElementById("msg");
+  const files = document.getElementById("files");
+  const btnReplaceAll = document.getElementById("btnReplaceAll");
+  const photosEl = document.getElementById("photos");
+
+  const annonceId = new URLSearchParams(location.search).get("id");
+  if (!annonceId) {
+    msg.textContent = "❌ id manquant. Retour annonces.";
+    throw new Error("Missing id");
+  }
+
+  const annonceRef = doc(db, "annonces_location", annonceId);
+
+  let currentUser = null;
+  let annonceData = null;
+
+  function show(t){ msg.textContent = t || ""; }
+  function esc(s){
+    return String(s ?? "").replace(/[&<>"']/g, m=>({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[m]));
+  }
+  function safeExt(file){
+    const ext = (file?.name?.split(".").pop() || "jpg").toLowerCase();
+    const clean = ext.replace(/[^a-z0-9]/g,"");
+    return clean || "jpg";
+  }
+  function storagePath(annonceId, index, file){
+    return `annonces_location/${annonceId}/p${index+1}.${safeExt(file)}`;
+  }
+
+  function renderPhotos(){
+    photosEl.innerHTML = "";
+    const u = Array.isArray(annonceData?.photos) ? annonceData.photos : [];
+    const p = Array.isArray(annonceData?.photoPaths) ? annonceData.photoPaths : [];
+
+    if (!u.length) {
+      photosEl.innerHTML = `<div class="meta">Aucune photo.</div>`;
+      return;
+    }
+
+    u.forEach((url, idx) => {
+      const path = p[idx] || "";
+      const div = document.createElement("div");
+      div.className = "photo";
+      div.innerHTML = `
+        <img src="${esc(url)}" alt="photo ${idx+1}">
+        <div class="row" style="margin-top:10px;justify-content:space-between">
+          <div class="meta">#${idx+1}</div>
+          <button class="btn btn-danger" type="button" data-del="${idx}">🗑️ Supprimer</button>
+        </div>
+        <div class="meta" style="margin-top:8px;opacity:.7">${esc(path)}</div>
+      `;
+      div.querySelector("[data-del]").addEventListener("click", async () => {
+        if (!confirm("Supprimer cette photo ?")) return;
+        try {
+          show("⏳ Suppression…");
+          await deletePhotoAtIndex(idx);
+          show("✅ Photo supprimée.");
+        } catch (e) {
+          console.error(e);
+          show("❌ " + (e?.message || "Erreur suppression"));
+        }
+      });
+      photosEl.appendChild(div);
+    });
+  }
+
+  async function reloadAnnonce(){
+    const snap = await getDoc(annonceRef);
+    if (!snap.exists()) {
+      show("❌ Annonce introuvable.");
+      return;
+    }
+
+    annonceData = snap.data() || {};
+
+    // 🔒 autorise uniquement si ACTIVE + owner
+    const status = String(annonceData.status || "");
+    const owner = annonceData.ownerUid || annonceData.ownerId || "";
+    const isOwner = currentUser && owner === currentUser.uid;
+
+    if (!isOwner) {
+      show("❌ Accès refusé (pas propriétaire).");
+      btnReplaceAll.disabled = true;
+      renderPhotos();
+      return;
+    }
+
+    if (status !== "active") {
+      show("❌ Accès refusé (annonce pas publiée).");
+      btnReplaceAll.disabled = true;
+      renderPhotos();
+      return;
+    }
+
+    btnReplaceAll.disabled = false;
+    renderPhotos();
+    show("✅ OK. Tu peux modifier les photos (annonce publiée).");
+  }
+
+  async function replaceAllPhotos(fileList){
+    const arr = Array.from(fileList).slice(0, 6);
+    if (!arr.length) throw new Error("Aucun fichier");
+
+    // supprimer anciennes
+    const oldPaths = Array.isArray(annonceData.photoPaths) ? annonceData.photoPaths : [];
+    for (const p of oldPaths) {
+      try { await deleteObject(ref(storage, p)); } catch(_) {}
+    }
+
+    // upload nouvelles
+    const newUrls = [];
+    const newPaths = [];
+    for (let i = 0; i < arr.length; i++) {
+      const f = arr[i];
+      show(`⏳ Upload photo ${i+1}/${arr.length}…`);
+      const p = storagePath(annonceId, i, f);
+      const sref = ref(storage, p);
+      await uploadBytes(sref, f, { contentType: f.type || "image/jpeg" });
+      const url = await getDownloadURL(sref);
+      newPaths.push(p);
+      newUrls.push(url);
+    }
+
+    await updateDoc(annonceRef, {
+      photos: newUrls,
+      photoPaths: newPaths,
+      updatedAt: serverTimestamp()
+    });
+
+    await reloadAnnonce();
+  }
+
+  async function deletePhotoAtIndex(idx){
+    const urls = Array.isArray(annonceData.photos) ? annonceData.photos.slice() : [];
+    const paths = Array.isArray(annonceData.photoPaths) ? annonceData.photoPaths.slice() : [];
+
+    const p = paths[idx];
+    if (!p) throw new Error("photoPaths manquant (impossible de supprimer proprement)");
+
+    await deleteObject(ref(storage, p));
+    urls.splice(idx, 1);
+    paths.splice(idx, 1);
+
+    await updateDoc(annonceRef, {
+      photos: urls,
+      photoPaths: paths,
+      updatedAt: serverTimestamp()
+    });
+
+    await reloadAnnonce();
+  }
+
+  onAuthStateChanged(auth, async (u) => {
+    currentUser = u || null;
+    if (!currentUser) {
+      show("❌ Non connecté. Redirection…");
+      setTimeout(() => location.href = "../auth/login.html", 400);
+      return;
+    }
+    await reloadAnnonce();
+  });
+
+  btnReplaceAll.addEventListener("click", async () => {
+    const fl = files.files;
+    if (!fl || !fl.length) return alert("Choisis des photos d’abord.");
+    if (!confirm("Remplacer TOUTES les photos ? (les anciennes seront supprimées)")) return;
+
+    btnReplaceAll.disabled = true;
+    try {
+      show("⏳ Remplacement des photos…");
+      await replaceAllPhotos(fl);
+      files.value = "";
+      show("✅ Photos remplacées.");
+    } catch (e) {
+      console.error(e);
+      show("❌ " + (e?.message || "Erreur upload (rules Storage ?)"));
+    } finally {
+      btnReplaceAll.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
