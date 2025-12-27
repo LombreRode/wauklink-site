@@ -4,21 +4,28 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>WAUKLINK</title>
+  <meta name="description" content="WAUKLINK – Services, travaux, conciergerie, locations et urgences." />
   <link rel="stylesheet" href="style.css?v=1" />
-  <script type="module" src="script.js?v=1"></script>
 </head>
+
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
       <div class="subtitle">Services • Travaux • Conciergerie • Airbnb</div>
     </div>
+
     <nav style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
       <a href="pricing.html" style="text-decoration:underline;opacity:.9;">Tarifs</a>
       <a href="legal/index.html" style="text-decoration:underline;opacity:.9;">CGU</a>
-      <a href="auth/login.html" style="text-decoration:underline;opacity:.9;">Connexion</a>
-      <a href="auth/register.html" style="padding:8px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);text-decoration:none;">
+
+      <!-- liens publics (cachés automatiquement quand connecté) -->
+      <a id="linkLogin" href="auth/login.html" style="text-decoration:underline;opacity:.9;">Connexion</a>
+      <a id="linkRegister"
+         href="auth/register.html"
+         style="padding:8px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);text-decoration:none;">
         Inscription
       </a>
     </nav>
@@ -31,6 +38,7 @@
     <p class="circle-subtitle">
       Clique sur une carte pour ouvrir • Glisse pour tourner
     </p>
+
     <div class="circle-wrapper" id="circleWrapper">
       <div class="circle" id="circle"></div>
     </div>
@@ -46,10 +54,16 @@
   <a href="admin/portal.html">Administrateurs / Modérateurs</a>
 </footer>
 
-<!-- ✅ STATUT CONNEXION (racine) -->
+<!-- ================= SCRIPTS ================= -->
+
+<!-- roue (chargée après le DOM) -->
+<script type="module" src="script.js?v=1"></script>
+
+<!-- statut auth -->
 <script type="module" src="./auth/status.js"></script>
 
-<!-- ✅ USER SYNC (racine) : crée/MAJ /users/{uid} -->
+<!-- sync user -->
 <script type="module" src="./auth/user_sync.js"></script>
+
 </body>
 </html>
