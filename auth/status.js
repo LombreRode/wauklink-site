@@ -1,5 +1,5 @@
 // /auth/status.js
-import { auth, db } from "./firebase.js";
+import { auth, db } from "../_shared/firebase.js";
 import {
   onAuthStateChanged,
   signOut
@@ -80,7 +80,6 @@ async function getRole(uid) {
 (function boot() {
   const bar = ensureBar();
   const base = basePath();
-
   const loginUrl = `${base}/auth/login.html`;
   const adminUrl = `${base}/admin/index.html`;
 
