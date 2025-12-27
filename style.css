@@ -2,14 +2,11 @@
 *{
   box-sizing:border-box;
 }
-
-html, body{
-  width:100%;
-  height:100%;
-}
-
-body{
+html,body{
   margin:0;
+  padding:0;
+}
+body{
   font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
   background:#0b1224;
   color:#f8fafc;
@@ -22,7 +19,6 @@ body{
   margin:0 auto;
   padding:0 16px;
 }
-
 .main-layout{
   padding:60px 0 90px;
 }
@@ -33,23 +29,29 @@ body{
   color:#fff;
   padding:22px 0;
 }
-
 .topbar-row{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  flex-wrap:wrap;
   gap:16px;
+  flex-wrap:wrap;
 }
-
 .topbar h1{
   margin:0;
   font-size:28px;
+  font-weight:900;
+  letter-spacing:.4px;
 }
-
 .subtitle{
   font-size:14px;
   opacity:.9;
+}
+.topbar nav a{
+  color:#fff;
+  opacity:.9;
+}
+.topbar nav a:hover{
+  opacity:1;
 }
 
 /* ================= SECTIONS ================= */
@@ -63,19 +65,19 @@ body{
     transparent 100%
   );
 }
-
 .circle-section h2{
   text-align:center;
-  margin-bottom:6px;
+  margin:0 0 6px;
+  font-size:26px;
+  font-weight:900;
 }
-
 .circle-subtitle{
   text-align:center;
   opacity:.85;
-  margin-bottom:24px;
+  margin-bottom:28px;
 }
 
-/* ================= CIRCLE UI ================= */
+/* ================= CIRCLE / CAROUSEL ================= */
 .circle-wrapper{
   position:relative;
   width:720px;
@@ -85,7 +87,6 @@ body{
   user-select:none;
   cursor:grab;
 }
-
 .circle{
   position:absolute;
   top:50%;
@@ -94,37 +95,38 @@ body{
   height:0;
 }
 
-/* ================= CARDS ================= */
+/* ================= CIRCLE CARDS ================= */
 .circle-card{
   position:absolute;
   width:170px;
   padding:14px;
   background:#ffffff;
   color:#111827;
-  border-radius:14px;
+  border-radius:16px;
   border:2px solid #22c55e;
   text-align:center;
   cursor:pointer;
   box-shadow:0 12px 28px rgba(0,0,0,.35);
-  transition:transform .18s ease, box-shadow .18s ease;
+  transition:
+    transform .18s ease,
+    box-shadow .18s ease,
+    filter .18s ease;
 }
-
 .circle-card:hover{
-  transform:scale(1.05);
-  box-shadow:0 18px 40px rgba(0,0,0,.45);
+  transform:scale(1.06);
+  box-shadow:0 18px 42px rgba(0,0,0,.45);
+  filter:brightness(1.05);
 }
 
 .circle-icon{
-  font-size:26px;
+  font-size:28px;
   margin-bottom:6px;
 }
-
 .circle-card h3{
   margin:6px 0;
   font-size:14px;
-  line-height:1.2;
+  font-weight:900;
 }
-
 .open{
   font-size:12px;
   opacity:.7;
@@ -138,22 +140,19 @@ body{
   background:rgba(255,255,255,.06);
   color:#fff;
   cursor:pointer;
+  text-decoration:none;
+  font-weight:700;
 }
-
 .btn:hover{
   filter:brightness(1.08);
 }
 
-/* ===== BOUTON DANGER / SIGNALER ===== */
+/* Bouton danger (signalement, etc.) */
 .btn-danger{
-  padding:8px 12px;
-  border-radius:12px;
   border:1px solid rgba(255,80,80,.45);
   background:rgba(255,80,80,.12);
-  color:#ffffff;
-  cursor:pointer;
+  color:#fff;
 }
-
 .btn-danger:hover{
   filter:brightness(1.12);
 }
@@ -163,16 +162,20 @@ body{
   text-align:center;
   padding:20px;
   color:#9ca3af;
-  font-size:14px;
+  font-size:13px;
 }
-
 .footer a{
   color:#9ca3af;
   text-decoration:none;
 }
-
 .footer a:hover{
   text-decoration:underline;
+  color:#fff;
+}
+
+/* ================= HELPERS ================= */
+.hidden{
+  display:none !important;
 }
 
 /* ================= RESPONSIVE ================= */
@@ -181,20 +184,19 @@ body{
     width:480px;
     height:480px;
   }
-
   .circle-card{
     width:150px;
   }
 }
-
 @media (max-width:600px){
   .circle-wrapper{
     width:340px;
     height:340px;
   }
-
   .circle-card{
     width:140px;
-    padding:12px;
+  }
+  .topbar h1{
+    font-size:22px;
   }
 }
