@@ -61,82 +61,39 @@
 </div>
 
 <script type="module">
-  // ✅ Sync user -> Firestore /users/{uid}
-  import "./user_sync.js";
-  import { auth } from "./firebase.js";
-  import {
-    signInWithEmailAndPassword,
-    onAuthStateChanged,
-    setPersistence,
-    browserLocalPersistence,
-    sendPasswordResetEmail
-  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import { auth } from "../_shared/firebase.js";
+  import { signInWithEmailAndPassword } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-  const form = document.getElementById("loginForm");
-  const msg = document.getElementById("msg");
-  const forgot = document.getElementById("forgot");
+  const form = document.querySelector("form");
+  const emailInput = document.querySelector("input[type='email']");
+  const passwordInput = document.querySelector("input[type='password']");
+  const button = document.querySelector("button");
 
-  function show(text, ok=false){
-    msg.style.display = "block";
-    msg.style.borderColor = ok ? "rgba(34,197,94,.35)" : "rgba(239,68,68,.35)";
-    msg.style.background = ok ? "rgba(34,197,94,.10)" : "rgba(239,68,68,.10)";
-    msg.textContent = text;
-  }
-
-  function goAfterLogin(){
-    const go = sessionStorage.getItem("afterLoginGo") || "../index.html";
-    sessionStorage.removeItem("afterLoginGo");
-    window.location.href = go;
-  }
-
-  // ✅ persistance de session
-  await setPersistence(auth, browserLocalPersistence);
-
-  // ✅ si déjà connecté → redirection vers la page demandée
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      show("✅ Déjà connecté, redirection…", true);
-      setTimeout(goAfterLogin, 500);
-    }
-  });
-
-  // ✅ Connexion
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    show("⏳ Connexion en cours…", true);
 
-    const data = new FormData(form);
-    const email = String(data.get("email") || "").trim();
-    const password = String(data.get("password") || "");
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
 
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      show("✅ Connexion réussie !", true);
-      setTimeout(goAfterLogin, 500);
-    } catch (err) {
-      console.error(err);
-      show("❌ " + (err.code || "") + " — " + err.message);
-    }
-  });
-
-  // ✅ Mot de passe oublié (reset par email)
-  forgot.addEventListener("click", async (e) => {
-    e.preventDefault();
-
-    const email = document.getElementById("email").value.trim();
-    if (!email) {
-      show("❌ Entre ton email d’abord, puis clique sur « Mot de passe oublié ».");
+    if (!email || !password) {
+      alert("Email ou mot de passe manquant");
       return;
     }
 
+    button.disabled = true;
+
     try {
-      await sendPasswordResetEmail(auth, email);
-      show("📧 Email de réinitialisation envoyé. Vérifie ta boîte mail (et spam).", true);
+      await signInWithEmailAndPassword(auth, email, password);
+      window.location.href = "../index.html";
     } catch (err) {
       console.error(err);
-      show("❌ " + (err.code || "") + " — " + err.message);
+      alert("Erreur connexion : " + err.message);
+    } finally {
+      button.disabled = false;
     }
   });
 </script>
+
 </body>
 </html>
