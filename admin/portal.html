@@ -1,17 +1,20 @@
-<script type="module">
-  import { requireModeration } from "../_shared/guard.js";
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Accès administration</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
 
-  requireModeration({
-    redirectTo: "../auth/login.html",
-    onLoading: () => {
-      console.log("Vérification en cours...");
-    },
-    onOk: (user, role) => {
-      console.log("OK admin/mod :", user.email, role);
-      // 👉 ici tu peux afficher le portail admin
-    },
-    onFail: (reason) => {
-      console.warn("Accès refusé :", reason);
-    }
-  });
-</script>
+  <div class="container" style="padding:24px">
+    <h1>Accès administration</h1>
+    <p id="msg">Initialisation…</p>
+    <a href="../index.html">← Retour au site</a>
+  </div>
+
+  <!-- SCRIPT UNIQUE -->
+  <script type="module" src="./portal.js"></script>
+</body>
+</html>
