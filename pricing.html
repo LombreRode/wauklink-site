@@ -2,11 +2,94 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Tarifs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tarifs – WAUKLINK</title>
+  <link rel="stylesheet" href="style.css?v=1">
 </head>
-<body style="background:#0b1224;color:#fff;font-family:system-ui;padding:30px;">
-  <h1>Tarifs WAUKLINK</h1>
-  <p>Page test OK ✅</p>
-  <a href="index.html" style="color:#7dd3fc;">← Retour</a>
+<body>
+
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Tarifs & Abonnements</div>
+    </div>
+    <nav style="display:flex;gap:10px;flex-wrap:wrap">
+      <a class="btn" href="index.html">← Accueil</a>
+      <a class="btn" href="auth/login.html">Connexion</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container main-layout">
+
+  <section style="text-align:center;margin-bottom:40px">
+    <h2>Des tarifs simples et transparents</h2>
+    <p style="opacity:.85">
+      Publiez, consultez et gérez vos annonces en toute simplicité.
+    </p>
+  </section>
+
+  <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px">
+
+    <!-- GRATUIT -->
+    <div class="circle-card" style="position:static">
+      <div class="circle-icon">🆓</div>
+      <h3>Gratuit</h3>
+      <p class="open">Consultation</p>
+      <ul style="list-style:none;padding:0;font-size:14px;opacity:.85">
+        <li>✔️ Accès aux annonces</li>
+        <li>✔️ Recherche & filtres</li>
+        <li>✔️ Création de compte</li>
+      </ul>
+      <strong>0 €</strong>
+    </div>
+
+    <!-- PARTICULIER -->
+    <div class="circle-card" style="position:static">
+      <div class="circle-icon">🏠</div>
+      <h3>Particulier</h3>
+      <p class="open">Publication d’annonces</p>
+      <ul style="list-style:none;padding:0;font-size:14px;opacity:.85">
+        <li>✔️ Déposer une annonce</li>
+        <li>✔️ Validation admin</li>
+        <li>✔️ Gestion des photos</li>
+      </ul>
+      <strong>À partir de 9 €</strong>
+    </div>
+
+    <!-- PRO -->
+    <div class="circle-card" style="position:static;border-color:#38bdf8">
+      <div class="circle-icon">🛠️</div>
+      <h3>Professionnel</h3>
+      <p class="open">Visibilité maximale</p>
+      <ul style="list-style:none;padding:0;font-size:14px;opacity:.85">
+        <li>✔️ Annonces illimitées</li>
+        <li>✔️ Mise en avant</li>
+        <li>✔️ Espace prestataire</li>
+      </ul>
+      <strong>Sur devis</strong>
+    </div>
+
+  </section>
+
+  <section style="margin-top:50px;text-align:center">
+    <p style="opacity:.8;font-size:14px">
+      Tous les paiements et options seront détaillés prochainement.
+    </p>
+  </section>
+
+</main>
+
+<footer class="footer">
+  © WAUKLINK —
+  <a href="pricing.html">Tarifs</a> |
+  <a href="legal/index.html">CGU</a> |
+  <a href="legal/mentions-legales.html">Mentions légales</a> |
+  <a href="legal/privacy.html">Confidentialité</a>
+</footer>
+
+<script type="module" src="./auth/status.js"></script>
+
 </body>
 </html>
