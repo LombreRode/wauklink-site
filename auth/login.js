@@ -1,26 +1,39 @@
-// auth/status.js
+// auth/login.js
+// ================================
+// LOGIN — APP SAFE
+// ================================
 import { auth } from "../_shared/firebase.js";
 import {
-  onAuthStateChanged,
-  signOut
+  signInWithEmailAndPassword,
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-onAuthStateChanged(auth, (user) => {
-  const btnLogin  = document.querySelector("[data-login]");
-  const btnLogout = document.querySelector("[data-logout]");
+const form = document.getElementById("loginForm");
+const msg  = document.getElementById("msg");
+const email = document.getElementById("email");
+const password = document.getElementById("password");
 
+// Si déjà connecté → retour accueil
+onAuthStateChanged(auth, (user) => {
   if (user) {
-    if (btnLogin)  btnLogin.style.display = "none";
-    if (btnLogout) btnLogout.style.display = "inline-block";
-  } else {
-    if (btnLogin)  btnLogin.style.display = "inline-block";
-    if (btnLogout) btnLogout.style.display = "none";
+    window.location.href = "../index.html";
   }
 });
 
-document.addEventListener("click", async (e) => {
-  if (e.target.matches("[data-logout]")) {
-    await signOut(auth);
-    window.location.href = "/index.html";
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  msg.textContent = "Connexion…";
+
+  try {
+    await signInWithEmailAndPassword(
+      auth,
+      email.value.trim(),
+      password.value.trim()
+    );
+
+    window.location.href = "../index.html";
+  } catch (err) {
+    console.error(err);
+    msg.textContent = "❌ " + (err.message || "Erreur de connexion");
   }
 });
