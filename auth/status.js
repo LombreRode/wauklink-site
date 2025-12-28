@@ -41,7 +41,7 @@ function renderAuth(user) {
 
   if (!user) {
     const login = document.createElement("a");
-    login.href = "/auth/login.html";
+    login.href = "auth/login.html"; // ✅ chemin relatif
     login.textContent = "Connexion";
     bar.appendChild(login);
     return;
@@ -54,8 +54,8 @@ function renderAuth(user) {
   logout.textContent = "Déconnexion";
   logout.onclick = async () => {
     await signOut(auth);
-    // APP-SAFE: no hard reload
-    window.location.href = "/";
+    // ✅ retour propre sans reload violent
+    window.location.href = "index.html";
   };
 
   bar.append(email, logout);
