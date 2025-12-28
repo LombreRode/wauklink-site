@@ -10,7 +10,6 @@ const msg = document.getElementById("msg");
 const email = document.getElementById("email");
 const password = document.getElementById("password");
 
-// Déjà connecté → accueil
 onAuthStateChanged(auth, (user) => {
   if (user) {
     window.location.href = "../index.html";
