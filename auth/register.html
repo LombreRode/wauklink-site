@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <title>Inscription – WAUKLINK</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="./auth.css">
 </head>
 <body>
@@ -11,52 +12,20 @@
   <h1>Inscription</h1>
 
   <form id="registerForm">
-    <input name="email" type="email" placeholder="Email" required>
-    <input name="password" type="password" placeholder="Mot de passe" required minlength="6">
+    <input id="email" type="email" placeholder="Email" required>
+    <input id="password" type="password" placeholder="Mot de passe" required>
     <button class="btn" type="submit">Créer le compte</button>
   </form>
+
+  <p class="small">
+    Déjà un compte ? <a href="./login.html">Connexion</a>
+  </p>
 
   <p id="msg" class="msg"></p>
 </div>
 
-<script type="module">
-  import { auth, db } from "../_shared/firebase.js";
-  import { createUserWithEmailAndPassword } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-  import { doc, setDoc, serverTimestamp } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
-  const form = document.getElementById("registerForm");
-  const msg  = document.getElementById("msg");
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    msg.textContent = "Création du compte…";
-
-    const data = new FormData(form);
-
-    try {
-      const cred = await createUserWithEmailAndPassword(
-        auth,
-        data.get("email"),
-        data.get("password")
-      );
-
-      // 🔥 DOCUMENT USER AVEC ROLE
-      await setDoc(doc(db, "users", cred.user.uid), {
-        uid: cred.user.uid,
-        email: data.get("email"),
-        role: "user",
-        createdAt: serverTimestamp(),
-        lastLoginAt: serverTimestamp()
-      });
-
-      location.href = "../index.html";
-    } catch (err) {
-      msg.textContent = "❌ " + err.message;
-    }
-  });
-</script>
+<!-- LOGIQUE APP -->
+<script type="module" src="./register.js"></script>
 
 </body>
 </html>
