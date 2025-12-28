@@ -1,8 +1,4 @@
 // auth/register.js
-// ================================
-// REGISTER — APP SAFE
-// ================================
-
 import { auth } from "../_shared/firebase.js";
 import {
   createUserWithEmailAndPassword,
@@ -11,6 +7,8 @@ import {
 
 const form = document.getElementById("registerForm");
 const msg  = document.getElementById("msg");
+const email = document.getElementById("email");
+const password = document.getElementById("password");
 
 // Si déjà connecté → retour accueil
 onAuthStateChanged(auth, (user) => {
@@ -30,10 +28,9 @@ form.addEventListener("submit", async (e) => {
       password.value.trim()
     );
 
-    // Redirection après création
     window.location.href = "../index.html";
-
   } catch (err) {
+    console.error(err);
     msg.textContent = "❌ " + (err.message || "Erreur d’inscription");
   }
 });
