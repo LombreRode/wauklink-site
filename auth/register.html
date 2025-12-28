@@ -4,27 +4,20 @@
   <meta charset="utf-8">
   <title>Inscription – WAUKLINK</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="./auth.css">
 </head>
 <body>
 
-<div class="container card">
-  <h1>Inscription</h1>
+<h1>Inscription</h1>
 
-  <form id="registerForm">
-    <input id="email" type="email" placeholder="Email" required>
-    <input id="password" type="password" placeholder="Mot de passe" required>
-    <button class="btn" type="submit">Créer le compte</button>
-  </form>
+<form id="registerForm">
+  <input id="email" type="email" placeholder="Email" required>
+  <input id="password" type="password" placeholder="Mot de passe" required>
+  <button type="submit">Créer le compte</button>
+</form>
 
-  <p class="small">
-    Déjà un compte ? <a href="./login.html">Connexion</a>
-  </p>
+<p id="msg"></p>
 
-  <p id="msg" class="msg"></p>
-</div>
-
-<!-- LOGIQUE APP -->
+<!-- OBLIGATOIRE -->
 <script type="module" src="./register.js"></script>
 
 </body>
