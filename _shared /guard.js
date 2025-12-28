@@ -1,9 +1,7 @@
 // _shared/guard.js
 import { auth, db } from "./firebase.js";
-import { onAuthStateChanged } from
-  "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import { doc, getDoc } from
-  "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 /* =========================
    AUTH SIMPLE
@@ -29,14 +27,9 @@ async function getRole(uid){
 }
 
 /* =========================
-   MODÉRATION (admin + moderator)
+   MODÉRATION
 ========================= */
-export function requireModeration({
-  redirectTo,
-  onOk,
-  onFail,
-  onLoading
-}){
+export function requireModeration({ redirectTo, onOk, onFail, onLoading }){
   onLoading?.();
   onAuthStateChanged(auth, async user=>{
     if(!user){
@@ -57,11 +50,7 @@ export function requireModeration({
 /* =========================
    ADMIN SEUL
 ========================= */
-export function requireAdmin({
-  redirectTo,
-  onOk,
-  onLoading
-}){
+export function requireAdmin({ redirectTo, onOk, onLoading }){
   onLoading?.();
   onAuthStateChanged(auth, async user=>{
     if(!user){
