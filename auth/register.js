@@ -1,4 +1,5 @@
-import { auth } from "../shared/firebase.js";
+// auth/register.js
+import { auth } from "../_shared/firebase.js";
 import {
   createUserWithEmailAndPassword,
   onAuthStateChanged
@@ -10,7 +11,9 @@ const email = document.getElementById("email");
 const password = document.getElementById("password");
 
 onAuthStateChanged(auth, (user) => {
-  if (user) window.location.href = "../index.html";
+  if (user) {
+    window.location.href = "../index.html";
+  }
 });
 
 form.addEventListener("submit", async (e) => {
@@ -25,6 +28,7 @@ form.addEventListener("submit", async (e) => {
     );
     window.location.href = "../index.html";
   } catch (err) {
+    console.error(err);
     msg.textContent = "❌ " + err.message;
   }
 });
