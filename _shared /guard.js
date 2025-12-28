@@ -10,35 +10,33 @@ async function getRole(uid) {
     const snap = await getDoc(doc(db, "users", uid));
     if (!snap.exists()) return "user";
     return snap.data().role || "user";
-  } catch {
+  } catch (e) {
+    console.error(e);
     return "user";
   }
 }
 
-export function requireAuth({ redirectTo, onOk }) {
-  onAuthStateChanged(auth, (user) => {
+export function requireModeration({
+  redirectTo,
+  onLoading,
+  onOk,
+  onFail
+}) {
+  onLoading?.();
+
+  onAuthStateChanged(auth, async (user) => {
     if (!user) {
-      window.location.href = redirectTo;
-    } else {
-      onOk(user);
+      onFail?.("not-auth");
+      return (location.href = redirectTo);
     }
-  });
-}
 
-export function requireAdmin({ redirectTo, onOk }) {
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) return window.location.href = redirectTo;
     const role = await getRole(user.uid);
-    if (role === "admin") onOk(user);
-    else window.location.href = redirectTo;
-  });
-}
 
-export function requireModeration({ redirectTo, onOk }) {
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) return window.location.href = redirectTo;
-    const role = await getRole(user.uid);
-    if (role === "admin" || role === "moderator") onOk(user);
-    else window.location.href = redirectTo;
+    if (role === "admin" || role === "moderator") {
+      onOk?.(user, role);
+    } else {
+      onFail?.("forbidden", role);
+      location.href = redirectTo;
+    }
   });
 }
