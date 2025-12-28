@@ -1,4 +1,7 @@
 // auth/register.js
+// ================================
+// REGISTER — APP SAFE
+// ================================
 import { auth } from "../_shared/firebase.js";
 import {
   createUserWithEmailAndPassword,
