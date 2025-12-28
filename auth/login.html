@@ -1,31 +1,30 @@
-<!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8">
-  <title>Connexion – WAUKLINK</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="./auth.css">
-</head>
-<body>
+import { auth } from "../shared/firebase.js";
+import {
+  signInWithEmailAndPassword,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-<div class="container card">
-  <h1>Connexion</h1>
+const form = document.getElementById("loginForm");
+const msg = document.getElementById("msg");
+const email = document.getElementById("email");
+const password = document.getElementById("password");
 
-  <form id="loginForm">
-    <input id="email" type="email" placeholder="Email" required>
-    <input id="password" type="password" placeholder="Mot de passe" required>
-    <button class="btn" type="submit">Se connecter</button>
-  </form>
+onAuthStateChanged(auth, (user) => {
+  if (user) window.location.href = "../index.html";
+});
 
-  <p class="small">
-    Pas de compte ? <a href="./register.html">Créer un compte</a>
-  </p>
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  msg.textContent = "Connexion…";
 
-  <p id="msg" class="msg"></p>
-</div>
-
-<!-- LOGIQUE APP -->
-<script type="module" src="./login.js"></script>
-
-</body>
-</html>
+  try {
+    await signInWithEmailAndPassword(
+      auth,
+      email.value.trim(),
+      password.value.trim()
+    );
+    window.location.href = "../index.html";
+  } catch (err) {
+    msg.textContent = "❌ " + err.message;
+  }
+});
