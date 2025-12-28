@@ -10,6 +10,7 @@ const msg = document.getElementById("msg");
 const email = document.getElementById("email");
 const password = document.getElementById("password");
 
+// Si déjà connecté → accueil
 onAuthStateChanged(auth, (user) => {
   if (user) {
     window.location.href = "../index.html";
@@ -26,7 +27,10 @@ form.addEventListener("submit", async (e) => {
       email.value.trim(),
       password.value.trim()
     );
+
+    msg.textContent = "✅ Compte créé";
     window.location.href = "../index.html";
+
   } catch (err) {
     console.error(err);
     msg.textContent = "❌ " + err.message;
