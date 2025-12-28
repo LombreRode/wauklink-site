@@ -1,16 +1,20 @@
 // auth/register.js
-import { auth } from "../_shared/firebase.js";
+import { auth, db } from "../_shared/firebase.js";
 import {
   createUserWithEmailAndPassword,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import {
+  doc,
+  setDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const form = document.getElementById("registerForm");
 const msg = document.getElementById("msg");
 const email = document.getElementById("email");
 const password = document.getElementById("password");
 
-// Si déjà connecté → accueil
 onAuthStateChanged(auth, (user) => {
   if (user) {
     window.location.href = "../index.html";
@@ -22,12 +26,19 @@ form.addEventListener("submit", async (e) => {
   msg.textContent = "Création du compte…";
 
   try {
-    await createUserWithEmailAndPassword(
+    const cred = await createUserWithEmailAndPassword(
       auth,
       email.value.trim(),
       password.value.trim()
     );
-    msg.textContent = "✅ Compte créé";
+
+    // 🔐 création user Firestore
+    await setDoc(doc(db, "users", cred.user.uid), {
+      email: cred.user.email,
+      role: "user",
+      createdAt: serverTimestamp()
+    });
+
     window.location.href = "../index.html";
   } catch (err) {
     console.error(err);
