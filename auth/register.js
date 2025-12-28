@@ -27,10 +27,8 @@ form.addEventListener("submit", async (e) => {
       email.value.trim(),
       password.value.trim()
     );
-
     msg.textContent = "✅ Compte créé";
     window.location.href = "../index.html";
-
   } catch (err) {
     console.error(err);
     msg.textContent = "❌ " + err.message;
