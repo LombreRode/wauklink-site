@@ -1,31 +1,15 @@
 import { auth } from "../_shared/firebase.js";
-import {
-  signInWithEmailAndPassword,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { signInWithEmailAndPassword } from
+  "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-const form = document.getElementById("loginForm");
-const msg = document.getElementById("msg");
-
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    console.log("✅ connecté :", user.uid);
-    location.href = "../index.html";
-  }
-});
-
-form.addEventListener("submit", async (e) => {
+loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   msg.textContent = "Connexion…";
 
   try {
-    await signInWithEmailAndPassword(
-      auth,
-      email.value.trim(),
-      password.value.trim()
-    );
-  } catch (err) {
-    console.error(err);
-    msg.textContent = "❌ Email ou mot de passe incorrect";
+    await signInWithEmailAndPassword(auth, email.value, password.value);
+    location.replace("../index.html");
+  } catch {
+    msg.textContent = "❌ Identifiants incorrects";
   }
 });
