@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WAUKLINK — Services à la personne</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+
+<body>
+<header class="topbar">
+  <div class="container">
+    <h1>WAUKLINK</h1>
+    <div class="subtitle">Services à la personne</div>
+  </div>
+</header>
+
+<main class="container" style="padding:22px 0;">
+
+  <h2>Services disponibles</h2>
+
+  <!-- MESSAGE GLOBAL -->
+  <p id="statusMsg" style="opacity:.85;margin-bottom:18px;">
+    Chargement…
+  </p>
+
+  <!-- BLOQUÉ -->
+  <section id="blocked" style="display:none" class="card">
+    <p style="color:#ff6666">
+      Accès bloqué selon votre abonnement ou votre statut.
+    </p>
+  </section>
+
+  <!-- CONTENU -->
+  <section id="content" style="display:none">
+    <div id="list" class="grid"></div>
+  </section>
+
+  <div style="margin-top:20px">
+    <a href="../index.html">← Accueil</a>
+  </div>
+
+</main>
+
+<script type="module">
+  import { auth, db } from "../_shared/firebase.js";
+  import { onAuthStateChanged } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import {
+    collection, query, where, orderBy, getDocs,
+    doc, getDoc
+  } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+  const statusMsg = document.getElementById("statusMsg");
+  const blocked = document.getElementById("blocked");
+  const content = document.getElementById("content");
+  const list = document.getElementById("list");
+
+  function esc(s){
+    return String(s ?? "").replace(/[&<>"']/g, m =>
+      ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
+    );
+  }
+
+  async function loadServices(){
+    list.innerHTML = "";
+
+    const qy = query(
+      collection(db, "services_personne"),
+      where("status", "==", "active"),
+      orderBy("createdAt", "desc")
+    );
+
+    const snap = await getDocs(qy);
+
+    if (!snap.size) {
+      list.innerHTML = "<p>Aucun service disponible.</p>";
+      return;
+    }
+
+    snap.forEach(d => {
+      const s = d.data();
+      const el = document.createElement("div");
+      el.className = "card";
+      el.innerHTML = `
+        <b>${esc(s.titre)}</b>
+        <div style="opacity:.8">${esc(s.ville || "")}</div>
+        <p>${esc(s.description || "")}</p>
+      `;
+      list.appendChild(el);
+    });
+  }
+
+  onAuthStateChanged(auth, async user => {
+    if (!user) {
+      location.href = "../auth/login.html";
+      return;
+    }
+
+    const snap = await getDoc(doc(db, "users", user.uid));
+    if (!snap.exists()) {
+      blocked.style.display = "block";
+      statusMsg.textContent = "Profil introuvable.";
+      return;
+    }
+
+    const u = snap.data();
+    const role = u.role || "user";
+    const sub = u.abonnement?.type || "free";
+    const proValidated = u.pro?.validated === true;
+
+    // FREE → BLOQUÉ
+    if (sub === "free") {
+      blocked.style.display = "block";
+      statusMsg.textContent =
+        "Abonnement requis pour accéder aux services.";
+      return;
+    }
+
+    // PARTIEL → OK (NON‑PRO)
+    if (sub === "partial" && role !== "pro") {
+      statusMsg.textContent =
+        "Accès autorisé (non‑professionnel / CESU).";
+      content.style.display = "block";
+      loadServices();
+      return;
+    }
+
+    // PRO NON VALIDÉ → BLOQUÉ
+    if (role === "pro" && !proValidated) {
+      blocked.style.display = "block";
+      statusMsg.textContent =
+        "Compte professionnel non validé.";
+      return;
+    }
+
+    // PRO VALIDÉ → OK
+    if (role === "pro" && proValidated) {
+      statusMsg.textContent =
+        "Accès autorisé (prestataire professionnel).";
+      content.style.display = "block";
+      loadServices();
+      return;
+    }
+
+    // SÉCURITÉ PAR DÉFAUT
+    blocked.style.display = "block";
+    statusMsg.textContent = "Accès non autorisé.";
+  });
+</script>
+
+</body>
+</html>
