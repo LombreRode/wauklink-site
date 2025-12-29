@@ -13,28 +13,45 @@ const msg = document.getElementById("msg");
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
-  msg.textContent = "Création du compte…";
+  msg.textContent = "";
 
-  const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
+  const password2 = document.getElementById("password2").value;
+
+  // 🔐 Vérification mot de passe
+  if (password !== password2) {
+    msg.textContent = "❌ Les mots de passe ne correspondent pas.";
+    return;
+  }
+
+  const data = {
+    lastName: document.getElementById("lastName").value.trim(),
+    firstName: document.getElementById("firstName").value.trim(),
+    email: document.getElementById("email").value.trim(),
+    phone: document.getElementById("phone").value.trim(),
+    address: document.getElementById("address").value.trim(),
+    address2: document.getElementById("address2").value.trim(),
+    postalCode: document.getElementById("postalCode").value.trim(),
+    city: document.getElementById("city").value.trim()
+  };
 
   try {
     const cred = await createUserWithEmailAndPassword(
       auth,
-      email,
+      data.email,
       password
     );
 
-    // Création du document user MINIMAL
+    // ✅ PROFIL COMPLET DÈS L’INSCRIPTION
     await setDoc(doc(db, "users", cred.user.uid), {
-      email,
+      ...data,
       role: "user",
-      profile: { completed: false },
+      profile: { completed: true },
       createdAt: serverTimestamp()
     });
 
-    // Redirection vers questionnaire
-    location.href = "./profile.html";
+    // Accès direct après inscription
+    location.href = "../dashboard/pro.html";
 
   } catch (err) {
     console.error(err);
