@@ -4,19 +4,72 @@
   <meta charset="utf-8">
   <title>Connexion – WAUKLINK</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- STYLE GLOBAL DU SITE -->
+  <link rel="stylesheet" href="../style.css">
 </head>
 <body>
 
-<h1>Connexion</h1>
+<!-- ================= HEADER SIMPLE ================= -->
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Connexion à votre compte</div>
+    </div>
+    <nav>
+      <a href="../index.html">Accueil</a>
+      <a href="./register.html">Inscription</a>
+    </nav>
+  </div>
+</header>
 
-<form id="loginForm">
-  <input id="email" type="email" placeholder="Email" required>
-  <input id="password" type="password" placeholder="Mot de passe" required>
-  <button type="submit">Connexion</button>
-</form>
+<!-- ================= CONTENU ================= -->
+<main class="main-layout container">
+  <section style="max-width:420px;margin:40px auto;">
+    <h2>Connexion</h2>
 
-<p id="msg"></p>
+    <form id="loginForm" style="display:flex;flex-direction:column;gap:14px;">
+      <input
+        id="email"
+        type="email"
+        placeholder="Adresse email"
+        required
+      >
 
+      <input
+        id="password"
+        type="password"
+        placeholder="Mot de passe"
+        required
+      >
+
+      <button type="submit">
+        Se connecter
+      </button>
+    </form>
+
+    <p id="msg" style="margin-top:12px;"></p>
+
+    <p style="margin-top:14px;font-size:14px;">
+      <a href="./forgot-password.html">Mot de passe oublié ?</a>
+    </p>
+
+    <p style="margin-top:12px;font-size:14px;">
+      Pas encore de compte ?
+      <a href="./register.html">Créer un compte</a>
+    </p>
+  </section>
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+  © WAUKLINK —
+  <a href="../pricing.html">Tarifs</a> |
+  <a href="../legal/index.html">CGU</a>
+</footer>
+
+<!-- ⚠️ SCRIPT FIREBASE (ON NE TOUCHE PAS) -->
 <script type="module" src="./login.js"></script>
 
 </body>
