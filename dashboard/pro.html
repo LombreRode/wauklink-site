@@ -3,74 +3,143 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WAUKLINK — Dashboard PRO</title>
+  <title>WAUKLINK — Dashboard</title>
   <link rel="stylesheet" href="../style.css" />
 </head>
+
 <body>
-  <header class="topbar">
-    <div class="container">
-      <h1>WAUKLINK</h1>
-      <div class="subtitle">Dashboard — Prestataire PRO</div>
-    </div>
-  </header>
+<header class="topbar">
+  <div class="container">
+    <h1>WAUKLINK</h1>
+    <div class="subtitle">Tableau de bord</div>
+  </div>
+</header>
 
-  <main class="container" style="padding:22px 0;">
-    <h2 style="margin:0 0 10px;">Mon espace PRO</h2>
-    <p style="opacity:.85;margin:0 0 18px;">
-      Statut : <b>Prestataire PRO</b> — Abonnement : <b>9€ / mois</b>
+<main class="container" style="padding:22px 0;">
+
+  <h2>Mon espace</h2>
+
+  <!-- STATUT GLOBAL -->
+  <p id="globalStatus" style="opacity:.85;margin-bottom:18px;">
+    Chargement du statut…
+  </p>
+
+  <!-- INFO -->
+  <section class="card">
+    <h3>Fonctionnement</h3>
+    <p>
+      Les fonctionnalités sont débloquées selon votre abonnement et votre statut.
+      Aucun accès professionnel n’est possible sans validation préalable.
     </p>
+  </section>
 
-    <!-- ABONNEMENT -->
-    <section style="border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:16px;">
-      <h3 style="margin:0 0 8px;">Abonnement PRO</h3>
+  <!-- ABONNEMENT -->
+  <section class="card">
+    <h3>Abonnement</h3>
+    <p id="subStatus">—</p>
 
-      <!-- Change juste ce texte plus tard via ton backend -->
-      <p style="opacity:.9;margin:0 0 10px;">
-        État : <b style="color:#ffcc66;">Inactif</b>
-      </p>
+    <ul>
+      <li><b>Free</b> : navigation uniquement</li>
+      <li><b>Partiel</b> : non‑pro / CESU / location occasionnelle</li>
+      <li><b>Complet</b> : accès PRO (sous conditions)</li>
+    </ul>
 
-      <div style="padding:12px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);">
-        <b>Ce que débloque l’abonnement (9€/mois)</b>
-        <ul style="opacity:.85;line-height:1.5;margin:10px 0 0;">
-          <li>Visibilité PRO (mise en avant dans l’affichage)</li>
-          <li>Réception de demandes / contacts</li>
-          <li>Accès aux fonctionnalités PRO</li>
-        </ul>
-        <p style="opacity:.85;margin:10px 0 0;">
-          <b>Important :</b> aucune garantie de mission ou de revenus. WAUKLINK = mise en relation uniquement.
-        </p>
-      </div>
+    <a href="../pricing.html">Voir les abonnements</a>
+  </section>
 
-      <div style="margin-top:12px;">
-        <button type="button"
-          style="padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:inherit;cursor:pointer;">
-          Activer l’abonnement (bientôt)
-        </button>
-        <a href="../pricing.html" style="margin-left:10px;text-decoration:underline;opacity:.9;">Voir tarifs</a>
-      </div>
-    </section>
+  <!-- ESPACE PRO -->
+  <section class="card" id="proSection" style="display:none">
+    <h3>Espace Prestataire PRO</h3>
 
-    <!-- KYC PRO -->
-    <section style="border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:16px;margin-top:12px;">
-      <h3 style="margin:0 0 8px;">Vérification PRO (KYC)</h3>
-      <p style="opacity:.85;margin:0 0 10px;">
-        Pour être conforme : <b>CNI</b> + <b>KBIS (-3 mois)</b> + <b>Assurance RC Pro</b>.
-      </p>
+    <p id="proMessage"></p>
 
-      <!-- Placeholder -->
-      <div style="padding:12px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);">
-        <p style="opacity:.85;margin:0;">
-          Upload documents : <b>Bientôt</b> (tu brancheras ça plus tard côté backend).
-        </p>
-      </div>
-    </section>
+    <a id="proAction" href="../dashboard/pro.html"
+       style="display:none">
+       Accéder à l’espace PRO
+    </a>
+  </section>
 
-    <!-- NAV -->
-    <div style="margin-top:16px;opacity:.85;">
-      <a href="../index.html" style="text-decoration:underline;">← Retour accueil</a> ·
-      <a href="../legal/" style="text-decoration:underline;">CGU & Documents</a> ·
-      <a href="../auth/login.html" style="text-decoration:underline;">Connexion</a>
-    </div>
-  </main>
+  <!-- BLOQUÉ -->
+  <section class="card" id="blockedSection" style="display:none">
+    <p style="color:#ff6666">
+      Accès bloqué selon votre statut actuel.
+    </p>
+  </section>
+
+  <div style="margin-top:20px">
+    <a href="../index.html">← Accueil</a> ·
+    <a href="../legal/">CGU & documents</a>
+  </div>
+
+</main>
+
+<script type="module">
+  import { auth, db } from "../_shared/firebase.js";
+  import { onAuthStateChanged } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import { doc, getDoc } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+  const globalStatus = document.getElementById("globalStatus");
+  const subStatus = document.getElementById("subStatus");
+  const proSection = document.getElementById("proSection");
+  const proMessage = document.getElementById("proMessage");
+  const proAction = document.getElementById("proAction");
+  const blocked = document.getElementById("blockedSection");
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      location.href = "../auth/login.html";
+      return;
+    }
+
+    const snap = await getDoc(doc(db, "users", user.uid));
+    if (!snap.exists()) {
+      alert("Profil utilisateur introuvable");
+      return;
+    }
+
+    const u = snap.data();
+    const role = u.role || "user";
+    const sub = u.abonnement?.type || "free";
+    const proValidated = u.pro?.validated === true;
+
+    globalStatus.innerHTML =
+      `Statut : <b>${role}</b> — Abonnement : <b>${sub}</b>`;
+    subStatus.textContent = `Abonnement actuel : ${sub}`;
+
+    // FREE
+    if (sub === "free") {
+      blocked.style.display = "block";
+      return;
+    }
+
+    // PARTIEL (NON‑PRO)
+    if (sub === "partial" && role !== "pro") {
+      blocked.style.display = "none";
+      return;
+    }
+
+    // COMPLET SANS VALIDATION
+    if (sub === "full" && !proValidated) {
+      proSection.style.display = "block";
+      proMessage.innerHTML =
+        "Compte PRO en attente : documents requis et validation obligatoire.";
+      return;
+    }
+
+    // PRO VALIDÉ
+    if (sub === "full" && proValidated) {
+      proSection.style.display = "block";
+      proMessage.innerHTML =
+        "<b>Compte PRO validé.</b> Accès autorisé.";
+      proAction.style.display = "inline-block";
+      return;
+    }
+
+    // SÉCURITÉ PAR DÉFAUT
+    blocked.style.display = "block";
+  });
+</script>
 </body>
 </html>
