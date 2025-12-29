@@ -4,32 +4,33 @@ import { onAuthStateChanged } from
 import { doc, updateDoc } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
+let currentUser = null;
 const form = document.getElementById("profileForm");
 const msg = document.getElementById("msg");
 
 onAuthStateChanged(auth, (user) => {
   if (!user) {
     location.href = "./login.html";
+    return;
   }
+  currentUser = user;
 });
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
-
-  const type = document.getElementById("type").value;
-  const ville = document.getElementById("ville").value;
+  if (!currentUser) return;
 
   try {
-    await updateDoc(doc(db, "users", auth.currentUser.uid), {
+    await updateDoc(doc(db, "users", currentUser.uid), {
       profile: {
-        type,
-        ville,
+        type: type.value,
+        ville: ville.value,
         completed: true
       }
     });
 
     location.href = "../dashboard/pro.html";
-  } catch (e) {
-    msg.textContent = "Erreur lors de l’enregistrement.";
+  } catch {
+    msg.textContent = "Erreur enregistrement";
   }
 });
