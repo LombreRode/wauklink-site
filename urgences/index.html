@@ -2,116 +2,153 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <title>WAUKLINK — Urgence</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="../style.css?v=1" />
+  <title>WAUKLINK — Urgences</title>
+  <link rel="stylesheet" href="../style.css" />
 </head>
 
 <body>
-
 <header class="topbar">
-  <div class="container topbar-row">
-    <div>
-      <h1>WAUKLINK</h1>
-      <div class="subtitle">Demande d’urgence</div>
-    </div>
-    <nav>
-      <a class="btn" href="../index.html">← Retour</a>
-    </nav>
+  <div class="container">
+    <h1>WAUKLINK</h1>
+    <div class="subtitle">Urgences & interventions rapides</div>
   </div>
 </header>
 
-<main class="container" style="padding:24px 0">
-  <div class="card" style="max-width:720px;margin:auto">
-    <p class="meta">
-      Une demande d’urgence est traitée en priorité par nos équipes.
+<main class="container" style="padding:22px 0;">
+
+  <h2>Urgences disponibles</h2>
+
+  <!-- MESSAGE GLOBAL -->
+  <p id="statusMsg" style="opacity:.85;margin-bottom:18px;">
+    Chargement…
+  </p>
+
+  <!-- BLOQUÉ -->
+  <section id="blocked" style="display:none" class="card">
+    <p style="color:#ff6666">
+      Accès bloqué selon votre abonnement ou votre statut.
     </p>
+  </section>
 
-    <form id="form">
-      <input id="titre" placeholder="Titre (ex: Fuite d’eau urgente)" required />
-      <input id="ville" placeholder="Ville" required />
+  <!-- CONTENU -->
+  <section id="content" style="display:none">
+    <div id="list" class="grid"></div>
+  </section>
 
-      <select id="type" required>
-        <option value="">Type d’urgence</option>
-        <option value="plomberie">Plomberie</option>
-        <option value="electricite">Électricité</option>
-        <option value="serrurerie">Serrurerie</option>
-        <option value="autre">Autre</option>
-      </select>
-
-      <textarea id="description" placeholder="Décris précisément le problème" required></textarea>
-
-      <input id="contactEmail" type="email" placeholder="Email de contact" required />
-      <input id="contactPhone" placeholder="Téléphone (optionnel)" />
-
-      <button class="btn btn-danger" id="submitBtn">🚨 Envoyer l’urgence</button>
-      <div id="msg" class="meta"></div>
-    </form>
+  <div style="margin-top:20px">
+    <a href="../index.html">← Accueil</a>
   </div>
+
 </main>
 
-<!-- ================= JS ================= -->
 <script type="module">
   import { auth, db } from "../_shared/firebase.js";
   import { onAuthStateChanged } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
   import {
-    collection, addDoc, serverTimestamp
-  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+    collection, query, where, orderBy, getDocs,
+    doc, getDoc
+  } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  const form = document.getElementById("form");
-  const msg = document.getElementById("msg");
-  const submitBtn = document.getElementById("submitBtn");
+  const statusMsg = document.getElementById("statusMsg");
+  const blocked = document.getElementById("blocked");
+  const content = document.getElementById("content");
+  const list = document.getElementById("list");
 
-  let user = null;
+  function esc(s){
+    return String(s ?? "").replace(/[&<>"']/g, m =>
+      ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
+    );
+  }
 
-  function setMsg(t){ msg.textContent = t || ""; }
+  async function loadUrgences(){
+    list.innerHTML = "";
 
-  onAuthStateChanged(auth, u=>{
-    if(!u){
-      setMsg("❌ Connexion requise pour envoyer une urgence.");
-      form.style.display = "none";
+    const qy = query(
+      collection(db, "urgences"),
+      where("status", "==", "active"),
+      orderBy("createdAt", "desc")
+    );
+
+    const snap = await getDocs(qy);
+
+    if (!snap.size) {
+      list.innerHTML = "<p>Aucune urgence disponible.</p>";
       return;
     }
-    user = u;
-  });
 
-  form.onsubmit = async e=>{
-    e.preventDefault();
-    if(!user) return;
+    snap.forEach(d => {
+      const u = d.data();
+      const el = document.createElement("div");
+      el.className = "card";
+      el.innerHTML = `
+        <b>${esc(u.titre)}</b>
+        <div style="opacity:.8">${esc(u.ville || "")}</div>
+        <p>${esc(u.description || "")}</p>
+      `;
+      list.appendChild(el);
+    });
+  }
 
-    submitBtn.disabled = true;
-
-    try{
-      setMsg("⏳ Envoi en cours…");
-
-      await addDoc(collection(db,"urgences"),{
-        titre: titre.value.trim(),
-        ville: ville.value.trim(),
-        type: type.value,
-        description: description.value.trim(),
-        contactEmail: contactEmail.value.trim(),
-        contactPhone: contactPhone.value.trim(),
-        ownerUid: user.uid,
-        ownerEmail: user.email || "",
-        status: "pending",
-        createdAt: serverTimestamp()
-      });
-
-      setMsg("✅ Urgence envoyée. Nous vous contactons rapidement.");
-      form.reset();
-
-    }catch(err){
-      console.error(err);
-      setMsg("❌ Erreur lors de l’envoi (voir console).");
-    }finally{
-      submitBtn.disabled = false;
+  onAuthStateChanged(auth, async user => {
+    if (!user) {
+      location.href = "../auth/login.html";
+      return;
     }
-  };
-</script>
 
-<script type="module" src="../auth/status.js"></script>
-<script type="module" src="../auth/user_sync.js"></script>
+    const snap = await getDoc(doc(db, "users", user.uid));
+    if (!snap.exists()) {
+      blocked.style.display = "block";
+      statusMsg.textContent = "Profil introuvable.";
+      return;
+    }
+
+    const data = snap.data();
+    const role = data.role || "user";
+    const sub = data.abonnement?.type || "free";
+    const proValidated = data.pro?.validated === true;
+
+    // FREE → BLOQUÉ
+    if (sub === "free") {
+      blocked.style.display = "block";
+      statusMsg.textContent =
+        "Abonnement requis pour accéder aux urgences.";
+      return;
+    }
+
+    // PARTIEL → OK (NON‑PRO)
+    if (sub === "partial" && role !== "pro") {
+      statusMsg.textContent =
+        "Accès autorisé (non‑professionnel).";
+      content.style.display = "block";
+      loadUrgences();
+      return;
+    }
+
+    // PRO NON VALIDÉ → BLOQUÉ
+    if (role === "pro" && !proValidated) {
+      blocked.style.display = "block";
+      statusMsg.textContent =
+        "Compte professionnel non validé.";
+      return;
+    }
+
+    // PRO VALIDÉ → OK
+    if (role === "pro" && proValidated) {
+      statusMsg.textContent =
+        "Accès autorisé (prestataire professionnel).";
+      content.style.display = "block";
+      loadUrgences();
+      return;
+    }
+
+    // SÉCURITÉ PAR DÉFAUT
+    blocked.style.display = "block";
+    statusMsg.textContent = "Accès non autorisé.";
+  });
+</script>
 
 </body>
 </html>
