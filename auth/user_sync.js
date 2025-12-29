@@ -3,7 +3,7 @@
 // USER FIRESTORE SYNC (APP SAFE)
 // =====================================
 
-import { auth, db } from "../_shared/firebase.js";
+import { auth, db } from "/wauklink-site/_shared/firebase.js";
 import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
@@ -21,7 +21,7 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  // Prevent duplicate writes in APP navigation
+  // éviter les doubles écritures
   if (lastSyncedUid === user.uid) return;
   lastSyncedUid = user.uid;
 
