@@ -18,9 +18,17 @@ form.addEventListener("submit", async (e) => {
   const password = document.getElementById("password").value;
   const password2 = document.getElementById("password2").value;
 
-  // 🔐 Vérification mot de passe
   if (password !== password2) {
     msg.textContent = "❌ Les mots de passe ne correspondent pas.";
+    return;
+  }
+
+  const acceptCgu = document.getElementById("acceptCgu");
+  const acceptLegal = document.getElementById("acceptLegal");
+  const acceptConditions = document.getElementById("acceptConditions");
+
+  if (!acceptCgu.checked || !acceptLegal.checked || !acceptConditions.checked) {
+    msg.textContent = "❌ Vous devez accepter les CGU, mentions légales et conditions d’utilisation.";
     return;
   }
 
@@ -42,15 +50,19 @@ form.addEventListener("submit", async (e) => {
       password
     );
 
-    // ✅ PROFIL COMPLET DÈS L’INSCRIPTION
     await setDoc(doc(db, "users", cred.user.uid), {
       ...data,
       role: "user",
       profile: { completed: true },
+      legal: {
+        cgu: true,
+        legalNotice: true,
+        conditions: true,
+        acceptedAt: serverTimestamp()
+      },
       createdAt: serverTimestamp()
     });
 
-    // Accès direct après inscription
     location.href = "../dashboard/pro.html";
 
   } catch (err) {
