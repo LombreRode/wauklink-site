@@ -5,6 +5,9 @@ import { onAuthStateChanged } from
 import { doc, getDoc } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
+/* =========================
+   ROLE UTILS
+========================= */
 async function getRole(uid) {
   try {
     const snap = await getDoc(doc(db, "users", uid));
@@ -16,6 +19,9 @@ async function getRole(uid) {
   }
 }
 
+/* =========================
+   MODERATION (admin + moderator)
+========================= */
 export function requireModeration({
   redirectTo,
   onLoading,
@@ -36,6 +42,28 @@ export function requireModeration({
       onOk?.(user, role);
     } else {
       onFail?.("forbidden", role);
+      location.href = redirectTo;
+    }
+  });
+}
+
+/* =========================
+   ADMIN SEUL
+========================= */
+export function requireAdmin({
+  redirectTo,
+  onOk
+}) {
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      return (location.href = redirectTo);
+    }
+
+    const role = await getRole(user.uid);
+
+    if (role === "admin") {
+      onOk?.(user);
+    } else {
       location.href = redirectTo;
     }
   });
