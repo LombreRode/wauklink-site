@@ -9,6 +9,7 @@ const msg = document.getElementById("msg");
 
 onAuthStateChanged(auth, (user) => {
   if (user) {
+    console.log("✅ connecté :", user.uid);
     location.href = "../index.html";
   }
 });
@@ -23,8 +24,8 @@ form.addEventListener("submit", async (e) => {
       email.value.trim(),
       password.value.trim()
     );
-    location.href = "../index.html";
   } catch (err) {
+    console.error(err);
     msg.textContent = "❌ Email ou mot de passe incorrect";
   }
 });
