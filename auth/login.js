@@ -1,8 +1,19 @@
 import { auth } from "../_shared/firebase.js";
-import { signInWithEmailAndPassword } from
-  "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import {
+  signInWithEmailAndPassword,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-loginForm.addEventListener("submit", async (e) => {
+const form = document.getElementById("loginForm");
+const msg = document.getElementById("msg");
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    location.href = "../index.html";
+  }
+});
+
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
   msg.textContent = "Connexion…";
 
@@ -12,8 +23,8 @@ loginForm.addEventListener("submit", async (e) => {
       email.value.trim(),
       password.value.trim()
     );
-    // status.js décidera
-  } catch {
-    msg.textContent = "Erreur de connexion";
+    location.href = "../index.html";
+  } catch (err) {
+    msg.textContent = "❌ Email ou mot de passe incorrect";
   }
 });
