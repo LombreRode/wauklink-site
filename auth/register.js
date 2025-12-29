@@ -10,38 +10,44 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-const form = document.getElementById("registerForm");
-const msg = document.getElementById("msg");
-const email = document.getElementById("email");
-const password = document.getElementById("password");
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("registerForm");
+  const msg = document.getElementById("msg");
+  const email = document.getElementById("email");
+  const password = document.getElementById("password");
 
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    window.location.href = "../index.html";
+  if (!form || !email || !password || !msg) {
+    console.error("❌ Formulaire d'inscription introuvable dans le DOM");
+    return;
   }
-});
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  msg.textContent = "Création du compte…";
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      window.location.href = "../index.html";
+    }
+  });
 
-  try {
-    const cred = await createUserWithEmailAndPassword(
-      auth,
-      email.value.trim(),
-      password.value.trim()
-    );
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    msg.textContent = "Création du compte…";
 
-    // 🔐 création user Firestore
-    await setDoc(doc(db, "users", cred.user.uid), {
-      email: cred.user.email,
-      role: "user",
-      createdAt: serverTimestamp()
-    });
+    try {
+      const cred = await createUserWithEmailAndPassword(
+        auth,
+        email.value.trim(),
+        password.value.trim()
+      );
 
-    window.location.href = "../index.html";
-  } catch (err) {
-    console.error(err);
-    msg.textContent = "❌ " + err.message;
-  }
+      await setDoc(doc(db, "users", cred.user.uid), {
+        email: cred.user.email,
+        role: "user",
+        createdAt: serverTimestamp()
+      });
+
+      window.location.href = "../index.html";
+    } catch (err) {
+      console.error(err);
+      msg.textContent = "❌ " + err.message;
+    }
+  });
 });
