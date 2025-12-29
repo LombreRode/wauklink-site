@@ -1,5 +1,5 @@
 // auth/user_sync.js
-import { auth, db } from "../_shared/firebase.js";
+import { auth, db } from "../shared/firebase.js";
 import { onAuthStateChanged } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { doc, setDoc, serverTimestamp } from
@@ -13,7 +13,7 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  // éviter double écriture
+  // ⛔ éviter double écriture
   if (lastSyncedUid === user.uid) return;
   lastSyncedUid = user.uid;
 
