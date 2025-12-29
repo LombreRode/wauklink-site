@@ -20,73 +20,44 @@
 
   <form id="registerForm" style="display:flex;flex-direction:column;gap:12px;">
 
-    <!-- IDENTITÉ -->
     <div style="display:flex;gap:10px;">
-      <input id="lastName" type="text" placeholder="Nom" required>
-      <input id="firstName" type="text" placeholder="Prénom" required>
+      <input id="lastName" placeholder="Nom" required>
+      <input id="firstName" placeholder="Prénom" required>
     </div>
 
-    <!-- COMPTE -->
-    <input id="email" type="email" placeholder="Adresse email" required>
+    <input id="email" type="email" placeholder="Email" required>
 
     <div style="display:flex;gap:10px;">
       <input id="password" type="password" placeholder="Mot de passe" required>
       <input id="password2" type="password" placeholder="Confirmer le mot de passe" required>
     </div>
 
-    <!-- CONTACT -->
-    <input id="phone" type="tel" placeholder="Téléphone" required>
-
-    <!-- ADRESSE -->
-    <input id="address" type="text" placeholder="Adresse" required>
-    <input id="address2" type="text" placeholder="Complément d’adresse (optionnel)">
+    <input id="phone" placeholder="Téléphone" required>
+    <input id="address" placeholder="Adresse" required>
+    <input id="address2" placeholder="Complément d’adresse (optionnel)">
 
     <div style="display:flex;gap:10px;">
-      <input id="postalCode" type="text" placeholder="Code postal" required>
-      <input id="city" type="text" placeholder="Ville" required>
+      <input id="postalCode" placeholder="Code postal" required>
+      <input id="city" placeholder="Ville" required>
     </div>
 
-    <!-- ACCEPTATION LÉGALE -->
-    <div style="font-size:14px;display:flex;flex-direction:column;gap:6px;margin-top:10px;">
-
-      <label>
-        <input type="checkbox" id="acceptCgu">
-        J’accepte les <a href="../legal/index.html" target="_blank">CGU</a>
-      </label>
-
-      <label>
-        <input type="checkbox" id="acceptLegal">
-        J’ai lu les <a href="../legal/mentions-legales.html" target="_blank">mentions légales</a>
-      </label>
-
-      <label>
-        <input type="checkbox" id="acceptConditions">
-        J’accepte les <a href="../legal/privacy.html" target="_blank">conditions d’utilisation</a>
-      </label>
-
+    <!-- CGU -->
+    <div style="font-size:14px;display:flex;flex-direction:column;gap:6px;">
+      <label><input type="checkbox" id="acceptCgu"> J’accepte les <a href="../legal/index.html" target="_blank">CGU</a></label>
+      <label><input type="checkbox" id="acceptLegal"> J’ai lu les <a href="../legal/mentions-legales.html" target="_blank">mentions légales</a></label>
+      <label><input type="checkbox" id="acceptConditions"> J’accepte les <a href="../legal/privacy.html" target="_blank">conditions d’utilisation</a></label>
     </div>
 
-    <!-- ACTION -->
-    <button type="submit" style="margin-top:12px;">
-      Créer le compte
-    </button>
+    <button type="submit">Créer le compte</button>
   </form>
 
-  <p id="msg" style="margin-top:12px;"></p>
+  <p id="msg"></p>
 
-  <!-- LIENS LÉGAUX VISIBLES -->
-  <div style="margin-top:18px;font-size:13px;opacity:.85;text-align:center;">
-    <a href="../legal/index.html" target="_blank">CGU</a> |
-    <a href="../legal/mentions-legales.html" target="_blank">Mentions légales</a> |
-    <a href="../legal/privacy.html" target="_blank">Conditions d’utilisation</a>
-  </div>
-
-  <p style="margin-top:16px;font-size:14px;text-align:center;">
-    Déjà un compte ? <a href="./login.html">Connexion</a>
+  <p>
+    <a href="../index.html">← Retour à l’accueil</a> •
+    <a href="./login.html">Déjà un compte ?</a>
   </p>
 </main>
-
-<footer class="footer">© WAUKLINK</footer>
 
 <script type="module" src="./register.js"></script>
 </body>
