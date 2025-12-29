@@ -4,21 +4,50 @@
   <meta charset="utf-8">
   <title>Inscription – WAUKLINK</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- STYLE GLOBAL -->
+  <link rel="stylesheet" href="../style.css">
 </head>
 <body>
 
-<h1>Inscription</h1>
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Créer un compte</div>
+    </div>
+    <nav>
+      <a href="../index.html">Accueil</a>
+      <a href="./login.html">Connexion</a>
+    </nav>
+  </div>
+</header>
 
-<form id="registerForm">
-  <input id="email" type="email" placeholder="Email" required>
-  <input id="password" type="password" placeholder="Mot de passe" required>
-  <button type="submit">Créer le compte</button>
-</form>
+<main class="main-layout container">
+  <section style="max-width:420px;margin:40px auto;">
+    <h2>Inscription</h2>
 
-<p id="msg"></p>
+    <form id="registerForm" style="display:flex;flex-direction:column;gap:14px;">
+      <input id="email" type="email" placeholder="Adresse email" required>
+      <input id="password" type="password" placeholder="Mot de passe" required>
+      <button type="submit">Créer mon compte</button>
+    </form>
 
-<!-- ⚠️ UNE SEULE BALISE SCRIPT, RIEN D’AUTRE -->
+    <p id="msg" style="margin-top:12px;"></p>
+
+    <p style="margin-top:16px;font-size:14px;">
+      Déjà un compte ?
+      <a href="./login.html">Se connecter</a>
+    </p>
+  </section>
+</main>
+
+<footer class="footer">
+  © WAUKLINK —
+  <a href="../pricing.html">Tarifs</a> |
+  <a href="../legal/index.html">CGU</a>
+</footer>
+
 <script type="module" src="./register.js"></script>
-
 </body>
 </html>
