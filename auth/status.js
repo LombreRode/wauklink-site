@@ -3,15 +3,12 @@
 // GLOBAL AUTH STATUS BAR (APP SAFE)
 // ================================
 
-import { auth } from "../_shared/firebase.js";
+import { auth } from "/wauklink-site/_shared/firebase.js";
 import {
   onAuthStateChanged,
   signOut
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-/**
- * Create or return the auth bar container
- */
 function getAuthBar() {
   let bar = document.getElementById("authBar");
   if (bar) return bar;
@@ -32,16 +29,13 @@ function getAuthBar() {
   return bar;
 }
 
-/**
- * Render UI depending on auth state
- */
 function renderAuth(user) {
   const bar = getAuthBar();
   bar.innerHTML = "";
 
   if (!user) {
     const login = document.createElement("a");
-    login.href = "auth/login.html"; // ✅ chemin relatif
+    login.href = "/wauklink-site/auth/login.html";
     login.textContent = "Connexion";
     bar.appendChild(login);
     return;
@@ -54,14 +48,10 @@ function renderAuth(user) {
   logout.textContent = "Déconnexion";
   logout.onclick = async () => {
     await signOut(auth);
-    // ✅ retour propre sans reload violent
-    window.location.href = "index.html";
+    window.location.href = "/wauklink-site/index.html";
   };
 
   bar.append(email, logout);
 }
 
-/**
- * Bootstrap auth status
- */
 onAuthStateChanged(auth, renderAuth);
