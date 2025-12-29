@@ -1,58 +1,147 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <title>Locations</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="../style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WAUKLINK — Annonces Location</title>
+  <link rel="stylesheet" href="../style.css" />
 </head>
-<body>
 
-<h1>Locations</h1>
-<div id="list">Chargement…</div>
+<body>
+<header class="topbar">
+  <div class="container">
+    <h1>WAUKLINK</h1>
+    <div class="subtitle">Locations disponibles</div>
+  </div>
+</header>
+
+<main class="container" style="padding:22px 0;">
+
+  <h2>Annonces de location</h2>
+
+  <!-- MESSAGE GLOBAL -->
+  <p id="statusMsg" style="opacity:.85;margin-bottom:18px;">
+    Chargement…
+  </p>
+
+  <!-- BLOQUÉ -->
+  <section id="blocked" style="display:none" class="card">
+    <p style="color:#ff6666">
+      Accès bloqué selon votre abonnement ou votre statut.
+    </p>
+  </section>
+
+  <!-- LISTE ANNONCES -->
+  <section id="content" style="display:none">
+    <div id="list" class="grid"></div>
+  </section>
+
+  <div style="margin-top:20px">
+    <a href="../index.html">← Accueil</a>
+  </div>
+
+</main>
 
 <script type="module">
-  import { db } from "../_shared/firebase.js";
+  import { auth, db } from "../_shared/firebase.js";
+  import { onAuthStateChanged } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
   import {
-    collection, query, where, getDocs
-  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+    collection, query, where, orderBy, getDocs, doc, getDoc
+  } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  const list=document.getElementById("list");
-  const duree=new URLSearchParams(location.search).get("duree");
+  const statusMsg = document.getElementById("statusMsg");
+  const blocked = document.getElementById("blocked");
+  const content = document.getElementById("content");
+  const list = document.getElementById("list");
 
-  async function load(){
-    let q = collection(db,"annonces_location");
-    let conditions = [ where("status","==","active") ];
+  function esc(s){
+    return String(s ?? "").replace(/[&<>"']/g, m =>
+      ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
+    );
+  }
 
-    if (duree){
-      conditions.push(where("duree","==",duree));
-    }
+  async function loadAnnonces(){
+    list.innerHTML = "";
+    const qy = query(
+      collection(db, "annonces_location"),
+      where("status", "==", "active"),
+      orderBy("createdAt", "desc")
+    );
+    const snap = await getDocs(qy);
 
-    const snap = await getDocs(query(q,...conditions));
-    list.innerHTML="";
-
-    if (snap.empty){
-      list.textContent="Aucune annonce.";
+    if (!snap.size) {
+      list.innerHTML = "<p>Aucune annonce disponible.</p>";
       return;
     }
 
-    snap.forEach(d=>{
-      const a=d.data();
-      const div=document.createElement("div");
-      div.className="card";
-      div.innerHTML=`
-        <h3>${a.titre}</h3>
-        <p>${a.ville}</p>
-        <p>${a.prix} €</p>
-        <small>${a.duree}</small>
+    snap.forEach(d => {
+      const a = d.data();
+      const el = document.createElement("div");
+      el.className = "card";
+      el.innerHTML = `
+        <b>${esc(a.titre)}</b>
+        <div style="opacity:.8">${esc(a.ville)} — ${esc(a.prix)}€</div>
+        <p>${esc(a.description || "")}</p>
       `;
-      list.appendChild(div);
+      list.appendChild(el);
     });
   }
 
-  load();
+  onAuthStateChanged(auth, async user => {
+    if (!user) {
+      location.href = "../auth/login.html";
+      return;
+    }
+
+    const snap = await getDoc(doc(db, "users", user.uid));
+    if (!snap.exists()) {
+      blocked.style.display = "block";
+      statusMsg.textContent = "Profil introuvable.";
+      return;
+    }
+
+    const u = snap.data();
+    const role = u.role || "user";
+    const sub = u.abonnement?.type || "free";
+    const proValidated = u.pro?.validated === true;
+
+    // FREE → BLOQUÉ
+    if (sub === "free") {
+      blocked.style.display = "block";
+      statusMsg.textContent = "Abonnement requis pour accéder aux annonces.";
+      return;
+    }
+
+    // PARTIEL → OK (NON‑PRO)
+    if (sub === "partial" && role !== "pro") {
+      statusMsg.textContent = "Accès autorisé (non‑professionnel).";
+      content.style.display = "block";
+      loadAnnonces();
+      return;
+    }
+
+    // PRO NON VALIDÉ → BLOQUÉ
+    if (role === "pro" && !proValidated) {
+      blocked.style.display = "block";
+      statusMsg.textContent = "Compte professionnel non validé.";
+      return;
+    }
+
+    // PRO VALIDÉ → OK
+    if (role === "pro" && proValidated) {
+      statusMsg.textContent = "Accès autorisé (prestataire professionnel).";
+      content.style.display = "block";
+      loadAnnonces();
+      return;
+    }
+
+    // SÉCURITÉ PAR DÉFAUT
+    blocked.style.display = "block";
+    statusMsg.textContent = "Accès non autorisé.";
+  });
 </script>
 
-<script type="module" src="../auth/status.js"></script>
 </body>
 </html>
