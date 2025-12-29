@@ -3,10 +3,10 @@ import { auth } from "../_shared/firebase.js";
 import { onAuthStateChanged } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-// ⚠️ STATUS = INFO UNIQUEMENT
-// ❌ AUCUNE redirection ici
-// ❌ AUCUN accès Firestore
-// ✅ Compatible pages publiques (home)
+// ⚠️ HOME = PUBLIQUE
+// ❌ aucune redirection ici
+// ❌ aucun Firestore
+// ✅ info uniquement
 
 onAuthStateChanged(auth, (user) => {
   if (!user) {
