@@ -1,46 +1,24 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <title>WAUKLINK — Finaliser mon profil</title>
-  <link rel="stylesheet" href="../style.css" />
+  <meta charset="utf-8">
+  <title>Finaliser le profil</title>
+  <link rel="stylesheet" href="../style.css">
 </head>
-
 <body>
-<header class="topbar">
-  <div class="container">
-    <h1>WAUKLINK</h1>
-    <div class="subtitle">Finaliser l’inscription</div>
-  </div>
-</header>
+<h1>Questionnaire</h1>
 
-<main class="container" style="padding:22px 0;">
-  <h2>Questionnaire de profil</h2>
+<form id="profileForm">
+  <select id="type" required>
+    <option value="">Type</option>
+    <option value="particulier">Particulier</option>
+    <option value="pro">Professionnel</option>
+  </select>
+  <input id="ville" placeholder="Ville" required>
+  <button>Continuer</button>
+</form>
 
-  <section class="card">
-    <form id="profileForm">
-
-      <label>
-        Type d’utilisateur<br />
-        <select id="type" required>
-          <option value="">— Choisir —</option>
-          <option value="particulier">Particulier</option>
-          <option value="non-pro">Non‑professionnel (CESU / occasionnel)</option>
-          <option value="pro">Professionnel</option>
-        </select>
-      </label><br /><br />
-
-      <label>
-        Ville<br />
-        <input type="text" id="ville" required />
-      </label><br /><br />
-
-      <button type="submit">Continuer</button>
-    </form>
-
-    <p id="msg" style="margin-top:10px;opacity:.8;"></p>
-  </section>
-</main>
+<p id="msg"></p>
 
 <script type="module" src="./profile.js"></script>
 </body>
