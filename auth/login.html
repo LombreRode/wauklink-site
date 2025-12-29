@@ -2,42 +2,25 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Connexion — WAUKLINK</title>
+  <title>Connexion</title>
   <link rel="stylesheet" href="../style.css">
 </head>
 <body>
 
-<header class="topbar">
-  <div class="container">
-    <h1>WAUKLINK</h1>
-    <div class="subtitle">Connexion</div>
-  </div>
-</header>
+<h2>Connexion</h2>
 
-<main class="container" style="max-width:420px;padding:40px 0;">
-  <h2>Se connecter</h2>
+<form id="loginForm">
+  <input id="email" type="email" placeholder="Email" required>
+  <input id="password" type="password" placeholder="Mot de passe" required>
+  <button>Connexion</button>
+</form>
 
-  <form id="loginForm" style="display:flex;flex-direction:column;gap:12px;">
-    <input id="email" type="email" placeholder="Adresse email" required>
-    <input id="password" type="password" placeholder="Mot de passe" required>
+<p id="msg"></p>
 
-    <button type="submit">Connexion</button>
-  </form>
-
-  <p id="msg" style="margin-top:12px;"></p>
-
-  <p style="margin-top:14px;font-size:14px;">
-    <a href="./forgot-password.html">Mot de passe oublié ?</a>
-  </p>
-
-  <p style="margin-top:12px;font-size:14px;">
-    Pas encore de compte ?
-    <a href="./register.html">Créer un compte</a>
-  </p>
-</main>
-
-<footer class="footer">© WAUKLINK</footer>
+<p>
+  <a href="./forgot-password.html">Mot de passe oublié</a><br>
+  <a href="../index.html">← Retour accueil</a>
+</p>
 
 <script type="module" src="./login.js"></script>
 </body>
