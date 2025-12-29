@@ -1,52 +1,53 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <title>Inscription – WAUKLINK</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- STYLE GLOBAL -->
-  <link rel="stylesheet" href="../style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WAUKLINK — Inscription</title>
+  <link rel="stylesheet" href="../style.css" />
 </head>
-<body>
 
+<body>
 <header class="topbar">
-  <div class="container topbar-row">
-    <div>
-      <h1>WAUKLINK</h1>
-      <div class="subtitle">Créer un compte</div>
-    </div>
-    <nav>
-      <a href="../index.html">Accueil</a>
-      <a href="./login.html">Connexion</a>
-    </nav>
+  <div class="container">
+    <h1>WAUKLINK</h1>
+    <div class="subtitle">Créer un compte</div>
   </div>
 </header>
 
-<main class="main-layout container">
-  <section style="max-width:420px;margin:40px auto;">
-    <h2>Inscription</h2>
+<main class="container" style="padding:22px 0;">
 
-    <form id="registerForm" style="display:flex;flex-direction:column;gap:14px;">
-      <input id="email" type="email" placeholder="Adresse email" required>
-      <input id="password" type="password" placeholder="Mot de passe" required>
+  <h2>Inscription</h2>
+
+  <section class="card">
+    <form id="registerForm">
+
+      <label>
+        Email<br />
+        <input type="email" id="email" required />
+      </label><br /><br />
+
+      <label>
+        Mot de passe<br />
+        <input type="password" id="password" required />
+      </label><br /><br />
+
+      <label>
+        Nom / Pseudo<br />
+        <input type="text" id="displayName" required />
+      </label><br /><br />
+
       <button type="submit">Créer mon compte</button>
     </form>
 
-    <p id="msg" style="margin-top:12px;"></p>
-
-    <p style="margin-top:16px;font-size:14px;">
-      Déjà un compte ?
-      <a href="./login.html">Se connecter</a>
-    </p>
+    <p id="msg" style="margin-top:12px;opacity:.85;"></p>
   </section>
-</main>
 
-<footer class="footer">
-  © WAUKLINK —
-  <a href="../pricing.html">Tarifs</a> |
-  <a href="../legal/index.html">CGU</a>
-</footer>
+  <div style="margin-top:20px">
+    <a href="../auth/login.html">Déjà un compte ? Connexion</a>
+  </div>
+
+</main>
 
 <script type="module" src="./register.js"></script>
 </body>
