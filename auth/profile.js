@@ -1,21 +1,52 @@
-import { auth, db } from "../_shared/firebase.js";
-import { doc, updateDoc } from
+import { auth, db } from "../shared/firebase.js";
+import { onAuthStateChanged } from
+  "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { doc, updateDoc, serverTimestamp } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-profileForm.addEventListener("submit", async (e) => {
+const form = document.getElementById("profileForm");
+const activity = document.getElementById("activity");
+const description = document.getElementById("description");
+const msg = document.getElementById("msg");
+
+// 🔐 Vérifie que l’utilisateur est connecté
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    location.replace("./login.html");
+  }
+});
+
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
+  msg.textContent = "";
+
+  if (!activity.value || !description.value.trim()) {
+    msg.textContent = "❌ Tous les champs sont obligatoires";
+    return;
+  }
 
   try {
-    await updateDoc(doc(db, "users", auth.currentUser.uid), {
+    const user = auth.currentUser;
+    if (!user) {
+      msg.textContent = "❌ Utilisateur non connecté";
+      return;
+    }
+
+    await updateDoc(doc(db, "users", user.uid), {
       activity: {
         type: activity.value,
-        description: description.value,
-        requestedAt: new Date()
-      }
+        description: description.value.trim(),
+        completedAt: serverTimestamp()
+      },
+      role: "pro",
+      updatedAt: serverTimestamp()
     });
 
-    location.href = "../dashboard/pro.html";
-  } catch {
-    msg.textContent = "Erreur lors de l’enregistrement";
+    // 🔁 Redirection après succès
+    location.replace("../dashboard/pro.html");
+
+  } catch (err) {
+    console.error(err);
+    msg.textContent = "❌ Erreur lors de l’enregistrement";
   }
 });
