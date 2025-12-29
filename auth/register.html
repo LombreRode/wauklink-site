@@ -15,18 +15,53 @@
   </div>
 </header>
 
-<main class="container" style="max-width:560px;padding:40px 0;">
-  <h2>FICHE COMPLÈTE TEST</h2>
+<main class="container" style="max-width:640px;padding:40px 0;">
+  <h2>Fiche d’inscription complète</h2>
 
-  <form>
-    <input placeholder="EMAIL">
-    <input placeholder="MOT DE PASSE">
-    <input placeholder="TÉLÉPHONE">
-    <input placeholder="ADRESSE">
-    <input placeholder="CODE POSTAL">
-    <input placeholder="VILLE">
+  <form id="registerForm" style="display:flex;flex-direction:column;gap:12px;">
+
+    <!-- IDENTITÉ -->
+    <div style="display:flex;gap:10px;">
+      <input id="lastName" type="text" placeholder="Nom" required>
+      <input id="firstName" type="text" placeholder="Prénom" required>
+    </div>
+
+    <!-- COMPTE -->
+    <input id="email" type="email" placeholder="Adresse email" required>
+
+    <div style="display:flex;gap:10px;">
+      <input id="password" type="password" placeholder="Mot de passe" required>
+      <input id="password2" type="password" placeholder="Confirmer le mot de passe" required>
+    </div>
+
+    <!-- CONTACT -->
+    <input id="phone" type="tel" placeholder="Téléphone" required>
+
+    <!-- ADRESSE -->
+    <input id="address" type="text" placeholder="Adresse" required>
+    <input id="address2" type="text" placeholder="Complément d’adresse (optionnel)">
+
+    <div style="display:flex;gap:10px;">
+      <input id="postalCode" type="text" placeholder="Code postal" required>
+      <input id="city" type="text" placeholder="Ville" required>
+    </div>
+
+    <!-- ACTION -->
+    <button type="submit" style="margin-top:10px;">
+      Créer le compte
+    </button>
   </form>
+
+  <p id="msg" style="margin-top:12px;"></p>
+
+  <p style="margin-top:16px;font-size:14px;">
+    Déjà un compte ?
+    <a href="./login.html">Connexion</a>
+  </p>
 </main>
 
+<footer class="footer">© WAUKLINK</footer>
+
+<script type="module" src="./register.js"></script>
 </body>
 </html>
