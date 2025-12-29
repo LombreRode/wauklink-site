@@ -8,9 +8,10 @@
   <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="style.css?v=1" />
 
-  <!-- CARROUSEL -->
+  <!-- SCRIPT PRINCIPAL / CARROUSEL -->
   <script type="module" src="script.js?v=1"></script>
 </head>
+
 <body>
 
 <!-- ================= TOPBAR ================= -->
@@ -44,19 +45,16 @@
 
 <!-- ================= CONTENU ================= -->
 <main class="main-layout container">
-
   <section class="circle-section">
     <h2>Choisissez un service</h2>
     <p class="circle-subtitle">
       Clique sur une carte pour ouvrir • Glisse pour tourner
     </p>
 
-    <!-- CARROUSEL -->
     <div class="circle-wrapper" id="circleWrapper">
       <div class="circle" id="circle"></div>
     </div>
   </section>
-
 </main>
 
 <!-- ================= FOOTER ================= -->
@@ -70,11 +68,8 @@
 </footer>
 
 <!-- ================= AUTH (GLOBAL) ================= -->
-<!-- Barre connexion / déconnexion -->
-<script type="module" src="./auth/status.js"></script>
-
-<!-- Sync utilisateur => /users/{uid} -->
-<script type="module" src="./auth/user_sync.js"></script>
+<script type="module" src="./auth/status.js?v=1"></script>
+<script type="module" src="./auth/user_sync.js?v=1"></script>
 
 </body>
 </html>
