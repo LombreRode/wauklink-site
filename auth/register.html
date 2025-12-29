@@ -1,53 +1,21 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WAUKLINK — Inscription</title>
-  <link rel="stylesheet" href="../style.css" />
+  <meta charset="utf-8">
+  <title>Inscription — WAUKLINK</title>
+  <link rel="stylesheet" href="../style.css">
 </head>
-
 <body>
-<header class="topbar">
-  <div class="container">
-    <h1>WAUKLINK</h1>
-    <div class="subtitle">Créer un compte</div>
-  </div>
-</header>
+<h1>Inscription</h1>
 
-<main class="container" style="padding:22px 0;">
+<form id="registerForm">
+  <input id="email" type="email" placeholder="Email" required>
+  <input id="password" type="password" placeholder="Mot de passe" required>
+  <input id="displayName" type="text" placeholder="Nom / Pseudo" required>
+  <button type="submit">Créer le compte</button>
+</form>
 
-  <h2>Inscription</h2>
-
-  <section class="card">
-    <form id="registerForm">
-
-      <label>
-        Email<br />
-        <input type="email" id="email" required />
-      </label><br /><br />
-
-      <label>
-        Mot de passe<br />
-        <input type="password" id="password" required />
-      </label><br /><br />
-
-      <label>
-        Nom / Pseudo<br />
-        <input type="text" id="displayName" required />
-      </label><br /><br />
-
-      <button type="submit">Créer mon compte</button>
-    </form>
-
-    <p id="msg" style="margin-top:12px;opacity:.85;"></p>
-  </section>
-
-  <div style="margin-top:20px">
-    <a href="../auth/login.html">Déjà un compte ? Connexion</a>
-  </div>
-
-</main>
+<p id="msg"></p>
 
 <script type="module" src="./register.js"></script>
 </body>
