@@ -1,57 +1,33 @@
-// auth/status.js
-// ================================
-// GLOBAL AUTH STATUS BAR (APP SAFE)
-// ================================
+import { auth, db } from "../_shared/firebase.js";
+import { onAuthStateChanged } from
+  "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { doc, getDoc } from
+  "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-import { auth } from "/wauklink-site/_shared/firebase.js";
-import {
-  onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-
-function getAuthBar() {
-  let bar = document.getElementById("authBar");
-  if (bar) return bar;
-
-  bar = document.createElement("div");
-  bar.id = "authBar";
-  bar.style.cssText = `
-    position:fixed;
-    top:12px;
-    right:12px;
-    z-index:9999;
-    display:flex;
-    gap:10px;
-    align-items:center;
-    font-size:13px;
-  `;
-  document.body.appendChild(bar);
-  return bar;
-}
-
-function renderAuth(user) {
-  const bar = getAuthBar();
-  bar.innerHTML = "";
-
+onAuthStateChanged(auth, async (user) => {
+  // Pas connecté → login
   if (!user) {
-    const login = document.createElement("a");
-    login.href = "/wauklink-site/auth/login.html";
-    login.textContent = "Connexion";
-    bar.appendChild(login);
+    location.href = "../auth/login.html";
     return;
   }
 
-  const email = document.createElement("span");
-  email.textContent = user.email || "Utilisateur";
+  const ref = doc(db, "users", user.uid);
+  const snap = await getDoc(ref);
 
-  const logout = document.createElement("button");
-  logout.textContent = "Déconnexion";
-  logout.onclick = async () => {
-    await signOut(auth);
-    window.location.href = "/wauklink-site/index.html";
-  };
+  // Doc user manquant → questionnaire
+  if (!snap.exists()) {
+    location.href = "../auth/profile.html";
+    return;
+  }
 
-  bar.append(email, logout);
-}
+  const data = snap.data();
 
-onAuthStateChanged(auth, renderAuth);
+  // Profil pas complété → questionnaire
+  if (!data.profile || data.profile.completed !== true) {
+    location.href = "../auth/profile.html";
+    return;
+  }
+
+  // Sinon → dashboard
+  // (NE FAIT RIEN, laisse la page courante)
+});
