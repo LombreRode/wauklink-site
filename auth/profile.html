@@ -2,20 +2,23 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Finaliser le profil</title>
+  <title>Devenir prestataire</title>
   <link rel="stylesheet" href="../style.css">
 </head>
 <body>
-<h1>Questionnaire</h1>
+<h2>Compléter mon activité</h2>
 
 <form id="profileForm">
-  <select id="type" required>
-    <option value="">Type</option>
-    <option value="particulier">Particulier</option>
-    <option value="pro">Professionnel</option>
+  <select id="activity" required>
+    <option value="">Choisir une activité</option>
+    <option value="non-pro">Prestataire non professionnel</option>
+    <option value="vendeur">Vendeur</option>
+    <option value="loueur">Loueur</option>
   </select>
-  <input id="ville" placeholder="Ville" required>
-  <button>Continuer</button>
+
+  <textarea id="description" placeholder="Décrivez votre activité" required></textarea>
+
+  <button>Enregistrer</button>
 </form>
 
 <p id="msg"></p>
