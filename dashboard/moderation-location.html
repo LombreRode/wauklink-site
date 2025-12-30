@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>WAUKLINK — Admin • Modération Location</title>
-  <link rel="stylesheet" href="../style.css?v=1" />
+  <link rel="stylesheet" href="/wauklink-site/style.css">
   <style>
     .page{padding:24px 0}
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:12px}
@@ -16,6 +16,7 @@
     .btnOk{border-color:rgba(90,255,160,.35);background:rgba(90,255,160,.10)}
   </style>
 </head>
+
 <body>
 
 <header class="topbar">
@@ -24,40 +25,39 @@
       <h1>WAUKLINK</h1>
       <div class="subtitle">Admin • Modération • Location</div>
     </div>
-    <nav style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-      <a href="../index.html">← Accueil</a>
-      <a href="../annonces/location.html">Voir annonces</a>
+    <nav style="display:flex;gap:10px;flex-wrap:wrap">
+      <a class="btn" href="/wauklink-site/admin/index.html">← Dashboard</a>
+      <a class="btn" href="/wauklink-site/annonces/location.html">Voir annonces</a>
     </nav>
   </div>
 </header>
 
 <main class="container page">
-  <h2 style="margin:0">Annonces en attente (pending)</h2>
-  <p class="meta">Clique “Valider” → status=active (visible sur la page Location).</p>
-
+  <h2 style="margin:0">Annonces en attente</h2>
+  <p class="meta">Valider → visible publiquement • Refuser → rejetée</p>
   <div id="msg" class="meta"></div>
   <div id="grid" class="grid"></div>
 </main>
 
 <script type="module">
-  import { auth, db } from "../auth/firebase.js";
-  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-  import { collection, query, where, orderBy, limit, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  import { db } from "/wauklink-site/shared/firebase.js";
+  import { requireAdmin } from "/wauklink-site/shared/guard.js";
+  import {
+    collection, query, where, orderBy, limit,
+    getDocs, doc, updateDoc
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
   const grid = document.getElementById("grid");
   const msg = document.getElementById("msg");
 
-  // ⚠️ TEMPORAIRE (Étape 3 = sécurité définitive)
-  // Mets ton UID admin ici (ou plusieurs).
-  const ADMIN_UIDS = [
-    // "TON_UID_ICI"
-  ];
-
-  function esc(s){ return String(s ?? "").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])); }
+  const esc = s =>
+    String(s ?? "").replace(/[&<>"']/g, m =>
+      ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
+    );
 
   async function loadPending(){
     grid.innerHTML = "";
-    msg.textContent = "Chargement…";
+    msg.textContent = "⏳ Chargement…";
 
     const qy = query(
       collection(db, "annonces_location"),
@@ -67,63 +67,56 @@
     );
 
     const snap = await getDocs(qy);
-    msg.textContent = `Pending: ${snap.size}`;
+    msg.textContent = `📋 ${snap.size} annonce(s) en attente`;
 
-    if(!snap.size){
+    if (!snap.size) {
       grid.innerHTML = `<div class="meta">Aucune annonce pending.</div>`;
       return;
     }
 
-    snap.forEach(d=>{
+    snap.forEach(d => {
       const a = d.data();
       const el = document.createElement("div");
       el.className = "card";
+
       el.innerHTML = `
         <div class="row">
           <div>
             <div style="font-weight:900">${esc(a.titre)}</div>
-            <div class="meta">${esc(a.ville)} • ${esc(a.type)} • ${esc(a.surface||"")}</div>
-            <div class="meta">${esc(a.prix)}€ • ${esc(a.contactEmail||"")}</div>
+            <div class="meta">${esc(a.ville)} • ${esc(a.type)}</div>
+            <div class="meta">${esc(a.prix)} €</div>
           </div>
         </div>
-        <div class="meta" style="margin-top:10px;white-space:pre-wrap">${esc(a.description||"")}</div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
-          <button class="btn btnOk" data-id="${d.id}" data-act="active">✅ Valider</button>
-          <button class="btn btnDanger" data-id="${d.id}" data-act="rejected">❌ Refuser</button>
+        <div class="meta" style="margin-top:10px;white-space:pre-wrap">
+          ${esc(a.description || "")}
+        </div>
+        <div style="display:flex;gap:10px;margin-top:12px">
+          <button class="btn btnOk">Valider</button>
+          <button class="btn btnDanger">Refuser</button>
         </div>
       `;
-      el.addEventListener("click", async (e)=>{
-        const b = e.target.closest("button");
-        if(!b) return;
-        const id = b.dataset.id;
-        const act = b.dataset.act;
 
-        await updateDoc(doc(db, "annonces_location", id), { status: act });
-        await loadPending();
-      });
+      const [ok, no] = el.querySelectorAll("button");
+
+      ok.onclick = async () => {
+        await updateDoc(doc(db, "annonces_location", d.id), { status: "active" });
+        loadPending();
+      };
+
+      no.onclick = async () => {
+        await updateDoc(doc(db, "annonces_location", d.id), { status: "rejected" });
+        loadPending();
+      };
 
       grid.appendChild(el);
     });
   }
 
-  onAuthStateChanged(auth, async (user)=>{
-    if(!user){
-      alert("Connecte-toi pour accéder à l’admin.");
-      location.href = "../auth/login.html";
-      return;
-    }
-
-    // Étape 3 = on remplacera ça par une vraie sécurité (custom claims / règles)
-    if(ADMIN_UIDS.length && !ADMIN_UIDS.includes(user.uid)){
-      alert("Accès admin refusé (UID non autorisé). Étape 3 = sécurisation définitive.");
-      location.href = "../index.html";
-      return;
-    }
-
-    await loadPending();
+  requireAdmin({
+    redirectTo: "/wauklink-site/auth/login.html",
+    onOk: loadPending
   });
 </script>
 
-<script type="module" src="../auth/status.js"></script>
 </body>
 </html>
