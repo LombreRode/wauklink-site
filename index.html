@@ -6,15 +6,14 @@
   <title>WAUKLINK</title>
 
   <!-- STYLE GLOBAL -->
-  <link rel="stylesheet" href="style.css?v=1" />
+  <link rel="stylesheet" href="/wauklink-site/style.css" />
 
-  <!-- SCRIPT PRINCIPAL / CARROUSEL -->
-  <script type="module" src="script.js?v=1"></script>
+  <!-- SCRIPT PRINCIPAL -->
+  <script type="module" src="/wauklink-site/script.js"></script>
 </head>
 
 <body>
 
-<!-- ================= TOPBAR ================= -->
 <header class="topbar">
   <div class="container topbar-row">
     <div>
@@ -23,53 +22,41 @@
     </div>
 
     <nav style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-      <a href="pricing.html" style="text-decoration:underline;opacity:.9;">Tarifs</a>
-      <a href="legal/index.html" style="text-decoration:underline;opacity:.9;">CGU</a>
-      <a href="auth/login.html" style="text-decoration:underline;opacity:.9;">Connexion</a>
-      <a
-        href="auth/register.html"
-        style="
-          padding:8px 12px;
-          border-radius:12px;
-          border:1px solid rgba(255,255,255,.14);
-          background:rgba(255,255,255,.06);
-          text-decoration:none;
-          color:#fff;
-        "
-      >
+      <a href="/wauklink-site/pricing.html">Tarifs</a>
+      <a href="/wauklink-site/legal/index.html">CGU</a>
+      <a href="/wauklink-site/auth/login.html">Connexion</a>
+      <a href="/wauklink-site/auth/register.html"
+         style="padding:8px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;">
         Inscription
       </a>
     </nav>
   </div>
 </header>
 
-<!-- ================= CONTENU ================= -->
 <main class="main-layout container">
   <section class="circle-section">
     <h2>Choisissez un service</h2>
     <p class="circle-subtitle">
       Clique sur une carte pour ouvrir • Glisse pour tourner
     </p>
-
     <div class="circle-wrapper" id="circleWrapper">
       <div class="circle" id="circle"></div>
     </div>
   </section>
 </main>
 
-<!-- ================= FOOTER ================= -->
 <footer class="footer">
   © WAUKLINK —
-  <a href="pricing.html">Tarifs</a> |
-  <a href="legal/index.html">CGU</a> |
-  <a href="legal/mentions-legales.html">Mentions légales</a> |
-  <a href="legal/privacy.html">Confidentialité</a> |
-  <a href="admin/portal.html">Administrateurs / Modérateurs</a>
+  <a href="/wauklink-site/pricing.html">Tarifs</a> |
+  <a href="/wauklink-site/legal/index.html">CGU</a> |
+  <a href="/wauklink-site/legal/mentions-legales.html">Mentions légales</a> |
+  <a href="/wauklink-site/legal/privacy.html">Confidentialité</a> |
+  <a href="/wauklink-site/admin/portal.html">Administrateurs / Modérateurs</a>
 </footer>
 
-<!-- ================= AUTH (GLOBAL) ================= -->
-<script type="module" src="./auth/status.js?v=1"></script>
-<script type="module" src="./auth/user_sync.js?v=1"></script>
+<!-- AUTH GLOBAL -->
+<script type="module" src="/wauklink-site/auth/status.js"></script>
+<script type="module" src="/wauklink-site/auth/user_sync.js"></script>
 
 </body>
 </html>
