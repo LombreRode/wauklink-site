@@ -1,12 +1,11 @@
 // admin/portal.js
 import { requireAdmin } from "/wauklink-site/shared/guard.js";
 
-const status = document.getElementById("status");
+const msg = document.getElementById("msg");
 
 requireAdmin({
   redirectTo: "/wauklink-site/auth/login.html",
-  onOk: (user) => {
-    console.log("ADMIN OK", user.uid);
-    status.textContent = "Accès admin autorisé";
+  onOk: () => {
+    msg.textContent = "Accès admin autorisé";
   }
 });
