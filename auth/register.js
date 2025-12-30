@@ -1,73 +1,75 @@
-// auth/register.js
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inscription — WAUKLINK</title>
 
-// 🔹 IMPORTS (CHEMINS RELATIFS — OBLIGATOIRE SUR GITHUB PAGES)
-import { auth, db } from "../shared/firebase.js";
+  <!-- ✅ CSS : chemin RELATIF -->
+  <link rel="stylesheet" href="../style.css">
+</head>
 
-import { createUserWithEmailAndPassword } from
-  "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+<body>
+<header class="topbar">
+  <div class="container">
+    <h1>WAUKLINK</h1>
+    <div class="subtitle">Créer un compte</div>
+  </div>
+</header>
 
-import { doc, setDoc, serverTimestamp } from
-  "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+<main class="container" style="max-width:680px;padding:40px 0;">
+  <h2>Fiche d’inscription complète</h2>
 
-// 🔹 ELEMENTS DOM
-const form = document.getElementById("registerForm");
-const msg = document.getElementById("msg");
+  <form id="registerForm" style="display:flex;flex-direction:column;gap:12px;">
+    <div style="display:flex;gap:10px;">
+      <input type="text" id="lastName" placeholder="Nom" required>
+      <input type="text" id="firstName" placeholder="Prénom" required>
+    </div>
 
-console.log("REGISTER.JS CHARGÉ");
+    <input type="email" id="email" placeholder="Email" required>
 
-// 🔹 SUBMIT FORM
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  msg.textContent = "Création du compte…";
+    <div style="display:flex;gap:10px;">
+      <input type="password" id="password" placeholder="Mot de passe" required>
+      <input type="password" id="password2" placeholder="Confirmer le mot de passe" required>
+    </div>
 
-  try {
-    // 🔸 RÉCUPÉRATION DES CHAMPS
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value;
-    const password2 = document.getElementById("password2").value;
+    <input type="tel" id="phone" placeholder="Téléphone">
+    <input type="text" id="address" placeholder="Adresse">
+    <input type="text" id="address2" placeholder="Complément d’adresse">
 
-    const firstName = document.getElementById("firstName").value.trim();
-    const lastName = document.getElementById("lastName").value.trim();
+    <div style="display:flex;gap:10px;">
+      <input type="text" id="postalCode" placeholder="Code postal">
+      <input type="text" id="city" placeholder="Ville">
+    </div>
 
-    // 🔸 VÉRIFICATIONS
-    if (password !== password2) {
-      msg.textContent = "❌ Les mots de passe ne correspondent pas";
-      return;
-    }
+    <div style="font-size:14px;display:flex;flex-direction:column;gap:6px;">
+      <label>
+        <input type="checkbox" id="acceptCgu">
+        J’accepte les <a href="../legal/index.html" target="_blank">CGU</a>
+      </label>
+      <label>
+        <input type="checkbox" id="acceptLegal">
+        J’ai lu les <a href="../legal/mentions-legales.html" target="_blank">mentions légales</a>
+      </label>
+      <label>
+        <input type="checkbox" id="acceptConditions">
+        J’accepte les <a href="../legal/privacy.html" target="_blank">conditions d’utilisation</a>
+      </label>
+    </div>
 
-    if (
-      !document.getElementById("acceptCgu").checked ||
-      !document.getElementById("acceptLegal").checked ||
-      !document.getElementById("acceptConditions").checked
-    ) {
-      msg.textContent = "❌ Tu dois accepter toutes les conditions";
-      return;
-    }
+    <button type="submit">Créer le compte</button>
+  </form>
 
-    // 🔹 1️⃣ CRÉATION UTILISATEUR AUTH
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
-    console.log("AUTH OK :", cred.user.uid);
+  <p id="msg"></p>
 
-    // 🔹 2️⃣ CRÉATION DOCUMENT FIRESTORE
-    await setDoc(doc(db, "users", cred.user.uid), {
-      firstName,
-      lastName,
-      email: cred.user.email,
-      role: "user",
-      abonnement: { type: "free" },
-      createdAt: serverTimestamp()
-    });
+  <p>
+    <a href="../index.html">← Retour à l’accueil</a> •
+    <a href="./login.html">Déjà un compte ?</a>
+  </p>
+</main>
 
-    console.log("FIRESTORE OK");
+<!-- ✅ SCRIPT JS : CHEMIN RELATIF OBLIGATOIRE -->
+<script type="module" src="./register.js"></script>
 
-    // 🔹 SUCCÈS
-    msg.textContent = "✅ Compte créé";
-    setTimeout(() => {
-      location.replace("../index.html");
-    }, 500);
-
-  } catch (err) {
-    console.error("REGISTER ERROR :", err);
-    msg.textContent = err.code || err.message || "❌ Erreur création compte";
-  }
-});
+</body>
+</html>
