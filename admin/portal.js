@@ -1,6 +1,12 @@
-import { requireModeration } from "../_shared/guard.js";
+// admin/portal.js
+import { requireAdmin } from "../shared/guard.js";
 
-requireModeration({
+const status = document.getElementById("status");
+
+requireAdmin({
   redirectTo: "../auth/login.html",
-  onOk: () => location.replace("./index.html")
+  onOk: (user) => {
+    console.log("ADMIN OK", user.uid);
+    status.textContent = "Accès admin autorisé";
+  }
 });
