@@ -2,30 +2,70 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Admin — Users</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin — Utilisateurs</title>
+  <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
+
 <body>
-<h1>Utilisateurs</h1>
-<div id="list"></div>
+
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Admin — Utilisateurs</div>
+    </div>
+    <nav>
+      <a class="btn" href="/wauklink-site/admin/index.html">← Dashboard</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container" style="padding:24px 0">
+  <p id="msg" class="meta">Vérification des droits…</p>
+  <div id="list">Chargement…</div>
+</main>
 
 <script type="module">
-  import { db } from "../_shared/firebase.js";
-  import { requireAdmin } from "../_shared/guard.js";
-  import { collection,getDocs } from
+  import { db } from "/wauklink-site/shared/firebase.js";
+  import { requireAdmin } from "/wauklink-site/shared/guard.js";
+  import { collection, getDocs } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  const list=document.getElementById("list");
+  const list = document.getElementById("list");
+  const msg = document.getElementById("msg");
 
   async function load(){
-    const snap=await getDocs(collection(db,"users"));
-    list.innerHTML="";
-    snap.forEach(d=>{
-      const u=d.data();
-      list.innerHTML+=`${u.email} — ${u.role}<br>`;
+    msg.textContent = "⏳ Chargement des utilisateurs…";
+    list.innerHTML = "";
+
+    const snap = await getDocs(collection(db, "users"));
+
+    if (snap.empty) {
+      list.innerHTML = "<p class='meta'>Aucun utilisateur.</p>";
+      msg.textContent = "Aucune donnée.";
+      return;
+    }
+
+    msg.textContent = `👤 ${snap.size} utilisateur(s)`;
+
+    snap.forEach(d => {
+      const u = d.data();
+      const div = document.createElement("div");
+      div.style.marginBottom = "8px";
+      div.innerHTML = `
+        <b>${u.email || "—"}</b>
+        <span class="meta">(${u.role || "user"})</span>
+      `;
+      list.appendChild(div);
     });
   }
 
-  requireAdmin({redirectTo:"../index.html",onOk:load});
+  requireAdmin({
+    redirectTo: "/wauklink-site/auth/login.html",
+    onOk: load
+  });
 </script>
+
 </body>
 </html>
