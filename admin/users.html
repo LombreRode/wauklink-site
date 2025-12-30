@@ -23,7 +23,10 @@
 
 <main class="container" style="padding:24px 0">
   <p id="msg" class="meta">Vérification des droits…</p>
-  <div id="list">Chargement…</div>
+
+  <div id="list">
+    <p class="meta">Chargement…</p>
+  </div>
 </main>
 
 <script type="module">
@@ -35,35 +38,49 @@
   const list = document.getElementById("list");
   const msg = document.getElementById("msg");
 
-  async function load(){
+  async function loadUsers() {
     msg.textContent = "⏳ Chargement des utilisateurs…";
     list.innerHTML = "";
 
-    const snap = await getDocs(collection(db, "users"));
+    try {
+      const snap = await getDocs(collection(db, "users"));
 
-    if (snap.empty) {
-      list.innerHTML = "<p class='meta'>Aucun utilisateur.</p>";
-      msg.textContent = "Aucune donnée.";
-      return;
+      if (snap.empty) {
+        msg.textContent = "Aucun utilisateur.";
+        list.innerHTML = "<p class='meta'>Aucune donnée disponible.</p>";
+        return;
+      }
+
+      msg.textContent = `👤 ${snap.size} utilisateur(s)`;
+
+      snap.forEach(docSnap => {
+        const u = docSnap.data();
+
+        const row = document.createElement("div");
+        row.style.padding = "10px 0";
+        row.style.borderBottom = "1px solid #eee";
+
+        row.innerHTML = `
+          <strong>${u.email || "—"}</strong>
+          <span class="meta">
+            — rôle : ${u.role || "user"}
+          </span>
+        `;
+
+        list.appendChild(row);
+      });
+
+    } catch (err) {
+      console.error(err);
+      msg.textContent = "❌ Erreur lors du chargement des utilisateurs";
+      list.innerHTML = "<p class='meta'>Impossible de récupérer les données.</p>";
     }
-
-    msg.textContent = `👤 ${snap.size} utilisateur(s)`;
-
-    snap.forEach(d => {
-      const u = d.data();
-      const div = document.createElement("div");
-      div.style.marginBottom = "8px";
-      div.innerHTML = `
-        <b>${u.email || "—"}</b>
-        <span class="meta">(${u.role || "user"})</span>
-      `;
-      list.appendChild(div);
-    });
   }
 
+  // 🔐 Protection admin
   requireAdmin({
     redirectTo: "/wauklink-site/auth/login.html",
-    onOk: load
+    onOk: loadUsers
   });
 </script>
 
