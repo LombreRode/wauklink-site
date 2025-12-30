@@ -1,5 +1,5 @@
 // auth/user_sync.js
-import { auth, db } from "../shared/firebase.js";
+import { auth, db } from "/wauklink-site/shared/firebase.js";
 import { onAuthStateChanged } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { doc, setDoc, serverTimestamp } from
@@ -26,7 +26,7 @@ onAuthStateChanged(auth, async (user) => {
       },
       { merge: true }
     );
-  } catch (e) {
-    console.error("user_sync error:", e);
+  } catch {
+    // silencieux en prod
   }
 });
