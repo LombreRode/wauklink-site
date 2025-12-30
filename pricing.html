@@ -4,8 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Tarifs – WAUKLINK</title>
-  <link rel="stylesheet" href="style.css?v=1">
+  <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
+
 <body>
 
 <header class="topbar">
@@ -15,8 +16,8 @@
       <div class="subtitle">Tarifs & Abonnements</div>
     </div>
     <nav style="display:flex;gap:10px;flex-wrap:wrap">
-      <a class="btn" href="index.html">← Accueil</a>
-      <a class="btn" href="auth/login.html">Connexion</a>
+      <a class="btn" href="/wauklink-site/index.html">← Accueil</a>
+      <a class="btn" href="/wauklink-site/auth/login.html">Connexion</a>
     </nav>
   </div>
 </header>
@@ -32,7 +33,7 @@
 
   <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px">
 
-    <!-- GRATUIT -->
+    <!-- 🆓 FREE -->
     <div class="circle-card" style="position:static">
       <div class="circle-icon">🆓</div>
       <h3>Gratuit</h3>
@@ -43,10 +44,15 @@
         <li>✔️ Création de compte</li>
       </ul>
       <strong>0 €</strong>
+      <div style="margin-top:14px">
+        <a class="btn" href="/wauklink-site/auth/register.html">
+          Commencer gratuitement
+        </a>
+      </div>
     </div>
 
-    <!-- PARTICULIER -->
-    <div class="circle-card" style="position:static">
+    <!-- 🟡 PARTICULIER -->
+    <div class="circle-card" style="position:static;opacity:.8">
       <div class="circle-icon">🏠</div>
       <h3>Particulier</h3>
       <p class="open">Publication d’annonces</p>
@@ -55,11 +61,16 @@
         <li>✔️ Validation admin</li>
         <li>✔️ Gestion des photos</li>
       </ul>
-      <strong>À partir de 9 €</strong>
+      <strong>9 € / mois<br><small>80 € / an</small></strong>
+      <div style="margin-top:14px">
+        <button class="btn" disabled style="opacity:.5;cursor:not-allowed">
+          Bientôt disponible
+        </button>
+      </div>
     </div>
 
-    <!-- PRO -->
-    <div class="circle-card" style="position:static;border-color:#38bdf8">
+    <!-- 🟢 PRO -->
+    <div class="circle-card" style="position:static;border-color:#38bdf8;opacity:.8">
       <div class="circle-icon">🛠️</div>
       <h3>Professionnel</h3>
       <p class="open">Visibilité maximale</p>
@@ -68,14 +79,19 @@
         <li>✔️ Mise en avant</li>
         <li>✔️ Espace prestataire</li>
       </ul>
-      <strong>Sur devis</strong>
+      <strong>15 € / mois<br><small>130 € / an</small></strong>
+      <div style="margin-top:14px">
+        <button class="btn" disabled style="opacity:.5;cursor:not-allowed">
+          Bientôt disponible
+        </button>
+      </div>
     </div>
 
   </section>
 
   <section style="margin-top:50px;text-align:center">
     <p style="opacity:.8;font-size:14px">
-      Tous les paiements et options seront détaillés prochainement.
+      Les abonnements payants seront activés prochainement.
     </p>
   </section>
 
@@ -83,13 +99,12 @@
 
 <footer class="footer">
   © WAUKLINK —
-  <a href="pricing.html">Tarifs</a> |
-  <a href="legal/index.html">CGU</a> |
-  <a href="legal/mentions-legales.html">Mentions légales</a> |
-  <a href="legal/privacy.html">Confidentialité</a>
+  <a href="/wauklink-site/pricing.html">Tarifs</a> |
+  <a href="/wauklink-site/legal/index.html">CGU</a> |
+  <a href="/wauklink-site/legal/mentions-legales.html">Mentions légales</a> |
+  <a href="/wauklink-site/legal/privacy.html">Confidentialité</a>
 </footer>
 
-<script type="module" src="./auth/status.js"></script>
-
+<script type="module" src="/wauklink-site/auth/status.js"></script>
 </body>
 </html>
