@@ -6,44 +6,26 @@ import { doc, getDoc } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 async function getRole(uid) {
-  try {
-    const snap = await getDoc(doc(db, "users", uid));
-    return snap.exists() ? snap.data().role || "user" : "user";
-  } catch (e) {
-    console.error("getRole error", e);
-    return "user";
-  }
-}
-
-export function requireModeration({ redirectTo, onLoading, onOk, onFail }) {
-  onLoading?.();
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      onFail?.("not-auth");
-      location.href = redirectTo;
-      return;
-    }
-    const role = await getRole(user.uid);
-    if (role === "admin" || role === "moderator") {
-      onOk?.(user, role);
-    } else {
-      onFail?.("forbidden", role);
-      location.href = redirectTo;
-    }
-  });
+  const snap = await getDoc(doc(db, "users", uid));
+  return snap.exists() ? snap.data().role : "user";
 }
 
 export function requireAdmin({ redirectTo, onOk }) {
   onAuthStateChanged(auth, async (user) => {
+    console.log("AUTH STATE", user);
+
     if (!user) {
-      location.href = redirectTo;
+      location.replace(redirectTo);
       return;
     }
+
     const role = await getRole(user.uid);
+    console.log("ROLE =", role);
+
     if (role === "admin") {
       onOk?.(user);
     } else {
-      location.href = redirectTo;
+      location.replace(redirectTo);
     }
   });
 }
