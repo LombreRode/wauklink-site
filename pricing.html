@@ -6,7 +6,6 @@
   <title>Tarifs – WAUKLINK</title>
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
-
 <body>
 
 <header class="topbar">
@@ -33,8 +32,12 @@
 
   <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px">
 
-    <!-- 🆓 FREE -->
-    <div class="circle-card" style="position:static">
+    <!-- 🆓 FREE – CARTE ENTIÈREMENT CLIQUABLE -->
+    <a
+      href="/wauklink-site/auth/register.html"
+      class="circle-card free-card"
+      style="position:static;text-decoration:none"
+    >
       <div class="circle-icon">🆓</div>
       <h3>Gratuit</h3>
       <p class="open">Consultation</p>
@@ -44,12 +47,10 @@
         <li>✔️ Création de compte</li>
       </ul>
       <strong>0 €</strong>
-      <div style="margin-top:14px">
-        <a class="btn" href="/wauklink-site/auth/register.html">
-          Commencer gratuitement
-        </a>
+      <div style="margin-top:12px;font-weight:700;color:#006b52">
+        Cliquer pour s’inscrire →
       </div>
-    </div>
+    </a>
 
     <!-- 🟡 PARTICULIER -->
     <div class="circle-card" style="position:static;opacity:.8">
@@ -62,10 +63,8 @@
         <li>✔️ Gestion des photos</li>
       </ul>
       <strong>9 € / mois<br><small>80 € / an</small></strong>
-      <div style="margin-top:14px">
-        <button class="btn" disabled style="opacity:.5;cursor:not-allowed">
-          Bientôt disponible
-        </button>
+      <div style="margin-top:14px;opacity:.6">
+        Bientôt disponible
       </div>
     </div>
 
@@ -80,10 +79,8 @@
         <li>✔️ Espace prestataire</li>
       </ul>
       <strong>15 € / mois<br><small>130 € / an</small></strong>
-      <div style="margin-top:14px">
-        <button class="btn" disabled style="opacity:.5;cursor:not-allowed">
-          Bientôt disponible
-        </button>
+      <div style="margin-top:14px;opacity:.6">
+        Bientôt disponible
       </div>
     </div>
 
