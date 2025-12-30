@@ -1,9 +1,9 @@
 // auth/profile.js
-import { auth, db } from "../shared/firebase.js";
+import { auth, db } from "/wauklink-site/shared/firebase.js";
 import { doc, updateDoc, serverTimestamp } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-// 🔗 DOM (OBLIGATOIRE)
+// 🔗 DOM
 const profileForm = document.getElementById("profileForm");
 const activity = document.getElementById("activity");
 const description = document.getElementById("description");
@@ -27,9 +27,10 @@ profileForm.addEventListener("submit", async (e) => {
       }
     });
 
-    location.href = "../dashboard/pro.html";
-  } catch (e) {
-    console.error(e);
+    // 🔁 Redirection (dashboard pro)
+    location.replace("/wauklink-site/dashboard/pro.html");
+
+  } catch {
     msg.textContent = "❌ Erreur lors de l’enregistrement";
   }
 });
