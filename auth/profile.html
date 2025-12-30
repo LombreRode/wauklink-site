@@ -2,10 +2,13 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Devenir prestataire</title>
-  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
+
 <body>
+
 <h2>Compléter mon activité</h2>
 
 <form id="profileForm">
@@ -16,13 +19,18 @@
     <option value="loueur">Loueur</option>
   </select>
 
-  <textarea id="description" placeholder="Décrivez votre activité" required></textarea>
+  <textarea
+    id="description"
+    placeholder="Décrivez votre activité"
+    required
+  ></textarea>
 
   <button>Enregistrer</button>
 </form>
 
 <p id="msg"></p>
 
-<script type="module" src="./profile.js"></script>
+<script type="module" src="/wauklink-site/auth/profile.js"></script>
+
 </body>
 </html>
