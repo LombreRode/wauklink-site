@@ -1,5 +1,7 @@
 // auth/register.js
-import { auth, db } from "/wauklink-site/shared/firebase.js";
+
+// 🔥 IMPORTS FIREBASE (CHEMIN RELATIF CORRIGÉ)
+import { auth, db } from "../shared/firebase.js";
 import { createUserWithEmailAndPassword } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { doc, setDoc, serverTimestamp } from
@@ -24,6 +26,7 @@ const acceptCgu = document.getElementById("acceptCgu");
 const acceptLegal = document.getElementById("acceptLegal");
 const acceptConditions = document.getElementById("acceptConditions");
 
+// 🧠 SUBMIT
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   msg.textContent = "";
@@ -40,14 +43,14 @@ form.addEventListener("submit", async (e) => {
   }
 
   try {
-    // ✅ Création Auth
+    // ✅ 1. Création Auth
     const cred = await createUserWithEmailAndPassword(
       auth,
       email.value.trim(),
       password.value
     );
 
-    // ✅ Création profil Firestore
+    // ✅ 2. Création profil Firestore (APRÈS Auth)
     await setDoc(doc(db, "users", cred.user.uid), {
       lastName: lastName.value.trim(),
       firstName: firstName.value.trim(),
@@ -57,21 +60,29 @@ form.addEventListener("submit", async (e) => {
       address2: address2.value.trim(),
       postalCode: postalCode.value.trim(),
       city: city.value.trim(),
+
       role: "user",
-      profile: { completed: true },
+      abonnement: { type: "free" },
+
+      profile: {
+        completed: true
+      },
+
       legal: {
         cgu: true,
         legalNotice: true,
         conditions: true,
         acceptedAt: serverTimestamp()
       },
+
       createdAt: serverTimestamp()
     });
 
-    // 🔁 Redirection accueil
+    // 🔁 Redirection
     location.replace("/wauklink-site/index.html");
 
   } catch (err) {
-    msg.textContent = err.message || "❌ Erreur inscription";
+    console.error(err);
+    msg.textContent = err.message || "❌ Erreur lors de l’inscription";
   }
 });
