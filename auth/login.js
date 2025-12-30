@@ -1,5 +1,5 @@
 // auth/login.js
-import { auth } from "../shared/firebase.js";
+import { auth } from "/wauklink-site/shared/firebase.js";
 import { signInWithEmailAndPassword } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
@@ -19,11 +19,10 @@ form.addEventListener("submit", async (e) => {
       password.value
     );
 
-    // ✅ Connexion OK → redirection
-    location.replace("../index.html");
+    // ✅ Connexion OK → accueil
+    location.replace("/wauklink-site/index.html");
 
   } catch (err) {
-    console.error(err);
     msg.textContent = "❌ Identifiants incorrects";
   }
 });
