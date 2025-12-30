@@ -1,7 +1,7 @@
 // auth/register.js
 
-// 🔥 IMPORTS FIREBASE (CHEMIN RELATIF CORRIGÉ)
-import { auth, db } from "../shared/firebase.js";
+// 🔥 IMPORT FIREBASE — CHEMIN ABSOLU (VALIDÉ PAR NETWORK)
+import { auth, db } from "/wauklink-site/shared/firebase.js";
 import { createUserWithEmailAndPassword } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { doc, setDoc, serverTimestamp } from
@@ -21,7 +21,6 @@ const address = document.getElementById("address");
 const address2 = document.getElementById("address2");
 const postalCode = document.getElementById("postalCode");
 const city = document.getElementById("city");
-
 const acceptCgu = document.getElementById("acceptCgu");
 const acceptLegal = document.getElementById("acceptLegal");
 const acceptConditions = document.getElementById("acceptConditions");
@@ -29,9 +28,8 @@ const acceptConditions = document.getElementById("acceptConditions");
 // 🧠 SUBMIT
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
-  msg.textContent = "";
+  msg.textContent = "Création du compte…";
 
-  // 🔐 Vérifications
   if (password.value !== password2.value) {
     msg.textContent = "❌ Les mots de passe ne correspondent pas";
     return;
@@ -43,14 +41,12 @@ form.addEventListener("submit", async (e) => {
   }
 
   try {
-    // ✅ 1. Création Auth
     const cred = await createUserWithEmailAndPassword(
       auth,
       email.value.trim(),
       password.value
     );
 
-    // ✅ 2. Création profil Firestore (APRÈS Auth)
     await setDoc(doc(db, "users", cred.user.uid), {
       lastName: lastName.value.trim(),
       firstName: firstName.value.trim(),
@@ -60,25 +56,18 @@ form.addEventListener("submit", async (e) => {
       address2: address2.value.trim(),
       postalCode: postalCode.value.trim(),
       city: city.value.trim(),
-
       role: "user",
       abonnement: { type: "free" },
-
-      profile: {
-        completed: true
-      },
-
+      profile: { completed: true },
       legal: {
         cgu: true,
         legalNotice: true,
         conditions: true,
         acceptedAt: serverTimestamp()
       },
-
       createdAt: serverTimestamp()
     });
 
-    // 🔁 Redirection
     location.replace("/wauklink-site/index.html");
 
   } catch (err) {
