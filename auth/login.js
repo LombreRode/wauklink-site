@@ -1,13 +1,17 @@
 // auth/login.js
-import { auth } from "/wauklink-site/shared/firebase.js";
+
+// 🔥 IMPORT FIREBASE (CHEMIN RELATIF)
+import { auth } from "../shared/firebase.js";
 import { signInWithEmailAndPassword } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
+// 🔗 DOM
 const form = document.getElementById("loginForm");
 const email = document.getElementById("email");
 const password = document.getElementById("password");
 const msg = document.getElementById("msg");
 
+// 🔐 SUBMIT
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   msg.textContent = "Connexion…";
@@ -19,10 +23,11 @@ form.addEventListener("submit", async (e) => {
       password.value
     );
 
-    // ✅ Connexion OK → accueil
+    // ✅ Connexion OK → accueil (ou dashboard plus tard)
     location.replace("/wauklink-site/index.html");
 
   } catch (err) {
-    msg.textContent = "❌ Identifiants incorrects";
+    console.error(err);
+    msg.textContent = "❌ Email ou mot de passe incorrect";
   }
 });
