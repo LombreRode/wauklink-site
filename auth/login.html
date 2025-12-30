@@ -2,28 +2,58 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Connexion</title>
-  <link rel="stylesheet" href="/wauklink-site/style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Connexion — WAUKLINK</title>
+  <link rel="stylesheet" href="../style.css">
 </head>
 
 <body>
 
-<h2>Connexion</h2>
+<header class="topbar">
+  <div class="container">
+    <h1>WAUKLINK</h1>
+    <div class="subtitle">Connexion</div>
+  </div>
+</header>
 
-<form id="loginForm">
-  <input id="email" type="email" placeholder="Email" required>
-  <input id="password" type="password" placeholder="Mot de passe" required>
-  <button>Connexion</button>
-</form>
+<main class="container" style="max-width:680px;padding:40px 0;">
+  <h2>Connexion à votre compte</h2>
 
-<p id="msg"></p>
+  <form id="loginForm" style="display:flex;flex-direction:column;gap:12px;">
 
-<p>
-  <a href="/wauklink-site/auth/forgot-password.html">Mot de passe oublié</a><br>
-  <a href="/wauklink-site/index.html">← Retour accueil</a>
-</p>
+    <input
+      type="email"
+      id="email"
+      placeholder="Email"
+      required
+    >
 
-<script type="module" src="/wauklink-site/auth/login.js"></script>
+    <input
+      type="password"
+      id="password"
+      placeholder="Mot de passe"
+      required
+    >
+
+    <button type="submit">
+      Se connecter
+    </button>
+  </form>
+
+  <p id="msg"></p>
+
+  <p style="margin-top:14px;">
+    <a href="./reset-password.html">Mot de passe oublié ?</a>
+  </p>
+
+  <p>
+    <a href="../index.html">← Retour à l’accueil</a> •
+    <a href="./register.html">Créer un compte</a>
+  </p>
+</main>
+
+<!-- JS sera branché APRÈS validation visuelle -->
+<!-- <script type="module" src="./login.js"></script> -->
 
 </body>
 </html>
