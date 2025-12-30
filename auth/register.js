@@ -1,10 +1,11 @@
-import { auth, db } from "../_shared/firebase.js";
+// auth/register.js
+import { auth, db } from "/wauklink-site/shared/firebase.js";
 import { createUserWithEmailAndPassword } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { doc, setDoc, serverTimestamp } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-// 🔗 LIENS INPUTS (OBLIGATOIRE)
+// 🔗 DOM
 const form = document.getElementById("registerForm");
 const msg = document.getElementById("msg");
 
@@ -27,7 +28,7 @@ form.addEventListener("submit", async (e) => {
   e.preventDefault();
   msg.textContent = "";
 
-  // 🔐 Vérifs
+  // 🔐 Vérifications
   if (password.value !== password2.value) {
     msg.textContent = "❌ Les mots de passe ne correspondent pas";
     return;
@@ -39,14 +40,14 @@ form.addEventListener("submit", async (e) => {
   }
 
   try {
-    // ✅ CRÉATION COMPTE AUTH
+    // ✅ Création Auth
     const cred = await createUserWithEmailAndPassword(
       auth,
       email.value.trim(),
       password.value
     );
 
-    // ✅ CRÉATION PROFIL FIRESTORE
+    // ✅ Création profil Firestore
     await setDoc(doc(db, "users", cred.user.uid), {
       lastName: lastName.value.trim(),
       firstName: firstName.value.trim(),
@@ -67,11 +68,10 @@ form.addEventListener("submit", async (e) => {
       createdAt: serverTimestamp()
     });
 
-    // 🔁 REDIRECTION
-    location.replace("../index.html");
+    // 🔁 Redirection accueil
+    location.replace("/wauklink-site/index.html");
 
   } catch (err) {
-    console.error(err);
     msg.textContent = err.message || "❌ Erreur inscription";
   }
 });
