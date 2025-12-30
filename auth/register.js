@@ -1,75 +1,53 @@
-<!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Inscription — WAUKLINK</title>
+import { auth, db } from "../shared/firebase.js";
+import { createUserWithEmailAndPassword } from
+  "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { doc, setDoc, serverTimestamp } from
+  "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  <!-- ✅ CSS : chemin RELATIF -->
-  <link rel="stylesheet" href="../style.css">
-</head>
+console.log("REGISTER.JS CHARGÉ");
 
-<body>
-<header class="topbar">
-  <div class="container">
-    <h1>WAUKLINK</h1>
-    <div class="subtitle">Créer un compte</div>
-  </div>
-</header>
+const form = document.getElementById("registerForm");
+const msg = document.getElementById("msg");
 
-<main class="container" style="max-width:680px;padding:40px 0;">
-  <h2>Fiche d’inscription complète</h2>
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  msg.textContent = "Création du compte…";
 
-  <form id="registerForm" style="display:flex;flex-direction:column;gap:12px;">
-    <div style="display:flex;gap:10px;">
-      <input type="text" id="lastName" placeholder="Nom" required>
-      <input type="text" id="firstName" placeholder="Prénom" required>
-    </div>
+  try {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const password2 = document.getElementById("password2").value;
 
-    <input type="email" id="email" placeholder="Email" required>
+    if (password !== password2) {
+      msg.textContent = "❌ Les mots de passe ne correspondent pas";
+      return;
+    }
 
-    <div style="display:flex;gap:10px;">
-      <input type="password" id="password" placeholder="Mot de passe" required>
-      <input type="password" id="password2" placeholder="Confirmer le mot de passe" required>
-    </div>
+    if (
+      !document.getElementById("acceptCgu").checked ||
+      !document.getElementById("acceptLegal").checked ||
+      !document.getElementById("acceptConditions").checked
+    ) {
+      msg.textContent = "❌ Tu dois accepter toutes les conditions";
+      return;
+    }
 
-    <input type="tel" id="phone" placeholder="Téléphone">
-    <input type="text" id="address" placeholder="Adresse">
-    <input type="text" id="address2" placeholder="Complément d’adresse">
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
 
-    <div style="display:flex;gap:10px;">
-      <input type="text" id="postalCode" placeholder="Code postal">
-      <input type="text" id="city" placeholder="Ville">
-    </div>
+    await setDoc(doc(db, "users", cred.user.uid), {
+      firstName: document.getElementById("firstName").value.trim(),
+      lastName: document.getElementById("lastName").value.trim(),
+      email: cred.user.email,
+      role: "user",
+      abonnement: { type: "free" },
+      createdAt: serverTimestamp()
+    });
 
-    <div style="font-size:14px;display:flex;flex-direction:column;gap:6px;">
-      <label>
-        <input type="checkbox" id="acceptCgu">
-        J’accepte les <a href="../legal/index.html" target="_blank">CGU</a>
-      </label>
-      <label>
-        <input type="checkbox" id="acceptLegal">
-        J’ai lu les <a href="../legal/mentions-legales.html" target="_blank">mentions légales</a>
-      </label>
-      <label>
-        <input type="checkbox" id="acceptConditions">
-        J’accepte les <a href="../legal/privacy.html" target="_blank">conditions d’utilisation</a>
-      </label>
-    </div>
+    msg.textContent = "✅ Compte créé";
+    location.replace("../index.html");
 
-    <button type="submit">Créer le compte</button>
-  </form>
-
-  <p id="msg"></p>
-
-  <p>
-    <a href="../index.html">← Retour à l’accueil</a> •
-    <a href="./login.html">Déjà un compte ?</a>
-  </p>
-</main>
-
-<!-- ✅ SCRIPT JS : CHEMIN RELATIF OBLIGATOIRE -->
-<script type="module" src="./register.js"></script>
-
-</body>
-</html>
+  } catch (err) {
+    console.error(err);
+    msg.textContent = err.code || err.message;
+  }
+});
