@@ -4,8 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Inscription — WAUKLINK</title>
-  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
+
 <body>
 
 <header class="topbar">
@@ -19,7 +20,6 @@
   <h2>Fiche d’inscription complète</h2>
 
   <form id="registerForm" style="display:flex;flex-direction:column;gap:12px;">
-
     <div style="display:flex;gap:10px;">
       <input id="lastName" placeholder="Nom" required>
       <input id="firstName" placeholder="Prénom" required>
@@ -43,9 +43,18 @@
 
     <!-- CGU -->
     <div style="font-size:14px;display:flex;flex-direction:column;gap:6px;">
-      <label><input type="checkbox" id="acceptCgu"> J’accepte les <a href="../legal/index.html" target="_blank">CGU</a></label>
-      <label><input type="checkbox" id="acceptLegal"> J’ai lu les <a href="../legal/mentions-legales.html" target="_blank">mentions légales</a></label>
-      <label><input type="checkbox" id="acceptConditions"> J’accepte les <a href="../legal/privacy.html" target="_blank">conditions d’utilisation</a></label>
+      <label>
+        <input type="checkbox" id="acceptCgu">
+        J’accepte les <a href="/wauklink-site/legal/index.html" target="_blank">CGU</a>
+      </label>
+      <label>
+        <input type="checkbox" id="acceptLegal">
+        J’ai lu les <a href="/wauklink-site/legal/mentions-legales.html" target="_blank">mentions légales</a>
+      </label>
+      <label>
+        <input type="checkbox" id="acceptConditions">
+        J’accepte les <a href="/wauklink-site/legal/privacy.html" target="_blank">conditions d’utilisation</a>
+      </label>
     </div>
 
     <button type="submit">Créer le compte</button>
@@ -54,11 +63,12 @@
   <p id="msg"></p>
 
   <p>
-    <a href="../index.html">← Retour à l’accueil</a> •
-    <a href="./login.html">Déjà un compte ?</a>
+    <a href="/wauklink-site/index.html">← Retour à l’accueil</a> •
+    <a href="/wauklink-site/auth/login.html">Déjà un compte ?</a>
   </p>
 </main>
 
-<script type="module" src="./register.js"></script>
+<script type="module" src="/wauklink-site/auth/register.js"></script>
+
 </body>
 </html>
