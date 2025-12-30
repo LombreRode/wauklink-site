@@ -1,7 +1,9 @@
 // auth/user_sync.js
-import { auth, db } from "/wauklink-site/shared/firebase.js";
+import { auth, db } from "../shared/firebase.js";
+
 import { onAuthStateChanged } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
 import { doc, setDoc, serverTimestamp } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
@@ -13,7 +15,6 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  // ⛔ éviter double écriture
   if (lastSyncedUid === user.uid) return;
   lastSyncedUid = user.uid;
 
@@ -27,6 +28,6 @@ onAuthStateChanged(auth, async (user) => {
       { merge: true }
     );
   } catch {
-    // silencieux en prod
+    // silencieux
   }
 });
