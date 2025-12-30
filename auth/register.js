@@ -1,41 +1,29 @@
-// auth/register.js
-
-// 🔥 IMPORT FIREBASE — CHEMIN ABSOLU (VALIDÉ PAR NETWORK)
 import { auth, db } from "/wauklink-site/shared/firebase.js";
 import { createUserWithEmailAndPassword } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { doc, setDoc, serverTimestamp } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-// 🔗 DOM
 const form = document.getElementById("registerForm");
 const msg = document.getElementById("msg");
 
-const lastName = document.getElementById("lastName");
-const firstName = document.getElementById("firstName");
-const email = document.getElementById("email");
-const password = document.getElementById("password");
-const password2 = document.getElementById("password2");
-const phone = document.getElementById("phone");
-const address = document.getElementById("address");
-const address2 = document.getElementById("address2");
-const postalCode = document.getElementById("postalCode");
-const city = document.getElementById("city");
-const acceptCgu = document.getElementById("acceptCgu");
-const acceptLegal = document.getElementById("acceptLegal");
-const acceptConditions = document.getElementById("acceptConditions");
-
-// 🧠 SUBMIT
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   msg.textContent = "Création du compte…";
 
-  if (password.value !== password2.value) {
+  const password = document.getElementById("password").value;
+  const password2 = document.getElementById("password2").value;
+
+  if (password !== password2) {
     msg.textContent = "❌ Les mots de passe ne correspondent pas";
     return;
   }
 
-  if (!acceptCgu.checked || !acceptLegal.checked || !acceptConditions.checked) {
+  if (
+    !document.getElementById("acceptCgu").checked ||
+    !document.getElementById("acceptLegal").checked ||
+    !document.getElementById("acceptConditions").checked
+  ) {
     msg.textContent = "❌ Tu dois accepter toutes les conditions";
     return;
   }
@@ -43,28 +31,16 @@ form.addEventListener("submit", async (e) => {
   try {
     const cred = await createUserWithEmailAndPassword(
       auth,
-      email.value.trim(),
-      password.value
+      document.getElementById("email").value.trim(),
+      password
     );
 
     await setDoc(doc(db, "users", cred.user.uid), {
-      lastName: lastName.value.trim(),
-      firstName: firstName.value.trim(),
-      email: email.value.trim(),
-      phone: phone.value.trim(),
-      address: address.value.trim(),
-      address2: address2.value.trim(),
-      postalCode: postalCode.value.trim(),
-      city: city.value.trim(),
+      lastName: document.getElementById("lastName").value.trim(),
+      firstName: document.getElementById("firstName").value.trim(),
+      email: cred.user.email,
       role: "user",
       abonnement: { type: "free" },
-      profile: { completed: true },
-      legal: {
-        cgu: true,
-        legalNotice: true,
-        conditions: true,
-        acceptedAt: serverTimestamp()
-      },
       createdAt: serverTimestamp()
     });
 
@@ -72,6 +48,6 @@ form.addEventListener("submit", async (e) => {
 
   } catch (err) {
     console.error(err);
-    msg.textContent = err.message || "❌ Erreur lors de l’inscription";
+    msg.textContent = err.message;
   }
 });
