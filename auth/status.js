@@ -1,5 +1,5 @@
 // auth/status.js
-import { auth } from "../_shared/firebase.js";
+import { auth } from "../shared/firebase.js";
 import { onAuthStateChanged } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
@@ -7,12 +7,10 @@ import { onAuthStateChanged } from
 // ❌ aucune redirection ici
 // ❌ aucun Firestore
 // ✅ info uniquement
-
 onAuthStateChanged(auth, (user) => {
   if (!user) {
     console.log("👤 visiteur non connecté");
     return;
   }
-
   console.log("✅ utilisateur connecté :", user.uid);
 });
