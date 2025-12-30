@@ -3,19 +3,29 @@
 <head>
   <meta charset="utf-8">
   <title>Admin — Dashboard</title>
-  <link rel="stylesheet" href="../style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
+
 <body>
+
   <h1>Admin</h1>
 
   <ul>
-    <li><a href="./annonces.html">🛠️ Annonces</a></li>
-    <li><a href="./reports.html">🚩 Signalements</a></li>
-    <li><a href="./ratings.html">⭐ Notes</a></li>
-    <li><a href="./users.html">👤 Utilisateurs</a></li>
+    <li><a href="/wauklink-site/admin/annonces.html">🛠️ Annonces</a></li>
+    <li><a href="/wauklink-site/admin/reports.html">🚩 Signalements</a></li>
+    <li><a href="/wauklink-site/admin/ratings.html">⭐ Notes</a></li>
+    <li><a href="/wauklink-site/admin/users.html">👤 Utilisateurs</a></li>
   </ul>
 
-  <script type="module" src="../auth/status.js"></script>
-  <script type="module" src="./admin.js"></script>
+  <!-- 🔐 PROTECTION ADMIN -->
+  <script type="module">
+    import { requireAdmin } from "/wauklink-site/shared/guard.js";
+
+    requireAdmin({
+      redirectTo: "/wauklink-site/auth/login.html"
+    });
+  </script>
+
 </body>
 </html>
