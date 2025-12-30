@@ -5,23 +5,34 @@ import { onAuthStateChanged } from
 import { doc, getDoc } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-async function getRole(uid) {
-  const snap = await getDoc(doc(db, "users", uid));
-  return snap.exists() ? snap.data().role : "user";
-}
-
 export function requireAdmin({ redirectTo, onOk }) {
-  onAuthStateChanged(auth, async (user) => {
+  const unsub = onAuthStateChanged(auth, async (user) => {
+    // stop l’écoute dès le premier résultat
+    unsub();
+
     if (!user) {
       location.replace(redirectTo);
       return;
     }
 
-    const role = await getRole(user.uid);
+    try {
+      const snap = await getDoc(doc(db, "users", user.uid));
 
-    if (role === "admin") {
-      onOk?.(user);
-    } else {
+      if (!snap.exists()) {
+        location.replace(redirectTo);
+        return;
+      }
+
+      const role = snap.data().role;
+
+      if (role === "admin") {
+        onOk?.(user);
+      } else {
+        location.replace(redirectTo);
+      }
+
+    } catch (err) {
+      console.error("Guard error:", err);
       location.replace(redirectTo);
     }
   });
