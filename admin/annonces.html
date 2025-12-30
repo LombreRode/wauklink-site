@@ -4,10 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>WAUKLINK — Admin • Annonces</title>
-
-  <!-- STYLE GLOBAL -->
-  <link rel="stylesheet" href="../style.css?v=1" />
-
+  <link rel="stylesheet" href="/wauklink-site/style.css">
   <style>
     .page{padding:24px 0}
     .meta{opacity:.85;font-size:13px}
@@ -19,11 +16,7 @@
       vertical-align:top;
     }
     th{opacity:.8}
-    .row-actions{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-    }
+    .row-actions{display:flex;gap:8px;flex-wrap:wrap}
     .btn{
       padding:8px 10px;
       border-radius:10px;
@@ -52,15 +45,16 @@
 </head>
 
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
-      <div class="subtitle">Admin / Modération — Annonces à valider</div>
+      <div class="subtitle">Admin — Annonces à valider</div>
     </div>
     <nav style="display:flex;gap:10px;flex-wrap:wrap">
-      <a class="btn" href="./index.html">← Dashboard</a>
-      <a class="btn" href="./reports.html">🚩 Signalements</a>
+      <a class="btn" href="/wauklink-site/admin/index.html">← Dashboard</a>
+      <a class="btn" href="/wauklink-site/admin/reports.html">🚩 Signalements</a>
     </nav>
   </div>
 </header>
@@ -86,10 +80,9 @@
   </table>
 </main>
 
-<!-- ================= SCRIPTS ================= -->
 <script type="module">
-  import { db } from "../_shared/firebase.js";
-  import { requireModeration } from "../_shared/guard.js";
+  import { db } from "/wauklink-site/shared/firebase.js";
+  import { requireAdmin } from "/wauklink-site/shared/guard.js";
   import {
     collection, query, where, orderBy, getDocs,
     doc, updateDoc
@@ -97,8 +90,7 @@
 
   const rows = document.getElementById("rows");
   const msg = document.getElementById("msg");
-
-  function setMsg(t){ msg.textContent = t || ""; }
+  const setMsg = t => msg.textContent = t || "";
 
   async function loadPending(){
     setMsg("⏳ Chargement des annonces en attente…");
@@ -113,16 +105,12 @@
     const snap = await getDocs(qy);
 
     if (snap.empty) {
-      rows.innerHTML = `
-        <tr>
-          <td colspan="7" class="meta">✅ Aucune annonce en attente.</td>
-        </tr>
-      `;
+      rows.innerHTML = `<tr><td colspan="7" class="meta">✅ Aucune annonce en attente.</td></tr>`;
       setMsg("Tout est à jour.");
       return;
     }
 
-    setMsg(`📋 ${snap.size} annonce(s) en attente de validation`);
+    setMsg(`📋 ${snap.size} annonce(s) en attente`);
 
     snap.forEach(d => {
       const a = d.data();
@@ -143,52 +131,27 @@
         </td>
       `;
 
-      const [btnOk, btnNo] = tr.querySelectorAll("button");
+      const [ok, no] = tr.querySelectorAll("button");
 
-      btnOk.onclick = async () => {
-        if (!confirm("Valider cette annonce ?")) return;
-        try {
-          await updateDoc(doc(db, "annonces_location", d.id), {
-            status: "active"
-          });
-          loadPending();
-        } catch (e) {
-          console.error(e);
-          alert("❌ Erreur validation (rules Firestore ?)");
-        }
+      ok.onclick = async () => {
+        await updateDoc(doc(db, "annonces_location", d.id), { status: "active" });
+        loadPending();
       };
 
-      btnNo.onclick = async () => {
-        if (!confirm("Refuser cette annonce ? (status: removed)")) return;
-        try {
-          await updateDoc(doc(db, "annonces_location", d.id), {
-            status: "removed"
-          });
-          loadPending();
-        } catch (e) {
-          console.error(e);
-          alert("❌ Erreur refus (rules Firestore ?)");
-        }
+      no.onclick = async () => {
+        await updateDoc(doc(db, "annonces_location", d.id), { status: "removed" });
+        loadPending();
       };
 
       rows.appendChild(tr);
     });
   }
 
-  // 🔐 PROTECTION RÔLE
-  requireModeration({
-    redirectTo: "../index.html",
-    onLoading: () => setMsg("🔐 Vérification du rôle…"),
-    onOk: () => loadPending(),
-    onFail: () => {
-      setMsg("⛔ Accès refusé.");
-      rows.innerHTML = "";
-    }
+  requireAdmin({
+    redirectTo: "/wauklink-site/auth/login.html",
+    onOk: loadPending
   });
 </script>
-
-<!-- BARRE LOGIN -->
-<script type="module" src="../auth/status.js"></script>
 
 </body>
 </html>
