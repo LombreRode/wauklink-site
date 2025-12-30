@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Inscription — WAUKLINK</title>
-  <link rel="stylesheet" href="/wauklink-site/style.css">
+  <link rel="stylesheet" href="../style.css">
 </head>
 
 <body>
@@ -20,40 +20,41 @@
   <h2>Fiche d’inscription complète</h2>
 
   <form id="registerForm" style="display:flex;flex-direction:column;gap:12px;">
+
     <div style="display:flex;gap:10px;">
-      <input id="lastName" placeholder="Nom" required>
-      <input id="firstName" placeholder="Prénom" required>
+      <input type="text" id="lastName" placeholder="Nom" required>
+      <input type="text" id="firstName" placeholder="Prénom" required>
     </div>
 
-    <input id="email" type="email" placeholder="Email" required>
+    <input type="email" id="email" placeholder="Email" required>
 
     <div style="display:flex;gap:10px;">
-      <input id="password" type="password" placeholder="Mot de passe" required>
-      <input id="password2" type="password" placeholder="Confirmer le mot de passe" required>
+      <input type="password" id="password" placeholder="Mot de passe" required>
+      <input type="password" id="password2" placeholder="Confirmer le mot de passe" required>
     </div>
 
-    <input id="phone" placeholder="Téléphone" required>
-    <input id="address" placeholder="Adresse" required>
-    <input id="address2" placeholder="Complément d’adresse (optionnel)">
+    <input type="tel" id="phone" placeholder="Téléphone" required>
+    <input type="text" id="address" placeholder="Adresse" required>
+    <input type="text" id="address2" placeholder="Complément d’adresse (optionnel)">
 
     <div style="display:flex;gap:10px;">
-      <input id="postalCode" placeholder="Code postal" required>
-      <input id="city" placeholder="Ville" required>
+      <input type="text" id="postalCode" placeholder="Code postal" required>
+      <input type="text" id="city" placeholder="Ville" required>
     </div>
 
     <!-- CGU -->
     <div style="font-size:14px;display:flex;flex-direction:column;gap:6px;">
       <label>
         <input type="checkbox" id="acceptCgu">
-        J’accepte les <a href="/wauklink-site/legal/index.html" target="_blank">CGU</a>
+        J’accepte les <a href="../legal/index.html" target="_blank">CGU</a>
       </label>
       <label>
         <input type="checkbox" id="acceptLegal">
-        J’ai lu les <a href="/wauklink-site/legal/mentions-legales.html" target="_blank">mentions légales</a>
+        J’ai lu les <a href="../legal/mentions-legales.html" target="_blank">mentions légales</a>
       </label>
       <label>
         <input type="checkbox" id="acceptConditions">
-        J’accepte les <a href="/wauklink-site/legal/privacy.html" target="_blank">conditions d’utilisation</a>
+        J’accepte les <a href="../legal/privacy.html" target="_blank">conditions d’utilisation</a>
       </label>
     </div>
 
@@ -63,12 +64,13 @@
   <p id="msg"></p>
 
   <p>
-    <a href="/wauklink-site/index.html">← Retour à l’accueil</a> •
-    <a href="/wauklink-site/auth/login.html">Déjà un compte ?</a>
+    <a href="../index.html">← Retour à l’accueil</a> •
+    <a href="./login.html">Déjà un compte ?</a>
   </p>
 </main>
 
-<script type="module" src="/wauklink-site/auth/register.js"></script>
+<!-- 🔥 JS INSCRIPTION (CHEMIN RELATIF) -->
+<script type="module" src="./register.js"></script>
 
 </body>
 </html>
