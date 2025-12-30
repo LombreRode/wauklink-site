@@ -1,13 +1,14 @@
 // shared/guard.js
-import { auth, db } from "/wauklink-site/shared/firebase.js";
+import { auth, db } from "./firebase.js";
+
 import { onAuthStateChanged } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
 import { doc, getDoc } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 export function requireAdmin({ redirectTo, onOk }) {
   const unsub = onAuthStateChanged(auth, async (user) => {
-    // stop l’écoute dès le premier résultat
     unsub();
 
     if (!user) {
