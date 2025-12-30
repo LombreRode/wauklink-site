@@ -4,8 +4,6 @@ import { createUserWithEmailAndPassword } from
 import { doc, setDoc, serverTimestamp } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-console.log("REGISTER.JS CHARGÉ");
-
 const form = document.getElementById("registerForm");
 const msg = document.getElementById("msg");
 
@@ -32,9 +30,13 @@ form.addEventListener("submit", async (e) => {
       return;
     }
 
+    // 1️⃣ Création Auth
     const cred = await createUserWithEmailAndPassword(auth, email, password);
-    console.log("AUTH OK", cred.user.uid);
 
+    // 2️⃣ Attendre que l'utilisateur soit bien reconnu
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    // 3️⃣ Création Firestore
     await setDoc(doc(db, "users", cred.user.uid), {
       firstName: document.getElementById("firstName").value.trim(),
       lastName: document.getElementById("lastName").value.trim(),
@@ -44,11 +46,11 @@ form.addEventListener("submit", async (e) => {
       createdAt: serverTimestamp()
     });
 
-    console.log("FIRESTORE OK");
+    msg.textContent = "✅ Compte créé";
     location.replace("/wauklink-site/index.html");
 
   } catch (err) {
-    console.error("REGISTER ERROR:", err);
-    msg.textContent = err.code || err.message || "Erreur inconnue";
+    console.error(err);
+    msg.textContent = err.code || err.message || "Erreur création compte";
   }
 });
