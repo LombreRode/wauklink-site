@@ -7,26 +7,37 @@ import { doc, setDoc, serverTimestamp } from
 const form = document.getElementById("registerForm");
 const msg = document.getElementById("msg");
 
-if (!form || !msg) {
-  msg.textContent = "Erreur chargement formulaire";
+if (!form) {
+  console.error("registerForm introuvable");
 } else {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    msg.textContent = "Création du compte…";
+    if (msg) msg.textContent = "Création du compte…";
 
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
     const password2 = document.getElementById("password2").value;
 
     if (password !== password2) {
-      msg.textContent = "❌ Les mots de passe ne correspondent pas";
+      if (msg) msg.textContent = "❌ Les mots de passe ne correspondent pas";
+      return;
+    }
+
+    // 🔒 Vérification STRICTE des 3 cases (conforme aux rules)
+    if (
+      !document.getElementById("acceptCgu")?.checked ||
+      !document.getElementById("acceptLegal")?.checked ||
+      !document.getElementById("acceptConditions")?.checked
+    ) {
+      if (msg) msg.textContent = "❌ Toutes les conditions doivent être acceptées";
       return;
     }
 
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
 
+      // Création du document user STRICTEMENT avec l’UID (conforme aux rules)
       await setDoc(doc(db, "users", cred.user.uid), {
         firstName: document.getElementById("firstName").value.trim(),
         lastName: document.getElementById("lastName").value.trim(),
@@ -34,11 +45,12 @@ if (!form || !msg) {
         createdAt: serverTimestamp()
       });
 
-      msg.textContent = "✅ Compte créé";
+      if (msg) msg.textContent = "✅ Compte créé";
       location.replace("../index.html");
 
     } catch (err) {
-      msg.textContent = "❌ Erreur lors de l’inscription";
+      console.error(err);
+      if (msg) msg.textContent = "❌ Erreur lors de l’inscription";
     }
   });
 }
