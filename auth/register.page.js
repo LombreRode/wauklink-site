@@ -15,16 +15,35 @@ if (!form) {
 
     if (msg) msg.textContent = "Création du compte…";
 
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value;
-    const password2 = document.getElementById("password2").value;
+    // Champs de base
+    const firstName = document.getElementById("firstName")?.value.trim();
+    const lastName = document.getElementById("lastName")?.value.trim();
+    const email = document.getElementById("email")?.value.trim();
+    const password = document.getElementById("password")?.value;
+    const password2 = document.getElementById("password2")?.value;
+
+    // Champs métier
+    const phone = document.getElementById("phone")?.value.trim();
+    const address = document.getElementById("address")?.value.trim();
+    const address2 = document.getElementById("address2")?.value.trim();
+
+    // Vérifications obligatoires
+    if (!firstName || !lastName || !email || !password || !password2) {
+      if (msg) msg.textContent = "❌ Tous les champs obligatoires doivent être remplis";
+      return;
+    }
 
     if (password !== password2) {
       if (msg) msg.textContent = "❌ Les mots de passe ne correspondent pas";
       return;
     }
 
-    // 🔒 Vérification STRICTE des 3 cases (conforme aux rules)
+    if (!phone || !address) {
+      if (msg) msg.textContent = "❌ Téléphone et adresse sont obligatoires";
+      return;
+    }
+
+    // Vérification des 3 cases légales
     if (
       !document.getElementById("acceptCgu")?.checked ||
       !document.getElementById("acceptLegal")?.checked ||
@@ -35,15 +54,25 @@ if (!form) {
     }
 
     try {
+      // Création du compte Auth
       const cred = await createUserWithEmailAndPassword(auth, email, password);
 
-      // Création du document user STRICTEMENT avec l’UID (conforme aux rules)
-      await setDoc(doc(db, "users", cred.user.uid), {
-        firstName: document.getElementById("firstName").value.trim(),
-        lastName: document.getElementById("lastName").value.trim(),
-        email: cred.user.email,
+      // Création du document user (conforme aux rules)
+      const userData = {
+        firstName,
+        lastName,
+        email,
+        phone,
+        address,
         createdAt: serverTimestamp()
-      });
+      };
+
+      // Complément d’adresse OPTIONNEL
+      if (address2) {
+        userData.address2 = address2;
+      }
+
+      await setDoc(doc(db, "users", cred.user.uid), userData);
 
       if (msg) msg.textContent = "✅ Compte créé";
       location.replace("../index.html");
