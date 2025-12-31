@@ -8,37 +8,39 @@
 </head>
 
 <body>
+
 <header class="topbar">
-  <div class="container">
-    <h1>WAUKLINK</h1>
-    <div class="subtitle">Travaux & chantiers</div>
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Travaux & chantiers</div>
+    </div>
+    <nav>
+      <a class="btn" href="../index.html">← Accueil</a>
+    </nav>
   </div>
 </header>
 
-<main class="container" style="padding:22px 0;">
+<main class="container main-layout">
 
   <h2>Travaux disponibles</h2>
 
   <!-- MESSAGE GLOBAL -->
-  <p id="statusMsg" style="opacity:.85;margin-bottom:18px;">
+  <p id="statusMsg" class="muted">
     Chargement…
   </p>
 
   <!-- BLOQUÉ -->
-  <section id="blocked" style="display:none" class="card">
-    <p style="color:#ff6666">
+  <section id="blocked" class="card hidden">
+    <p class="text-danger">
       Accès bloqué selon votre abonnement ou votre statut.
     </p>
   </section>
 
   <!-- CONTENU -->
-  <section id="content" style="display:none">
+  <section id="content" class="hidden">
     <div id="list" class="grid"></div>
   </section>
-
-  <div style="margin-top:20px">
-    <a href="../index.html">← Accueil</a>
-  </div>
 
 </main>
 
@@ -65,7 +67,6 @@
 
   async function loadTravaux(){
     list.innerHTML = "";
-
     const qy = query(
       collection(db, "travaux"),
       where("status", "==", "active"),
@@ -73,9 +74,9 @@
     );
 
     const snap = await getDocs(qy);
-
     if (!snap.size) {
-      list.innerHTML = "<p>Aucun chantier disponible.</p>";
+      list.innerHTML =
+        "<p class='muted'>Aucun chantier disponible.</p>";
       return;
     }
 
@@ -84,8 +85,8 @@
       const el = document.createElement("div");
       el.className = "card";
       el.innerHTML = `
-        <b>${esc(t.titre)}</b>
-        <div style="opacity:.8">${esc(t.ville || "")}</div>
+        <strong>${esc(t.titre)}</strong>
+        <div class="muted">${esc(t.ville || "")}</div>
         <p>${esc(t.description || "")}</p>
       `;
       list.appendChild(el);
@@ -100,7 +101,7 @@
 
     const snap = await getDoc(doc(db, "users", user.uid));
     if (!snap.exists()) {
-      blocked.style.display = "block";
+      blocked.classList.remove("hidden");
       statusMsg.textContent = "Profil introuvable.";
       return;
     }
@@ -110,42 +111,37 @@
     const sub = u.abonnement?.type || "free";
     const proValidated = u.pro?.validated === true;
 
-    // FREE → BLOQUÉ
     if (sub === "free") {
-      blocked.style.display = "block";
+      blocked.classList.remove("hidden");
       statusMsg.textContent =
         "Abonnement requis pour accéder aux travaux.";
       return;
     }
 
-    // PARTIEL → OK (NON‑PRO)
     if (sub === "partial" && role !== "pro") {
       statusMsg.textContent =
         "Accès autorisé (non‑professionnel).";
-      content.style.display = "block";
+      content.classList.remove("hidden");
       loadTravaux();
       return;
     }
 
-    // PRO NON VALIDÉ → BLOQUÉ
     if (role === "pro" && !proValidated) {
-      blocked.style.display = "block";
+      blocked.classList.remove("hidden");
       statusMsg.textContent =
         "Compte professionnel non validé.";
       return;
     }
 
-    // PRO VALIDÉ → OK
     if (role === "pro" && proValidated) {
       statusMsg.textContent =
         "Accès autorisé (prestataire professionnel).";
-      content.style.display = "block";
+      content.classList.remove("hidden");
       loadTravaux();
       return;
     }
 
-    // SÉCURITÉ PAR DÉFAUT
-    blocked.style.display = "block";
+    blocked.classList.remove("hidden");
     statusMsg.textContent = "Accès non autorisé.";
   });
 </script>
