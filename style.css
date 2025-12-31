@@ -1,8 +1,8 @@
 /* =================================================
-   GLOBAL BASE — WAUKLINK
+   GLOBAL BASE — WAUKLINK (COMPLET)
    ================================================= */
 
-/* RESET */
+/* ================= RESET ================= */
 *{
   box-sizing:border-box;
 }
@@ -11,7 +11,7 @@ html,body{
   padding:0;
 }
 
-/* VARIABLES GLOBALES */
+/* ================= VARIABLES ================= */
 :root{
   --bg:#0b1224;
   --panel:rgba(255,255,255,.06);
@@ -19,19 +19,21 @@ html,body{
   --muted:#9ca3af;
   --brand:#006b52;
   --line:rgba(255,255,255,.14);
-  --danger:#ff6666;
+  --danger:#ff5a5a;
+  --success:#5aff9e;
   --radius:14px;
 }
 
-/* BODY */
+/* ================= BODY ================= */
 body{
   font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
   background:var(--bg);
   color:var(--text);
   overflow-x:hidden;
+  line-height:1.5;
 }
 
-/* LIENS */
+/* ================= LIENS ================= */
 a{
   color:var(--text);
   text-decoration:none;
@@ -40,7 +42,7 @@ a:hover{
   text-decoration:underline;
 }
 
-/* LAYOUT */
+/* ================= LAYOUT ================= */
 .container{
   max-width:1100px;
   margin:0 auto;
@@ -50,9 +52,7 @@ a:hover{
   padding:60px 0 90px;
 }
 
-/* =================================================
-   HEADER
-   ================================================= */
+/* ================= HEADER ================= */
 .topbar{
   background:var(--brand);
   color:#fff;
@@ -75,90 +75,86 @@ a:hover{
   opacity:.9;
 }
 
-/* =================================================
-   BUTTONS
-   ================================================= */
-.btn,
-button{
-  padding:8px 14px;
+/* ================= BOUTONS ================= */
+.btn{
+  padding:8px 12px;
   border-radius:12px;
   border:1px solid var(--line);
-  background:rgba(255,255,255,.08);
+  background:rgba(255,255,255,.06);
   color:#fff;
   font-weight:700;
   cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
 }
-.btn:hover,
-button:hover{
+.btn:hover{
   filter:brightness(1.1);
 }
-.btn-danger{
-  background:rgba(255,80,80,.18);
-  border-color:rgba(255,80,80,.45);
+.btnDanger{
+  border-color:rgba(255,90,90,.4);
+  background:rgba(255,90,90,.12);
+}
+.btnOk{
+  border-color:rgba(90,255,160,.4);
+  background:rgba(90,255,160,.12);
 }
 
-/* =================================================
-   CARDS
-   ================================================= */
+/* ================= CARTES ================= */
 .card{
   background:var(--panel);
   border:1px solid var(--line);
-  border-radius:var(--radius);
+  border-radius:16px;
   padding:16px;
-  box-shadow:0 12px 30px rgba(0,0,0,.35);
+  box-shadow:0 14px 36px rgba(0,0,0,.35);
 }
 
-/* =================================================
-   GRID (listes annonces / services / urgences)
-   ================================================= */
+/* ================= GRID ================= */
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-  gap:16px;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:14px;
 }
 
-/* =================================================
-   STATUS / MESSAGES
-   ================================================= */
-#statusMsg{
+/* ================= TEXTE ================= */
+.meta{
+  font-size:13px;
+  opacity:.85;
+  color:var(--muted);
+}
+h2,h3{
+  margin-top:0;
+}
+
+/* ================= ROW ================= */
+.row{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:10px;
+}
+
+/* ================= FORM ================= */
+label{
+  display:block;
   font-size:14px;
 }
-#blocked p{
-  color:var(--danger);
-  font-weight:600;
-}
-
-/* =================================================
-   FORMS
-   ================================================= */
-form label{
-  display:block;
-  font-weight:600;
-  margin-bottom:6px;
-}
-input,
-textarea{
+input,textarea{
   width:100%;
-  padding:10px 12px;
+  margin-top:6px;
+  padding:10px;
   border-radius:10px;
   border:1px solid var(--line);
-  background:rgba(255,255,255,.04);
-  color:var(--text);
-  font-size:14px;
-}
-input:focus,
-textarea:focus{
+  background:rgba(0,0,0,.25);
+  color:#fff;
   outline:none;
-  border-color:#7dd3fc;
 }
 textarea{
-  min-height:100px;
+  min-height:110px;
   resize:vertical;
 }
 
-/* =================================================
-   FOOTER
-   ================================================= */
+/* ================= FOOTER ================= */
 .footer{
   text-align:center;
   padding:20px;
@@ -169,14 +165,10 @@ textarea{
   color:var(--muted);
 }
 
-/* =================================================
-   HELPERS
-   ================================================= */
+/* ================= HELPERS ================= */
 .hidden{display:none!important}
 
-/* =================================================
-   RESPONSIVE
-   ================================================= */
+/* ================= RESPONSIVE ================= */
 @media (max-width:600px){
   .topbar h1{font-size:22px}
 }
