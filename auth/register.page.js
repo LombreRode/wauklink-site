@@ -1,4 +1,4 @@
-import { auth } from "../shared/firebase.js";
+import { auth, db } from "../shared/firebase.js";
 import { createUserWithEmailAndPassword } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { doc, setDoc, serverTimestamp } from
@@ -7,11 +7,6 @@ import { doc, setDoc, serverTimestamp } from
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("form");
   const msg  = document.getElementById("msg");
-
-  if (!form) {
-    console.error("❌ Formulaire #form introuvable");
-    return;
-  }
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -22,20 +17,30 @@ document.addEventListener("DOMContentLoaded", () => {
     const address   = document.getElementById("address").value.trim();
     const email     = document.getElementById("email").value.trim();
     const password  = document.getElementById("password").value;
+    const passwordConfirm =
+      document.getElementById("passwordConfirm").value;
 
     const cgu1 = document.getElementById("cgu1").checked;
     const cgu2 = document.getElementById("cgu2").checked;
     const cgu3 = document.getElementById("cgu3").checked;
 
+    // ❌ CGU
     if (!cgu1 || !cgu2 || !cgu3) {
       msg.textContent = "❌ Tu dois accepter toutes les conditions";
+      return;
+    }
+
+    // ❌ MOTS DE PASSE DIFFÉRENTS
+    if (password !== passwordConfirm) {
+      msg.textContent = "❌ Les mots de passe ne correspondent pas";
       return;
     }
 
     msg.textContent = "⏳ Création du compte…";
 
     try {
-      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      const cred =
+        await createUserWithEmailAndPassword(auth, email, password);
 
       await setDoc(doc(db, "users", cred.user.uid), {
         firstName,
@@ -53,7 +58,9 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       msg.textContent = "✅ Compte créé avec succès";
-      setTimeout(() => location.href = "../index.html", 800);
+      setTimeout(() => {
+        location.href = "/wauklink-site/index.html";
+      }, 800);
 
     } catch (err) {
       console.error(err);
