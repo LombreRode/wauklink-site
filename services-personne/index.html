@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="../style.css" />
 </head>
 <body>
-
 <header class="topbar">
   <div class="container">
     <h1>WAUKLINK</h1>
@@ -18,19 +17,16 @@
 <main class="container" style="padding:22px 0;">
   <h2>Services disponibles</h2>
 
-  <!-- MESSAGE GLOBAL -->
   <p id="statusMsg" style="opacity:.85;margin-bottom:18px;">
     Chargement…
   </p>
 
-  <!-- BLOQUÉ -->
   <section id="blocked" style="display:none" class="card">
     <p style="color:#ff6666">
       Accès bloqué selon votre abonnement ou votre statut.
     </p>
   </section>
 
-  <!-- CONTENU -->
   <section id="content" style="display:none">
     <div id="list" class="grid"></div>
   </section>
@@ -41,13 +37,12 @@
 </main>
 
 <script type="module">
-  /* 🔧 IMPORTS — CHEMINS RELATIFS CORRECTS */
   import { auth, db } from "../shared/firebase.js";
   import { onAuthStateChanged } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
   import {
-    collection, query, where, orderBy,
-    getDocs, doc, getDoc
+    collection, query, where, orderBy, getDocs,
+    doc, getDoc
   } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
@@ -56,30 +51,24 @@
   const content = document.getElementById("content");
   const list = document.getElementById("list");
 
-  /* 🔐 Sécurité HTML */
   function esc(s){
     return String(s ?? "").replace(/[&<>"']/g, m =>
       ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
     );
   }
 
-  /* 📦 Chargement des services */
   async function loadServices(){
     list.innerHTML = "";
-
     const qy = query(
       collection(db, "services_personne"),
       where("status", "==", "active"),
       orderBy("createdAt", "desc")
     );
-
     const snap = await getDocs(qy);
-
-    if (snap.empty) {
+    if (!snap.size) {
       list.innerHTML = "<p>Aucun service disponible.</p>";
       return;
     }
-
     snap.forEach(d => {
       const s = d.data();
       const el = document.createElement("div");
@@ -93,16 +82,13 @@
     });
   }
 
-  /* 🔐 LOGIQUE D’ACCÈS UTILISATEUR */
   onAuthStateChanged(auth, async user => {
-
     if (!user) {
       location.href = "../auth/login.html";
       return;
     }
 
     const snap = await getDoc(doc(db, "users", user.uid));
-
     if (!snap.exists()) {
       blocked.style.display = "block";
       statusMsg.textContent = "Profil introuvable.";
@@ -114,7 +100,6 @@
     const sub = u.abonnement?.type || "free";
     const proValidated = u.pro?.validated === true;
 
-    /* FREE → BLOQUÉ */
     if (sub === "free") {
       blocked.style.display = "block";
       statusMsg.textContent =
@@ -122,7 +107,6 @@
       return;
     }
 
-    /* PARTIEL (NON PRO) → OK */
     if (sub === "partial" && role !== "pro") {
       statusMsg.textContent =
         "Accès autorisé (non‑professionnel / CESU).";
@@ -131,7 +115,6 @@
       return;
     }
 
-    /* PRO NON VALIDÉ → BLOQUÉ */
     if (role === "pro" && !proValidated) {
       blocked.style.display = "block";
       statusMsg.textContent =
@@ -139,7 +122,6 @@
       return;
     }
 
-    /* PRO VALIDÉ → OK */
     if (role === "pro" && proValidated) {
       statusMsg.textContent =
         "Accès autorisé (prestataire professionnel).";
@@ -148,11 +130,9 @@
       return;
     }
 
-    /* SÉCURITÉ PAR DÉFAUT */
     blocked.style.display = "block";
     statusMsg.textContent = "Accès non autorisé.";
   });
 </script>
-
 </body>
 </html>
