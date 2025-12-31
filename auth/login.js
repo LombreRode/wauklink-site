@@ -1,3 +1,4 @@
+// auth/login.js
 import { auth } from "../shared/firebase.js";
 import { signInWithEmailAndPassword } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
@@ -14,8 +15,11 @@ form.addEventListener("submit", async (e) => {
 
   try {
     await signInWithEmailAndPassword(auth, email, password);
+
     msg.textContent = "✅ Connecté. Redirection…";
-    setTimeout(() => location.href = "../index.html", 600);
+    setTimeout(() => {
+      location.href = "../index.html";
+    }, 600);
 
   } catch (err) {
     console.error(err);
