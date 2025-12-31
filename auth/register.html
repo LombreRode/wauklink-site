@@ -4,8 +4,6 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Inscription — WAUKLINK</title>
-
-  <!-- CSS : chemin relatif correct -->
   <link rel="stylesheet" href="../style.css">
 </head>
 <body>
@@ -18,60 +16,31 @@
 </header>
 
 <main class="container" style="max-width:680px;padding:40px 0;">
-  <h2>Fiche d’inscription complète</h2>
+  <h2>Inscription</h2>
 
   <form id="registerForm" style="display:flex;flex-direction:column;gap:12px;">
-    <div style="display:flex;gap:10px;">
-      <input type="text" id="lastName" placeholder="Nom" required>
-      <input type="text" id="firstName" placeholder="Prénom" required>
-    </div>
-
+    <input type="text" id="firstName" placeholder="Prénom" required>
+    <input type="text" id="lastName" placeholder="Nom" required>
     <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Mot de passe" required>
+    <input type="password" id="password2" placeholder="Confirmation mot de passe" required>
 
-    <div style="display:flex;gap:10px;">
-      <input type="password" id="password" placeholder="Mot de passe" required>
-      <input type="password" id="password2" placeholder="Confirmer le mot de passe" required>
-    </div>
-
-    <input type="tel" id="phone" placeholder="Téléphone">
-    <input type="text" id="address" placeholder="Adresse">
-    <input type="text" id="address2" placeholder="Complément d’adresse">
-
-    <div style="display:flex;gap:10px;">
-      <input type="text" id="postalCode" placeholder="Code postal">
-      <input type="text" id="city" placeholder="Ville">
-    </div>
-
-    <div style="font-size:14px;display:flex;flex-direction:column;gap:6px;">
-      <label>
-        <input type="checkbox" id="acceptCgu" required>
-        J’accepte les <a href="../legal/index.html" target="_blank">CGU</a>
-      </label>
-
-      <label>
-        <input type="checkbox" id="acceptLegal" required>
-        J’ai lu les <a href="../legal/mentions-legales.html" target="_blank">mentions légales</a>
-      </label>
-
-      <label>
-        <input type="checkbox" id="acceptConditions" required>
-        J’accepte les <a href="../legal/privacy.html" target="_blank">conditions d’utilisation</a>
-      </label>
-    </div>
+    <label>
+      <input type="checkbox" id="acceptAll" required>
+      J’accepte les conditions
+    </label>
 
     <button type="submit">Créer le compte</button>
   </form>
 
-  <p id="msg"></p>
+  <p id="msg" style="margin-top:10px;"></p>
 
   <p>
-    <a href="../index.html">← Retour à l’accueil</a> •
+    <a href="../index.html">← Retour</a> •
     <a href="./login.html">Déjà un compte ?</a>
   </p>
 </main>
 
-<!-- ✅ SCRIPT CORRECT (plus de 404) -->
 <script type="module" src="./register.page.js"></script>
-
 </body>
 </html>
