@@ -1,35 +1,60 @@
-<form id="form">
-  <label>
-    Prénom<br />
-    <input id="firstName" required />
-  </label><br /><br />
+<body class="auth-page">
 
-  <label>
-    Nom<br />
-    <input id="lastName" required />
-  </label><br /><br />
+  <div class="auth-card">
+    <h2>Créer un compte</h2>
 
-  <label>
-    Téléphone<br />
-    <input id="phone" required />
-  </label><br /><br />
+    <form id="form">
 
-  <label>
-    Adresse<br />
-    <input id="address" required />
-  </label><br /><br />
+      <label>
+        Prénom
+        <input id="firstName" required />
+      </label>
 
-  <label>
-    Email<br />
-    <input type="email" id="email" required />
-  </label><br /><br />
+      <label>
+        Nom
+        <input id="lastName" required />
+      </label>
 
-  <label>
-    Mot de passe<br />
-    <input type="password" id="password" required />
-  </label><br /><br />
+      <label>
+        Téléphone
+        <input id="phone" required />
+      </label>
 
-  <button type="submit">Créer mon compte</button>
-</form>
+      <label>
+        Adresse
+        <input id="address" required />
+      </label>
 
-<p id="msg"></p>
+      <label>
+        Email
+        <input type="email" id="email" required />
+      </label>
+
+      <label>
+        Mot de passe
+        <input type="password" id="password" required />
+      </label>
+
+      <!-- CGU -->
+      <label class="checkbox">
+        <input type="checkbox" id="cgu1" required />
+        J’accepte les Conditions Générales d’Utilisation
+      </label>
+
+      <label class="checkbox">
+        <input type="checkbox" id="cgu2" required />
+        J’accepte la politique de confidentialité
+      </label>
+
+      <label class="checkbox">
+        <input type="checkbox" id="cgu3" required />
+        Je certifie être majeur
+      </label>
+
+      <button type="submit">Créer mon compte</button>
+    </form>
+
+    <p id="msg" class="msg"></p>
+  </div>
+
+</body>
