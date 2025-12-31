@@ -2,7 +2,7 @@
    GLOBAL BASE — WAUKLINK
    ================================================= */
 
-/* ================= RESET ================= */
+/* RESET */
 *{
   box-sizing:border-box;
 }
@@ -11,18 +11,19 @@ html,body{
   padding:0;
 }
 
-/* ================= VARIABLES GLOBALES ================= */
+/* VARIABLES GLOBALES */
 :root{
   --bg:#0b1224;
+  --panel:rgba(255,255,255,.06);
   --text:#f8fafc;
   --muted:#9ca3af;
   --brand:#006b52;
   --line:rgba(255,255,255,.14);
+  --danger:#ff6666;
   --radius:14px;
-  --danger:#ff6b6b;
 }
 
-/* ================= BODY ================= */
+/* BODY */
 body{
   font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
   background:var(--bg);
@@ -30,7 +31,7 @@ body{
   overflow-x:hidden;
 }
 
-/* ================= LIENS ================= */
+/* LIENS */
 a{
   color:var(--text);
   text-decoration:none;
@@ -39,7 +40,7 @@ a:hover{
   text-decoration:underline;
 }
 
-/* ================= LAYOUT ================= */
+/* LAYOUT */
 .container{
   max-width:1100px;
   margin:0 auto;
@@ -49,7 +50,9 @@ a:hover{
   padding:60px 0 90px;
 }
 
-/* ================= HEADER / TOPBAR ================= */
+/* =================================================
+   HEADER
+   ================================================= */
 .topbar{
   background:var(--brand);
   color:#fff;
@@ -72,66 +75,90 @@ a:hover{
   opacity:.9;
 }
 
-/* ================= NAV / CTA ================= */
-.nav-cta{
-  padding:8px 12px;
+/* =================================================
+   BUTTONS
+   ================================================= */
+.btn,
+button{
+  padding:8px 14px;
   border-radius:12px;
   border:1px solid var(--line);
   background:rgba(255,255,255,.08);
   color:#fff;
   font-weight:700;
-}
-.nav-cta:hover{
-  filter:brightness(1.1);
-}
-
-/* ================= BOUTONS ================= */
-.btn{
-  padding:8px 12px;
-  border-radius:12px;
-  border:1px solid var(--line);
-  background:rgba(255,255,255,.06);
-  color:#fff;
-  font-weight:700;
   cursor:pointer;
 }
-.btn:hover{
-  filter:brightness(1.08);
+.btn:hover,
+button:hover{
+  filter:brightness(1.1);
 }
 .btn-danger{
-  background:rgba(255,80,80,.15);
-  border-color:rgba(255,80,80,.4);
-  color:#fff;
+  background:rgba(255,80,80,.18);
+  border-color:rgba(255,80,80,.45);
 }
 
-/* ================= CARTES ================= */
+/* =================================================
+   CARDS
+   ================================================= */
 .card{
-  background:rgba(255,255,255,.06);
+  background:var(--panel);
   border:1px solid var(--line);
-  border-radius:16px;
-  padding:18px;
-  box-shadow:0 18px 44px rgba(0,0,0,.35);
+  border-radius:var(--radius);
+  padding:16px;
+  box-shadow:0 12px 30px rgba(0,0,0,.35);
 }
 
-/* ================= TEXTE / HELPERS ================= */
-.muted{
-  opacity:.8;
-}
-.text-danger{
-  color:var(--danger);
-}
-.hidden{
-  display:none !important;
-}
-
-/* ================= GRILLES (LISTES) ================= */
+/* =================================================
+   GRID (listes annonces / services / urgences)
+   ================================================= */
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
   gap:16px;
 }
 
-/* ================= FOOTER ================= */
+/* =================================================
+   STATUS / MESSAGES
+   ================================================= */
+#statusMsg{
+  font-size:14px;
+}
+#blocked p{
+  color:var(--danger);
+  font-weight:600;
+}
+
+/* =================================================
+   FORMS
+   ================================================= */
+form label{
+  display:block;
+  font-weight:600;
+  margin-bottom:6px;
+}
+input,
+textarea{
+  width:100%;
+  padding:10px 12px;
+  border-radius:10px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.04);
+  color:var(--text);
+  font-size:14px;
+}
+input:focus,
+textarea:focus{
+  outline:none;
+  border-color:#7dd3fc;
+}
+textarea{
+  min-height:100px;
+  resize:vertical;
+}
+
+/* =================================================
+   FOOTER
+   ================================================= */
 .footer{
   text-align:center;
   padding:20px;
@@ -141,13 +168,15 @@ a:hover{
 .footer a{
   color:var(--muted);
 }
-.footer a:hover{
-  color:#fff;
-}
 
-/* ================= RESPONSIVE ================= */
+/* =================================================
+   HELPERS
+   ================================================= */
+.hidden{display:none!important}
+
+/* =================================================
+   RESPONSIVE
+   ================================================= */
 @media (max-width:600px){
-  .topbar h1{
-    font-size:22px;
-  }
+  .topbar h1{font-size:22px}
 }
