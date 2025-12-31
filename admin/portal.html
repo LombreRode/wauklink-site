@@ -1,20 +1,11 @@
-<!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8">
-  <title>Accès administration</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/wauklink-site/style.css">
-</head>
-<body>
-  <div class="container card">
-    <h1>Administration</h1>
-    <p id="msg">Vérification des droits…</p>
-    <a href="/wauklink-site/index.html">← Retour site</a>
-  </div>
+// admin/portal.js
+import { requireAdmin } from "/wauklink-site/shared/guard.js";
 
-  <!-- 🔥 OBLIGATOIRE -->
-  <script type="module" src="/wauklink-site/shared/guard.js"></script>
-  <script type="module" src="/wauklink-site/admin/portal.js"></script>
-</body>
-</html>
+const msg = document.getElementById("msg");
+
+requireAdmin({
+  redirectTo: "/wauklink-site/auth/login.html",
+  onOk: () => {
+    msg.textContent = "Accès admin autorisé";
+  }
+});
