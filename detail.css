@@ -1,116 +1,90 @@
 /* =================================================
-   DETAIL PAGE — CARROUSEL PHOTOS
-   ================================================= */
+   CARROUSEL CIRCULAIRE — WAUKLINK
+   (spécifique accueil)
+================================================= */
 
-/* CONTENEUR GLOBAL */
-.detail-photos{
-  margin-top:16px;
+.circle-section{
+  text-align:center;
+  margin-top:40px;
 }
 
-/* CARROUSEL */
-.carousel{
+.section-title{
+  font-size:26px;
+  font-weight:900;
+  margin-bottom:6px;
+}
+
+.section-subtitle{
+  opacity:.8;
+  margin-bottom:28px;
+}
+
+/* ZONE */
+.circle-wrapper{
   position:relative;
-  overflow:hidden;
-  border-radius:16px;
-  border:1px solid rgba(255,255,255,.14);
-  background:rgba(255,255,255,.04);
-}
-
-/* PISTE */
-.carousel-track{
-  display:flex;
-  gap:12px;
-  overflow-x:auto;
-  scroll-snap-type:x mandatory;
-  scroll-behavior:smooth;
-  padding:12px;
-}
-
-/* CACHER SCROLLBAR */
-.carousel-track::-webkit-scrollbar{
-  display:none;
-}
-.carousel-track{
-  -ms-overflow-style:none;
-  scrollbar-width:none;
-}
-
-/* SLIDE */
-.carousel-slide{
-  flex:0 0 100%;
-  scroll-snap-align:center;
-  position:relative;
-}
-
-/* IMAGE */
-.carousel-slide img{
   width:100%;
-  height:320px;
-  object-fit:cover;
-  border-radius:12px;
-  border:1px solid rgba(255,255,255,.12);
-  background:#000;
+  max-width:520px;
+  aspect-ratio:1 / 1;
+  margin:0 auto;
+  touch-action:pan-x;
 }
 
-/* =================================================
-   BOUTONS PREV / NEXT
-   ================================================= */
-.carousel-btn{
+/* CERCLE */
+.circle{
+  position:absolute;
+  inset:0;
+}
+
+/* CARTE */
+.circle-card{
   position:absolute;
   top:50%;
-  transform:translateY(-50%);
-  z-index:5;
-  width:40px;
-  height:40px;
-  border-radius:50%;
-  border:1px solid rgba(255,255,255,.25);
-  background:rgba(0,0,0,.45);
-  color:#fff;
-  font-size:18px;
-  font-weight:900;
-  cursor:pointer;
+  left:50%;
+  width:160px;
+  height:160px;
+  transform-origin:center;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:18px;
+  box-shadow:0 14px 32px rgba(0,0,0,.35);
   display:flex;
+  flex-direction:column;
   align-items:center;
   justify-content:center;
+  cursor:pointer;
+  transition:transform .25s ease, background .2s ease;
 }
 
-.carousel-btn:hover{
-  background:rgba(0,0,0,.65);
+.circle-card:hover{
+  background:rgba(255,255,255,.12);
 }
 
-.carousel-prev{
-  left:10px;
-}
-.carousel-next{
-  right:10px;
-}
-
-/* =================================================
-   INDICATEURS
-   ================================================= */
-.carousel-dots{
-  display:flex;
-  justify-content:center;
-  gap:8px;
-  padding:10px 0;
+/* ICÔNE */
+.circle-icon{
+  font-size:34px;
+  margin-bottom:6px;
 }
 
-.carousel-dot{
-  width:8px;
-  height:8px;
-  border-radius:50%;
-  background:rgba(255,255,255,.35);
+/* TITRE */
+.circle-card h3{
+  margin:0;
+  font-size:14px;
+  font-weight:800;
+  text-align:center;
+  line-height:1.2;
 }
 
-.carousel-dot.active{
-  background:#fff;
+/* ACTION */
+.circle-card .open{
+  margin-top:6px;
+  font-size:12px;
+  opacity:.7;
 }
 
-/* =================================================
-   RESPONSIVE
-   ================================================= */
+/* RESPONSIVE */
 @media (max-width:600px){
-  .carousel-slide img{
-    height:220px;
+  .circle-card{
+    width:130px;
+    height:130px;
   }
 }
