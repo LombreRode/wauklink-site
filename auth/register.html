@@ -1,77 +1,67 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>WAUKLINK — Créer un compte</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- CSS GLOBAL -->
+  <link rel="stylesheet" href="/wauklink-site/style.css">
+</head>
+
 <body class="auth-page">
 
   <div class="auth-card">
-    <h2>Créer un compte</h2>
+    <h1>Créer un compte</h1>
 
     <form id="form">
+      <label>Prénom
+        <input id="firstName" required>
+      </label>
 
-      <!-- INFOS PERSONNELLES -->
-      <h3 style="margin:14px 0 6px">Informations personnelles</h3>
+      <label>Nom
+        <input id="lastName" required>
+      </label>
 
-      <label>
-        Prénom
-        <input id="firstName" required />
+      <label>Téléphone
+        <input id="phone" required>
+      </label>
+
+      <label>Adresse
+        <input id="address" required>
+      </label>
+
+      <label>Email
+        <input type="email" id="email" required>
+      </label>
+
+      <label>Mot de passe
+        <input type="password" id="password" required>
       </label>
 
       <label>
-        Nom
-        <input id="lastName" required />
+        <input type="checkbox" id="cgu1" required>
+        J’accepte les Conditions Générales d’Utilisation
       </label>
 
       <label>
-        Téléphone
-        <input id="phone" required />
+        <input type="checkbox" id="cgu2" required>
+        J’accepte la politique de confidentialité
       </label>
 
       <label>
-        Adresse
-        <input id="address" required />
-      </label>
-
-      <!-- CONNEXION -->
-      <h3 style="margin:16px 0 6px">Informations de connexion</h3>
-
-      <label>
-        Email
-        <input type="email" id="email" required />
-      </label>
-
-      <label>
-        Mot de passe
-        <input type="password" id="password" required />
-      </label>
-
-      <!-- CGU -->
-      <h3 style="margin:16px 0 6px">Conditions légales</h3>
-
-      <label class="checkbox">
-        <input type="checkbox" id="cgu1" required />
-        J’accepte les
-        <a href="/wauklink-site/legal/cgu.html" target="_blank">
-          Conditions Générales d’Utilisation
-        </a>
-      </label>
-
-      <label class="checkbox">
-        <input type="checkbox" id="cgu2" required />
-        J’accepte la
-        <a href="/wauklink-site/legal/privacy.html" target="_blank">
-          politique de confidentialité
-        </a>
-      </label>
-
-      <label class="checkbox">
-        <input type="checkbox" id="cgu3" required />
-        Je certifie être majeur et accepter les
-        <a href="/wauklink-site/legal/mentions.html" target="_blank">
-          mentions légales
-        </a>
+        <input type="checkbox" id="cgu3" required>
+        Je certifie être majeur
       </label>
 
       <button type="submit">Créer mon compte</button>
     </form>
 
-    <p id="msg" class="msg"></p>
+    <p id="msg"></p>
   </div>
 
+  <!-- JS INSCRIPTION -->
+  <script type="module" src="./register.js"></script>
+
 </body>
+</html>
