@@ -1,4 +1,5 @@
-import { auth } from "/wauklink-site/shared/firebase.js";
+// auth/login.js
+import { auth } from "../shared/firebase.js";
 import { signInWithEmailAndPassword } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
@@ -15,8 +16,12 @@ form.addEventListener("submit", async (e) => {
       email.value.trim(),
       password.value
     );
-    location.replace("/wauklink-site/index.html");
-  } catch {
+
+    // redirection après login
+    location.replace("../index.html");
+
+  } catch (err) {
+    console.error(err);
     msg.textContent = "❌ Email ou mot de passe incorrect";
   }
 });
