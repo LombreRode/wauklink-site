@@ -4,12 +4,15 @@
   <meta charset="utf-8">
   <title>WAUKLINK — Créer un compte</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- CSS GLOBAL -->
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
 
 <body class="auth-page">
+
+  <!-- ⬅️ RETOUR ACCUEIL -->
+  <a href="/wauklink-site/index.html" class="auth-back">
+    ← Retour à l’accueil
+  </a>
 
   <div class="auth-card">
     <h1>Créer un compte</h1>
@@ -39,17 +42,29 @@
         <input type="password" id="password" required>
       </label>
 
-      <label>
+      <!-- ✅ CONFIRMATION MDP -->
+      <label>Confirmer le mot de passe
+        <input type="password" id="passwordConfirm" required>
+      </label>
+
+      <!-- CGU -->
+      <label class="checkbox">
         <input type="checkbox" id="cgu1" required>
-        J’accepte les Conditions Générales d’Utilisation
+        J’accepte les
+        <a href="/wauklink-site/legal/cgu.html" target="_blank">
+          Conditions Générales d’Utilisation
+        </a>
       </label>
 
-      <label>
+      <label class="checkbox">
         <input type="checkbox" id="cgu2" required>
-        J’accepte la politique de confidentialité
+        J’accepte la
+        <a href="/wauklink-site/legal/privacy.html" target="_blank">
+          politique de confidentialité
+        </a>
       </label>
 
-      <label>
+      <label class="checkbox">
         <input type="checkbox" id="cgu3" required>
         Je certifie être majeur
       </label>
@@ -60,8 +75,6 @@
     <p id="msg"></p>
   </div>
 
-  <!-- JS INSCRIPTION -->
-  <script type="module" src="./register.page.js"></script>
-
+  <script type="module" src="./register.js"></script>
 </body>
 </html>
