@@ -1,88 +1,6 @@
-<!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WAUKLINK — Admin • Annonces</title>
-  <link rel="stylesheet" href="/wauklink-site/style.css">
-  <style>
-    .page{padding:24px 0}
-    .meta{opacity:.85;font-size:13px}
-    table{width:100%;border-collapse:collapse;margin-top:14px}
-    th,td{
-      padding:10px;
-      border-bottom:1px solid rgba(255,255,255,.15);
-      text-align:left;
-      vertical-align:top;
-    }
-    th{opacity:.8}
-    .row-actions{display:flex;gap:8px;flex-wrap:wrap}
-    .btn{
-      padding:8px 10px;
-      border-radius:10px;
-      border:1px solid rgba(255,255,255,.2);
-      background:rgba(255,255,255,.08);
-      color:#fff;
-      cursor:pointer;
-    }
-    .btn-ok{
-      border-color:rgba(80,255,160,.35);
-      background:rgba(80,255,160,.12);
-    }
-    .btn-danger{
-      border-color:rgba(255,80,80,.45);
-      background:rgba(255,80,80,.15);
-    }
-    .pill{
-      display:inline-block;
-      padding:4px 8px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
-      font-size:12px;
-      opacity:.9;
-    }
-  </style>
-</head>
-
-<body>
-
-<header class="topbar">
-  <div class="container topbar-row">
-    <div>
-      <h1>WAUKLINK</h1>
-      <div class="subtitle">Admin — Annonces à valider</div>
-    </div>
-    <nav style="display:flex;gap:10px;flex-wrap:wrap">
-      <a class="btn" href="/wauklink-site/admin/index.html">← Dashboard</a>
-      <a class="btn" href="/wauklink-site/admin/reports.html">🚩 Signalements</a>
-    </nav>
-  </div>
-</header>
-
-<main class="container page">
-  <div class="meta" id="msg">Vérification des droits…</div>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Titre</th>
-        <th>Ville</th>
-        <th>Type</th>
-        <th>Prix</th>
-        <th>Owner</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="rows">
-      <tr><td colspan="7" class="meta">Chargement…</td></tr>
-    </tbody>
-  </table>
-</main>
-
 <script type="module">
   import { db } from "/wauklink-site/shared/firebase.js";
-  import { requireAdmin } from "/wauklink-site/shared/guard.js";
+  import { requireModerator } from "/wauklink-site/shared/guard.js";
   import {
     collection, query, where, orderBy, getDocs,
     doc, updateDoc
@@ -105,7 +23,8 @@
     const snap = await getDocs(qy);
 
     if (snap.empty) {
-      rows.innerHTML = `<tr><td colspan="7" class="meta">✅ Aucune annonce en attente.</td></tr>`;
+      rows.innerHTML =
+        `<tr><td colspan="7" class="meta">✅ Aucune annonce en attente.</td></tr>`;
       setMsg("Tout est à jour.");
       return;
     }
@@ -134,12 +53,18 @@
       const [ok, no] = tr.querySelectorAll("button");
 
       ok.onclick = async () => {
-        await updateDoc(doc(db, "annonces_location", d.id), { status: "active" });
+        await updateDoc(
+          doc(db, "annonces_location", d.id),
+          { status: "active" }
+        );
         loadPending();
       };
 
       no.onclick = async () => {
-        await updateDoc(doc(db, "annonces_location", d.id), { status: "removed" });
+        await updateDoc(
+          doc(db, "annonces_location", d.id),
+          { status: "removed" }
+        );
         loadPending();
       };
 
@@ -147,11 +72,8 @@
     });
   }
 
-  requireAdmin({
+  requireModerator({
     redirectTo: "/wauklink-site/auth/login.html",
     onOk: loadPending
   });
 </script>
-
-</body>
-</html>
