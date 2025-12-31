@@ -6,7 +6,6 @@
   <title>WAUKLINK — Déposer une annonce location</title>
   <link rel="stylesheet" href="../style.css" />
 </head>
-
 <body>
 <header class="topbar">
   <div class="container">
@@ -16,22 +15,18 @@
 </header>
 
 <main class="container" style="padding:22px 0;">
-
   <h2>Nouvelle annonce de location</h2>
 
-  <!-- MESSAGE GLOBAL -->
   <p id="statusMsg" style="opacity:.85;margin-bottom:18px;">
     Chargement…
   </p>
 
-  <!-- BLOQUÉ -->
   <section id="blocked" style="display:none" class="card">
     <p style="color:#ff6666">
       Accès bloqué selon votre abonnement ou votre statut.
     </p>
   </section>
 
-  <!-- FORMULAIRE -->
   <section id="formSection" style="display:none" class="card">
     <form id="form">
       <label>
@@ -61,11 +56,10 @@
   <div style="margin-top:20px">
     <a href="../index.html">← Accueil</a>
   </div>
-
 </main>
 
 <script type="module">
-  import { auth, db } from "../_shared/firebase.js";
+  import { auth, db } from "../shared/firebase.js";
   import { onAuthStateChanged } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
   import {
@@ -97,35 +91,30 @@
     const sub = u.abonnement?.type || "free";
     const proValidated = u.pro?.validated === true;
 
-    // FREE → BLOQUÉ
     if (sub === "free") {
       blocked.style.display = "block";
       statusMsg.textContent = "Abonnement requis pour déposer une annonce.";
       return;
     }
 
-    // PARTIEL → OK (NON‑PRO)
     if (sub === "partial" && role !== "pro") {
       statusMsg.textContent = "Dépôt autorisé (non‑professionnel).";
       formSection.style.display = "block";
       return;
     }
 
-    // PRO NON VALIDÉ → BLOQUÉ
     if (role === "pro" && !proValidated) {
       blocked.style.display = "block";
       statusMsg.textContent = "Compte professionnel non validé.";
       return;
     }
 
-    // PRO VALIDÉ → OK
     if (role === "pro" && proValidated) {
       statusMsg.textContent = "Dépôt autorisé (prestataire professionnel).";
       formSection.style.display = "block";
       return;
     }
 
-    // SÉCURITÉ PAR DÉFAUT
     blocked.style.display = "block";
     statusMsg.textContent = "Accès non autorisé.";
   });
@@ -139,14 +128,13 @@
       prix: Number(form.prix.value),
       description: form.description.value,
       status: "pending",
-      createdAt: serverTimestamp(),
-      authorUid: auth.currentUser.uid
+      ownerUid: auth.currentUser.uid,
+      createdAt: serverTimestamp()
     });
 
     alert("Annonce envoyée en modération.");
     location.href = "../annonces/location.html";
   });
 </script>
-
 </body>
 </html>
