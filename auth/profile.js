@@ -1,45 +1,42 @@
-// auth/profile.js
-import { auth, db } from "/wauklink-site/shared/firebase.js";
-import { doc, getDoc, updateDoc, serverTimestamp } from
+import { auth, db } from "../shared/firebase.js";
+import { onAuthStateChanged } from
+  "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { doc, updateDoc, serverTimestamp } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-// 🔗 DOM
-const profileForm = document.getElementById("profileForm");
-const activity = document.getElementById("activity");
-const description = document.getElementById("description");
-const msg = document.getElementById("msg");
+const form = document.getElementById("profileForm");
+const msg  = document.getElementById("msg");
 
-profileForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  msg.textContent = "";
-
-  if (!auth.currentUser) {
-    msg.textContent = "❌ Non connecté";
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    msg.textContent = "❌ Vous devez être connecté";
     return;
   }
 
-  try {
-    const ref = doc(db, "users", auth.currentUser.uid);
-    const snap = await getDoc(ref);
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-    if (!snap.exists()) {
-      msg.textContent = "❌ Profil utilisateur introuvable";
+    const activity = document.getElementById("activity").value;
+
+    if (!activity) {
+      msg.textContent = "❌ Activité obligatoire";
       return;
     }
 
-    await updateDoc(ref, {
-      activity: {
-        type: activity.value,
-        description: description.value,
-        requestedAt: serverTimestamp()
-      }
-    });
+    try {
+      const ref = doc(db, "users", user.uid);
 
-    // 🔁 Redirection dashboard pro
-    location.replace("/wauklink-site/dashboard/pro.html");
+      // ✅ UNIQUEMENT champs autorisés par les rules
+      await updateDoc(ref, {
+        activity,
+        lastLoginAt: serverTimestamp()
+      });
 
-  } catch (err) {
-    console.error(err);
-    msg.textContent = "❌ Erreur lors de l’enregistrement";
-  }
+      msg.textContent = "✅ Activité enregistrée";
+
+    } catch (err) {
+      console.error(err);
+      msg.textContent = "❌ " + err.code;
+    }
+  });
 });
