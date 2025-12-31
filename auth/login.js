@@ -1,33 +1,31 @@
-import { auth, db } from "../wauklink-site/shared/firebase.js
-import { signInWithEmailAndPassword } from
-  "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { auth } from "/shared/firebase.js";
+import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("loginForm");
-  const msg  = document.getElementById("msg");
+  const msg = document.getElementById("msg");
 
   if (!form) {
-    console.error("❌ Formulaire #loginForm introuvable");
+    console.error("Formulaire loginForm introuvable");
     return;
   }
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-
-    if (msg) msg.textContent = "⏳ Connexion…";
+    msg.textContent = "Connexion…";
 
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      if (msg) msg.textContent = "✅ Connecté. Redirection…";
+      msg.textContent = "Connecté";
       setTimeout(() => {
         location.href = "../index.html";
-      }, 600);
+      }, 500);
     } catch (err) {
       console.error(err);
-      if (msg) msg.textContent = "❌ Email ou mot de passe incorrect";
+      msg.textContent = "Email ou mot de passe incorrect";
     }
   });
 });
