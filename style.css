@@ -1,4 +1,8 @@
-/* ================= RESET ================= */
+/* =================================================
+   GLOBAL BASE — WAUKLINK
+   ================================================= */
+
+/* RESET */
 *{
   box-sizing:border-box;
 }
@@ -6,14 +10,35 @@ html,body{
   margin:0;
   padding:0;
 }
+
+/* VARIABLES GLOBALES */
+:root{
+  --bg:#0b1224;
+  --text:#f8fafc;
+  --muted:#9ca3af;
+  --brand:#006b52;
+  --line:rgba(255,255,255,.14);
+  --radius:14px;
+}
+
+/* BODY */
 body{
   font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
-  background:#0b1224;
-  color:#f8fafc;
+  background:var(--bg);
+  color:var(--text);
   overflow-x:hidden;
 }
 
-/* ================= LAYOUT ================= */
+/* LIENS */
+a{
+  color:var(--text);
+  text-decoration:none;
+}
+a:hover{
+  text-decoration:underline;
+}
+
+/* LAYOUT */
 .container{
   max-width:1100px;
   margin:0 auto;
@@ -23,9 +48,9 @@ body{
   padding:60px 0 90px;
 }
 
-/* ================= TOPBAR ================= */
+/* HEADER */
 .topbar{
-  background:#006b52;
+  background:var(--brand);
   color:#fff;
   padding:22px 0;
 }
@@ -40,166 +65,55 @@ body{
   margin:0;
   font-size:28px;
   font-weight:900;
-  letter-spacing:.4px;
 }
 .subtitle{
   font-size:14px;
   opacity:.9;
 }
-.topbar nav a{
-  color:#fff;
-  opacity:.9;
-  text-decoration:none;
-}
-.topbar nav a:hover{
-  opacity:1;
-}
 
-/* ===== CTA NAV (REMPLACE STYLE INLINE) ===== */
+/* NAV CTA */
 .nav-cta{
   padding:8px 12px;
   border-radius:12px;
-  border:1px solid rgba(255,255,255,.14);
-  background:rgba(255,255,255,.06);
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.08);
   color:#fff;
   font-weight:700;
-  text-decoration:none;
 }
 .nav-cta:hover{
-  filter:brightness(1.08);
+  filter:brightness(1.1);
 }
 
-/* ================= SECTIONS ================= */
-.circle-section{
-  padding:40px 0 70px;
-  border-radius:18px;
-  background:radial-gradient(
-    circle at 50% 30%,
-    rgba(255,255,255,.06),
-    rgba(255,255,255,.02) 55%,
-    transparent 100%
-  );
-}
-.circle-section h2{
-  text-align:center;
-  margin:0 0 6px;
-  font-size:26px;
-  font-weight:900;
-}
-.circle-subtitle{
-  text-align:center;
-  opacity:.85;
-  margin-bottom:28px;
-}
-
-/* ================= CIRCLE ================= */
-.circle-wrapper{
-  position:relative;
-  width:720px;
-  height:720px;
-  margin:0 auto;
-  touch-action:none;
-  user-select:none;
-  cursor:grab;
-}
-.circle{
-  position:absolute;
-  top:50%;
-  left:50%;
-  width:0;
-  height:0;
-}
-
-/* ================= CARDS ================= */
-.circle-card{
-  position:absolute;
-  width:170px;
-  padding:14px;
-  background:#ffffff;
-  color:#111827;
-  border-radius:16px;
-  border:2px solid #22c55e;
-  text-align:center;
-  cursor:pointer;
-  box-shadow:0 12px 28px rgba(0,0,0,.35);
-  transition:transform .18s ease, box-shadow .18s ease, filter .18s ease;
-}
-.circle-card:hover{
-  transform:scale(1.06);
-  box-shadow:0 18px 42px rgba(0,0,0,.45);
-  filter:brightness(1.05);
-}
-.circle-icon{
-  font-size:28px;
-  margin-bottom:6px;
-}
-.circle-card h3{
-  margin:6px 0;
-  font-size:14px;
-  font-weight:900;
-}
-.open{
-  font-size:12px;
-  opacity:.7;
-}
-
-/* ================= BUTTONS ================= */
+/* BOUTONS */
 .btn{
   padding:8px 12px;
   border-radius:12px;
-  border:1px solid rgba(255,255,255,.14);
+  border:1px solid var(--line);
   background:rgba(255,255,255,.06);
   color:#fff;
-  cursor:pointer;
-  text-decoration:none;
   font-weight:700;
-}
-.btn:hover{
-  filter:brightness(1.08);
+  cursor:pointer;
 }
 .btn-danger{
-  border:1px solid rgba(255,80,80,.45);
-  background:rgba(255,80,80,.12);
-  color:#fff;
+  background:rgba(255,80,80,.15);
+  border-color:rgba(255,80,80,.4);
 }
 
-/* ================= FOOTER ================= */
+/* FOOTER */
 .footer{
   text-align:center;
   padding:20px;
-  color:#9ca3af;
+  color:var(--muted);
   font-size:13px;
 }
 .footer a{
-  color:#9ca3af;
-  text-decoration:none;
-}
-.footer a:hover{
-  color:#fff;
-  text-decoration:underline;
+  color:var(--muted);
 }
 
-/* ================= LIENS (ANTI VIOLET) ================= */
-main a,
-main a:visited{
-  color:#ffffff;
-  text-decoration:none;
-}
-main a:hover{
-  color:#e5e7eb;
-  text-decoration:underline;
-}
+/* HELPERS */
+.hidden{display:none!important}
 
-/* ================= HELPERS ================= */
-.hidden{ display:none !important; }
-
-/* ================= RESPONSIVE ================= */
-@media (max-width:900px){
-  .circle-wrapper{ width:480px; height:480px; }
-  .circle-card{ width:150px; }
-}
+/* RESPONSIVE */
 @media (max-width:600px){
-  .circle-wrapper{ width:340px; height:340px; }
-  .circle-card{ width:140px; }
-  .topbar h1{ font-size:22px; }
+  .topbar h1{font-size:22px}
 }
