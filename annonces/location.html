@@ -6,8 +6,8 @@
   <title>WAUKLINK — Annonces Location</title>
   <link rel="stylesheet" href="../style.css" />
 </head>
-
 <body>
+
 <header class="topbar">
   <div class="container">
     <h1>WAUKLINK</h1>
@@ -16,22 +16,18 @@
 </header>
 
 <main class="container" style="padding:22px 0;">
-
   <h2>Annonces de location</h2>
 
-  <!-- MESSAGE GLOBAL -->
   <p id="statusMsg" style="opacity:.85;margin-bottom:18px;">
     Chargement…
   </p>
 
-  <!-- BLOQUÉ -->
   <section id="blocked" style="display:none" class="card">
     <p style="color:#ff6666">
-      Accès bloqué selon votre abonnement ou votre statut.
+      Abonnement requis pour accéder aux annonces.
     </p>
   </section>
 
-  <!-- LISTE ANNONCES -->
   <section id="content" style="display:none">
     <div id="list" class="grid"></div>
   </section>
@@ -39,15 +35,15 @@
   <div style="margin-top:20px">
     <a href="../index.html">← Accueil</a>
   </div>
-
 </main>
 
 <script type="module">
-  import { auth, db } from "../_shared/firebase.js";
+  import { auth, db } from "../shared/firebase.js";
   import { onAuthStateChanged } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
   import {
-    collection, query, where, orderBy, getDocs, doc, getDoc
+    collection, query, where, orderBy, getDocs,
+    doc, getDoc
   } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
@@ -64,14 +60,16 @@
 
   async function loadAnnonces(){
     list.innerHTML = "";
+
     const qy = query(
       collection(db, "annonces_location"),
       where("status", "==", "active"),
       orderBy("createdAt", "desc")
     );
+
     const snap = await getDocs(qy);
 
-    if (!snap.size) {
+    if (snap.empty) {
       list.innerHTML = "<p>Aucune annonce disponible.</p>";
       return;
     }
@@ -82,23 +80,27 @@
       el.className = "card";
       el.innerHTML = `
         <b>${esc(a.titre)}</b>
-        <div style="opacity:.8">${esc(a.ville)} — ${esc(a.prix)}€</div>
+        <div style="opacity:.8">${esc(a.ville)} — ${esc(a.prix)} €</div>
         <p>${esc(a.description || "")}</p>
       `;
       list.appendChild(el);
     });
   }
 
+  // 🔓 Lecture publique (rules OK)
+  content.style.display = "block";
+  loadAnnonces();
+
+  // 🔒 Si connecté → filtrage abonnement UI
   onAuthStateChanged(auth, async user => {
     if (!user) {
-      location.href = "../auth/login.html";
+      statusMsg.textContent = "Consultation publique.";
       return;
     }
 
     const snap = await getDoc(doc(db, "users", user.uid));
     if (!snap.exists()) {
       blocked.style.display = "block";
-      statusMsg.textContent = "Profil introuvable.";
       return;
     }
 
@@ -107,41 +109,19 @@
     const sub = u.abonnement?.type || "free";
     const proValidated = u.pro?.validated === true;
 
-    // FREE → BLOQUÉ
     if (sub === "free") {
       blocked.style.display = "block";
-      statusMsg.textContent = "Abonnement requis pour accéder aux annonces.";
+      content.style.display = "none";
       return;
     }
 
-    // PARTIEL → OK (NON‑PRO)
-    if (sub === "partial" && role !== "pro") {
-      statusMsg.textContent = "Accès autorisé (non‑professionnel).";
-      content.style.display = "block";
-      loadAnnonces();
-      return;
-    }
+    if (sub === "partial" && role !== "pro") return;
 
-    // PRO NON VALIDÉ → BLOQUÉ
     if (role === "pro" && !proValidated) {
       blocked.style.display = "block";
-      statusMsg.textContent = "Compte professionnel non validé.";
-      return;
+      content.style.display = "none";
     }
-
-    // PRO VALIDÉ → OK
-    if (role === "pro" && proValidated) {
-      statusMsg.textContent = "Accès autorisé (prestataire professionnel).";
-      content.style.display = "block";
-      loadAnnonces();
-      return;
-    }
-
-    // SÉCURITÉ PAR DÉFAUT
-    blocked.style.display = "block";
-    statusMsg.textContent = "Accès non autorisé.";
   });
 </script>
-
 </body>
 </html>
