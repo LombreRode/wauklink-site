@@ -7,14 +7,20 @@ const form = document.getElementById("resetForm");
 const email = document.getElementById("email");
 const msg = document.getElementById("msg");
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  msg.textContent = "Envoi du lien…";
-  try {
-    await sendPasswordResetEmail(auth, email.value.trim());
-    msg.textContent = "✅ Email de réinitialisation envoyé";
-  } catch (err) {
-    console.error(err);
-    msg.textContent = "❌ Adresse email invalide ou erreur";
-  }
-});
+if (!form || !email) {
+  console.error("resetForm ou email introuvable");
+} else {
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    if (msg) msg.textContent = "Envoi du lien…";
+
+    try {
+      await sendPasswordResetEmail(auth, email.value.trim());
+      if (msg) msg.textContent = "✅ Email de réinitialisation envoyé";
+    } catch (err) {
+      console.error(err);
+      if (msg) msg.textContent = "❌ Adresse email invalide ou erreur";
+    }
+  });
+}
