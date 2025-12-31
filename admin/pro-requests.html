@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin — Demandes PRO</title>
+  <link rel="stylesheet" href="/wauklink-site/style.css">
+  <style>
+    .page{padding:24px 0}
+    .card{
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      border-radius:16px;
+      padding:14px;
+      margin-bottom:12px
+    }
+    .row{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .meta{opacity:.8;font-size:13px}
+    .btn{
+      padding:8px 12px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.2);
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      cursor:pointer
+    }
+    .btn-ok{
+      border-color:rgba(80,255,160,.4);
+      background:rgba(80,255,160,.12)
+    }
+    .btn-no{
+      border-color:rgba(255,80,80,.4);
+      background:rgba(255,80,80,.12)
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Admin — Validation PRO</div>
+    </div>
+    <nav>
+      <a class="btn" href="/wauklink-site/admin/index.html">← Dashboard</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container page">
+  <h2>Demandes PRO en attente</h2>
+  <p id="msg" class="meta">Vérification des droits…</p>
+  <div id="list"></div>
+</main>
+
+<script type="module">
+  import { db } from "/wauklink-site/shared/firebase.js";
+  import { requireAdmin } from "/wauklink-site/shared/guard.js";
+  import {
+    collection, query, where, getDocs,
+    doc, updateDoc, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+  const list = document.getElementById("list");
+  const msg  = document.getElementById("msg");
+
+  const esc = s =>
+    String(s ?? "").replace(/[&<>"']/g, m =>
+      ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
+    );
+
+  async function loadRequests(){
+    list.innerHTML = "";
+    msg.textContent = "⏳ Chargement des demandes PRO…";
+
+    const qy = query(
+      collection(db, "users"),
+      where("pro.requested", "==", true),
+      where("pro.validated", "==", false)
+    );
+
+    const snap = await getDocs(qy);
+
+    if (snap.empty) {
+      msg.textContent = "✅ Aucune demande PRO en attente.";
+      return;
+    }
+
+    msg.textContent = `📋 ${snap.size} demande(s) PRO`;
+
+    snap.forEach(d => {
+      const u = d.data();
+
+      const card = document.createElement("div");
+      card.className = "card";
+
+      card.innerHTML = `
+        <div class="row">
+          <div>
+            <b>${esc(u.firstName)} ${esc(u.lastName)}</b><br />
+            <span class="meta">${esc(u.email)}</span><br />
+            <span class="meta">Téléphone : ${esc(u.phone)}</span>
+          </div>
+          <div class="row">
+            <button class="btn btn-ok">Valider</button>
+            <button class="btn btn-no">Refuser</button>
+          </div>
+        </div>
+      `;
+
+      const [okBtn, noBtn] = card.querySelectorAll("button");
+
+      // ✅ VALIDER → user devient PRO
+      okBtn.onclick = async () => {
+        if (!confirm("Valider ce compte PRO ?")) return;
+
+        await updateDoc(doc(db, "users", d.id), {
+          role: "pro",
+          "pro.validated": true,
+          "pro.validatedAt": serverTimestamp()
+        });
+
+        loadRequests();
+      };
+
+      // ❌ REFUSER → demande annulée
+      noBtn.onclick = async () => {
+        if (!confirm("Refuser cette demande PRO ?")) return;
+
+        await updateDoc(doc(db, "users", d.id), {
+          "pro.requested": false
+        });
+
+        loadRequests();
+      };
+
+      list.appendChild(card);
+    });
+  }
+
+  // 🔐 Protection admin
+  requireAdmin({
+    redirectTo: "/wauklink-site/auth/login.html",
+    onOk: loadRequests
+  });
+</script>
+
+</body>
+</html>
