@@ -1,28 +1,33 @@
-// auth/login.js
 import { auth } from "../shared/firebase.js";
 import { signInWithEmailAndPassword } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-const form = document.getElementById("form");
-const msg  = document.getElementById("msg");
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("loginForm");
+  const msg  = document.getElementById("msg");
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  msg.textContent = "⏳ Connexion…";
-
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
-
-  try {
-    await signInWithEmailAndPassword(auth, email, password);
-
-    msg.textContent = "✅ Connecté. Redirection…";
-    setTimeout(() => {
-      location.href = "../index.html";
-    }, 600);
-
-  } catch (err) {
-    console.error(err);
-    msg.textContent = "❌ Email ou mot de passe incorrect";
+  if (!form) {
+    console.error("❌ Formulaire #loginForm introuvable");
+    return;
   }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    if (msg) msg.textContent = "⏳ Connexion…";
+
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      if (msg) msg.textContent = "✅ Connecté. Redirection…";
+      setTimeout(() => {
+        location.href = "../index.html";
+      }, 600);
+    } catch (err) {
+      console.error(err);
+      if (msg) msg.textContent = "❌ Email ou mot de passe incorrect";
+    }
+  });
 });
