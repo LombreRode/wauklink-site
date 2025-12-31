@@ -1,5 +1,5 @@
 // admin/portal.js
-import { requireAdmin } from "/wauklink-site/shared/guard.js";
+import { auth } from "../shared/firebase.js";
 
 const msg = document.getElementById("msg");
 
