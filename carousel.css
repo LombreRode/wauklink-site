@@ -1,90 +1,125 @@
 /* =================================================
-   CAROUSEL CIRCULAIRE — WAUKLINK
-   (uniquement pour index.html)
-   ================================================= */
+   CARROUSEL CIRCULAIRE — WAUKLINK
+   (spécifique à la page d’accueil)
+   Dépend de style.css (variables globales)
+================================================= */
 
+/* =========================
+   SECTION
+========================= */
 .circle-section{
   text-align:center;
   margin-top:40px;
 }
 
 .section-title{
-  font-size:28px;
+  font-size:26px;
   font-weight:900;
   margin-bottom:6px;
 }
 
 .section-subtitle{
-  color:var(--muted);
-  font-size:14px;
-  margin-bottom:26px;
+  opacity:.8;
+  margin-bottom:28px;
 }
 
-/* WRAPPER */
+/* =========================
+   ZONE CARROUSEL
+========================= */
 .circle-wrapper{
   position:relative;
   width:100%;
   max-width:520px;
-  aspect-ratio:1/1;
+  aspect-ratio:1 / 1;
   margin:0 auto;
-  touch-action:none;
+  touch-action:pan-x;
 }
 
-/* CERCLE */
+/* =========================
+   CERCLE LOGIQUE
+========================= */
 .circle{
   position:absolute;
   inset:0;
 }
 
-/* CARTE */
+/* =========================
+   CARTES
+========================= */
 .circle-card{
   position:absolute;
   top:50%;
   left:50%;
-  width:150px;
-  height:150px;
-  border-radius:22px;
-  background:rgba(255,255,255,.08);
-  border:1px solid rgba(255,255,255,.18);
-  backdrop-filter:blur(10px);
+  width:160px;
+  height:160px;
+  transform-origin:center;
+
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:18px;
+  box-shadow:0 14px 32px rgba(0,0,0,.35);
+
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap:6px;
+
   cursor:pointer;
-  transition:transform .25s ease, background .25s ease;
+  user-select:none;
+
+  transition:
+    transform .25s ease,
+    background .2s ease,
+    box-shadow .2s ease;
 }
 
 .circle-card:hover{
-  background:rgba(255,255,255,.14);
+  background:rgba(255,255,255,.12);
+  box-shadow:0 18px 40px rgba(0,0,0,.45);
 }
 
-/* ICÔNE */
+/* =========================
+   ICÔNE
+========================= */
 .circle-icon{
-  font-size:28px;
+  font-size:34px;
+  margin-bottom:6px;
 }
 
-/* TITRE */
+/* =========================
+   TITRE
+========================= */
 .circle-card h3{
-  font-size:14px;
   margin:0;
-  font-weight:700;
+  font-size:14px;
+  font-weight:800;
+  text-align:center;
+  line-height:1.2;
 }
 
-/* ACTION */
+/* =========================
+   ACTION
+========================= */
 .circle-card .open{
+  margin-top:6px;
   font-size:12px;
-  opacity:.75;
+  opacity:.7;
 }
 
-/* RESPONSIVE */
+/* =========================
+   RESPONSIVE
+========================= */
 @media (max-width:600px){
   .circle-card{
-    width:120px;
-    height:120px;
+    width:130px;
+    height:130px;
   }
+
   .circle-icon{
-    font-size:22px;
+    font-size:28px;
+  }
+
+  .circle-card h3{
+    font-size:12px;
   }
 }
