@@ -22,14 +22,16 @@ onAuthStateChanged(auth, async (user) => {
     const snap = await getDoc(ref);
 
     if (!snap.exists()) {
-      console.error("❌ users/{uid} inexistant — inscription non conforme aux rules");
+      console.error(
+        "❌ users/{uid} inexistant — inscription non conforme aux rules"
+      );
       window.currentUser = null;
       return;
     }
 
     const data = snap.data();
 
-    // 🔒 ALIGNÉ AUX RULES (lecture uniquement)
+    // 🔒 Lecture uniquement (alignée aux rules)
     window.currentUser = {
       uid: user.uid,
       email: data.email,
@@ -40,7 +42,7 @@ onAuthStateChanged(auth, async (user) => {
       role: data.role
     };
 
-    // ✅ Mise à jour autorisée (champ neutre)
+    // ✅ Champ autorisé par les rules
     await updateDoc(ref, {
       lastLoginAt: serverTimestamp()
     });
