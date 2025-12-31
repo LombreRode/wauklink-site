@@ -3,34 +3,55 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Devenir prestataire</title>
+  <title>WAUKLINK — Devenir prestataire</title>
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
-
 <body>
 
-<h2>Compléter mon activité</h2>
+<header class="topbar">
+  <div class="container">
+    <h1>WAUKLINK</h1>
+    <div class="subtitle">Devenir prestataire</div>
+  </div>
+</header>
 
-<form id="profileForm">
-  <select id="activity" required>
-    <option value="">Choisir une activité</option>
-    <option value="non-pro">Prestataire non professionnel</option>
-    <option value="vendeur">Vendeur</option>
-    <option value="loueur">Loueur</option>
-  </select>
+<main class="container" style="max-width:700px;padding:40px 0;">
+  <h2>Compléter mon activité</h2>
 
-  <textarea
-    id="description"
-    placeholder="Décrivez votre activité"
-    required
-  ></textarea>
+  <section class="card">
+    <form id="profileForm" style="display:flex;flex-direction:column;gap:14px">
+      
+      <label>
+        Activité
+        <select id="activity" required>
+          <option value="">Choisir une activité</option>
+          <option value="non-pro">Prestataire non professionnel (CESU)</option>
+          <option value="vendeur">Vendeur</option>
+          <option value="loueur">Loueur</option>
+        </select>
+      </label>
 
-  <button>Enregistrer</button>
-</form>
+      <label>
+        Description de l’activité
+        <textarea
+          id="description"
+          placeholder="Décrivez votre activité"
+          required
+          rows="4"
+        ></textarea>
+      </label>
 
-<p id="msg"></p>
+      <button class="btn">Enregistrer</button>
+    </form>
+
+    <p id="msg" class="note"></p>
+  </section>
+
+  <div style="margin-top:20px">
+    <a href="/wauklink-site/dashboard/">← Retour au tableau de bord</a>
+  </div>
+</main>
 
 <script type="module" src="/wauklink-site/auth/profile.js"></script>
-
 </body>
 </html>
