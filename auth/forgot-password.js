@@ -18,7 +18,6 @@ form.addEventListener("submit", async (e) => {
   } catch (err) {
     console.error(err);
 
-    // Messages clairs (sans exposer la sécurité)
     if (err.code === "auth/user-not-found") {
       msg.textContent = "❌ Aucun compte avec cet email";
     } else if (err.code === "auth/invalid-email") {
