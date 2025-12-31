@@ -1,57 +1,60 @@
-<!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Connexion — WAUKLINK</title>
-  <link rel="stylesheet" href="../style.css">
-</head>
 <body>
 
 <header class="topbar">
-  <div class="container topbar-row">
-    <div>
-      <h1>WAUKLINK</h1>
-      <div class="subtitle">Connexion</div>
-    </div>
-    <nav>
-      <a href="../index.html">Accueil</a>
-      <a href="register.html">Inscription</a>
-    </nav>
+  <div class="container">
+    <h1>WAUKLINK</h1>
+    <div class="subtitle">Création de compte</div>
   </div>
 </header>
 
-<main class="container main-layout">
-  <section class="card" style="max-width:420px;margin:auto">
-    <h2>Se connecter</h2>
+<main class="container" style="padding:30px 0">
+
+  <section class="card" style="max-width:520px;margin:auto">
+    <h2>Créer un compte</h2>
 
     <form id="form">
-      <label>Email
-        <input type="email" id="email" required>
+
+      <label>Prénom</label>
+      <input id="firstName" required />
+
+      <label>Nom</label>
+      <input id="lastName" required />
+
+      <label>Téléphone</label>
+      <input id="phone" required />
+
+      <label>Adresse</label>
+      <input id="address" required />
+
+      <label>Email</label>
+      <input type="email" id="email" required />
+
+      <label>Mot de passe</label>
+      <input type="password" id="password" required />
+
+      <label class="meta" style="margin-top:10px">
+        <input type="checkbox" id="cgu1" required />
+        J’accepte les Conditions Générales d’Utilisation
       </label>
 
-      <label>Mot de passe
-        <input type="password" id="password" required>
+      <label class="meta">
+        <input type="checkbox" id="cgu2" required />
+        J’accepte la politique de confidentialité
       </label>
 
-      <button class="btn btn-ok" type="submit">
-        Connexion
+      <label class="meta">
+        <input type="checkbox" id="cgu3" required />
+        Je certifie être majeur
+      </label>
+
+      <button class="btn" type="submit" style="margin-top:16px">
+        Créer mon compte
       </button>
-
-      <p class="meta" id="msg"></p>
     </form>
 
-    <p class="meta">
-      Pas encore de compte ?
-      <a href="register.html">Créer un compte</a>
-    </p>
+    <p id="msg" class="meta" style="margin-top:12px"></p>
   </section>
+
 </main>
 
-<footer class="footer">
-  © WAUKLINK
-</footer>
-
-<script type="module" src="login.js"></script>
 </body>
-</html>
