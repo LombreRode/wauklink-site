@@ -27,13 +27,11 @@ export function requireUser({ redirectTo, onOk }) {
       location.replace(redirectTo);
       return;
     }
-
     const snap = await getDoc(doc(db, "users", user.uid));
     if (!snap.exists()) {
       location.replace(redirectTo);
       return;
     }
-
     onOk?.(user, snap.data());
   });
 }
@@ -48,14 +46,12 @@ export function requireAdmin({ redirectTo, onOk }) {
       location.replace(redirectTo);
       return;
     }
-
     try {
       const snap = await getDoc(doc(db, "users", user.uid));
       if (!snap.exists()) {
         location.replace(redirectTo);
         return;
       }
-
       if (snap.data().role === "admin") {
         onOk?.(user, snap.data());
       } else {
@@ -78,14 +74,12 @@ export function requireModerator({ redirectTo, onOk }) {
       location.replace(redirectTo);
       return;
     }
-
     try {
       const snap = await getDoc(doc(db, "users", user.uid));
       if (!snap.exists()) {
         location.replace(redirectTo);
         return;
       }
-
       const role = snap.data().role;
       if (role === "admin" || role === "moderator") {
         onOk?.(user, snap.data());
