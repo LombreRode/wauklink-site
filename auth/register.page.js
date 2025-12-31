@@ -1,4 +1,4 @@
-import { auth, db } from "/wauklink-site/shared/firebase.js";
+import { auth } from "../shared/firebase.js";
 import { createUserWithEmailAndPassword } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { doc, setDoc, serverTimestamp } from
