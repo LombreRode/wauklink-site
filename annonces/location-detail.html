@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Détail annonce — WAUKLINK</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container">
+    <h1>WAUKLINK</h1>
+    <div class="subtitle">Détail de l’annonce</div>
+  </div>
+</header>
+
+<main class="container" style="padding:22px 0;">
+  <p id="msg">Chargement…</p>
+
+  <section id="annonce" style="display:none" class="card">
+    <h2 id="titre"></h2>
+    <p id="meta" style="opacity:.8"></p>
+    <p id="description"></p>
+
+    <div id="photos" class="grid"></div>
+
+    <hr>
+
+    <!-- RATING -->
+    <div id="ratingSection" style="display:none">
+      <p>Noter cette annonce :</p>
+      <select id="ratingValue">
+        <option value="">Choisir</option>
+        <option value="1">1 ★</option>
+        <option value="2">2 ★</option>
+        <option value="3">3 ★</option>
+        <option value="4">4 ★</option>
+        <option value="5">5 ★</option>
+      </select>
+      <button id="rateBtn">Voter</button>
+    </div>
+  </section>
+
+  <div style="margin-top:20px">
+    <a href="./location.html">← Retour annonces</a>
+  </div>
+</main>
+
+<script type="module">
+  import { auth, db } from "../shared/firebase.js";
+  import { onAuthStateChanged } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import {
+    doc, getDoc, collection, setDoc, serverTimestamp
+  } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+  const msg = document.getElementById("msg");
+  const box = document.getElementById("annonce");
+  const titre = document.getElementById("titre");
+  const meta = document.getElementById("meta");
+  const desc = document.getElementById("description");
+  const photosEl = document.getElementById("photos");
+  const ratingSection = document.getElementById("ratingSection");
+  const rateBtn = document.getElementById("rateBtn");
+  const ratingValue = document.getElementById("ratingValue");
+
+  const annonceId = new URLSearchParams(location.search).get("id");
+  if (!annonceId) {
+    msg.textContent = "❌ Annonce introuvable.";
+    throw new Error("Missing id");
+  }
+
+  const annonceRef = doc(db, "annonces_location", annonceId);
+
+  function esc(s){
+    return String(s ?? "").replace(/[&<>"']/g, m =>
+      ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
+    );
+  }
+
+  let annonceData = null;
+  let currentUser = null;
+
+  async function loadAnnonce(){
+    const snap = await getDoc(annonceRef);
+    if (!snap.exists()) {
+      msg.textContent = "Annonce introuvable.";
+      return;
+    }
+
+    annonceData = snap.data();
+
+    if (annonceData.status !== "active") {
+      msg.textContent = "Annonce non disponible.";
+      return;
+    }
+
+    titre.textContent = annonceData.titre;
+    meta.textContent =
+      `${annonceData.ville} • ${annonceData.prix} €`;
+    desc.textContent = annonceData.description || "";
+
+    photosEl.innerHTML = "";
+    (annonceData.photos || []).forEach(url => {
+      const img = document.createElement("img");
+      img.src = url;
+      img.style.width = "100%";
+      img.style.borderRadius = "10px";
+      photosEl.appendChild(img);
+    });
+
+    box.style.display = "block";
+    msg.textContent = "";
+
+    checkRatingAccess();
+  }
+
+  function checkRatingAccess(){
+    if (!currentUser) return;
+
+    const owner =
+      annonceData.ownerUid || annonceData.ownerId;
+
+    if (owner === currentUser.uid) return;
+
+    ratingSection.style.display = "block";
+  }
+
+  rateBtn.onclick = async () => {
+    const v = Number(ratingValue.value);
+    if (!v || v < 1 || v > 5) return alert("Note invalide");
+
+    const rateRef = doc(
+      collection(annonceRef, "ratings"),
+      currentUser.uid
+    );
+
+    await setDoc(rateRef, {
+      value: v,
+      createdAt: serverTimestamp()
+    });
+
+    alert("Merci pour votre note !");
+    ratingSection.style.display = "none";
+  };
+
+  onAuthStateChanged(auth, async u => {
+    currentUser = u || null;
+    await loadAnnonce();
+  });
+</script>
+
+</body>
+</html>
