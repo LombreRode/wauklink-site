@@ -1,33 +1,6 @@
-<!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Admin — Signalements</title>
-  <link rel="stylesheet" href="../style.css">
-</head>
-
-<body>
-<header class="topbar">
-  <div class="container topbar-row">
-    <div>
-      <h1>WAUKLINK</h1>
-      <div class="subtitle">Admin — Signalements</div>
-    </div>
-    <nav>
-      <a class="btn" href="./index.html">← Dashboard</a>
-    </nav>
-  </div>
-</header>
-
-<main class="container" style="padding:24px 0">
-  <p id="msg" class="meta">Vérification des droits…</p>
-  <div id="list">Chargement…</div>
-</main>
-
 <script type="module">
   import { db } from "../shared/firebase.js";
-  import { requireAdmin } from "../shared/guard.js";
+  import { requireModerator } from "../shared/guard.js";
   import {
     collection, getDocs, doc, updateDoc
   } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
@@ -53,13 +26,19 @@
       const r = d.data();
       const div = document.createElement("div");
       div.style.marginBottom = "10px";
+
       div.innerHTML = `
         <b>${r.reason || "Signalement"}</b>
-        <button class="btn btn-danger" style="margin-left:10px">Clore</button>
+        <button class="btn btn-danger" style="margin-left:10px">
+          Clore
+        </button>
       `;
 
       div.querySelector("button").onclick = async () => {
-        await updateDoc(doc(db, "reports", d.id), { status: "closed" });
+        await updateDoc(
+          doc(db, "reports", d.id),
+          { status: "closed" }
+        );
         load();
       };
 
@@ -67,10 +46,8 @@
     });
   }
 
-  requireAdmin({
+  requireModerator({
     redirectTo: "../auth/login.html",
     onOk: load
   });
 </script>
-</body>
-</html>
