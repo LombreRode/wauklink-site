@@ -1,194 +1,118 @@
-// detail.js — COMPLET, prêt à coller
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Détail de l’annonce — WAUKLINK</title>
 
-import { auth, db } from "./_shared/firebase.js";
-import {
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import {
-  doc,
-  getDoc,
-  addDoc,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  <!-- CSS GLOBAL -->
+  <link rel="stylesheet" href="style.css">
 
-/* ================= UTILS ================= */
+  <!-- CSS PAGE DETAIL (si tu en ajoutes plus tard) -->
+  <!-- <link rel="stylesheet" href="detail.css"> -->
+</head>
 
-function qs(id) {
-  return document.getElementById(id);
-}
+<body>
 
-function getParam(name) {
-  return new URLSearchParams(location.search).get(name);
-}
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Détail de l’annonce</div>
+    </div>
 
-function setText(id, txt) {
-  const el = qs(id);
-  if (el) el.textContent = txt || "";
-}
+    <nav>
+      <a href="index.html">Accueil</a>
+      <a href="pricing.html">Tarifs</a>
+      <a href="auth/login.html" class="nav-cta">Connexion</a>
+    </nav>
+  </div>
+</header>
 
-function esc(s) {
-  return String(s ?? "").replace(/[&<>"']/g, m => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#039;"
-  }[m]));
-}
+<main class="container main-layout">
 
-/* ================= ELEMENTS ================= */
+  <!-- INFOS ANNONCE -->
+  <section class="card">
+    <h2 id="title">Chargement…</h2>
 
-const titleEl = qs("title");
-const descEl = qs("desc");
-const segmentEl = qs("segment");
-const statusLine = qs("statusLine");
+    <p id="segment" class="small"></p>
 
-const btnMail = qs("btnMail");
-const btnCall = qs("btnCall");
-const btnReport = qs("btnReport");
-const btnEditPhotos = qs("btnEditPhotos");
+    <p id="desc"></p>
 
-const form = qs("form");
-const nameInput = qs("name");
-const phoneInput = qs("phone");
-const msgInput = qs("msg");
-const noteEl = qs("note");
+    <p id="statusLine" class="small"></p>
+  </section>
 
-/* ================= STATE ================= */
+  <!-- ACTIONS CONTACT -->
+  <section class="card">
+    <h3>Contacter</h3>
 
-const annonceId = getParam("id");
-let annonce = null;
-let currentUser = null;
+    <div class="actions">
+      <a id="btnMail" class="btn" href="#" target="_blank">
+        📧 Email
+      </a>
 
-/* ================= GUARDS ================= */
+      <a id="btnCall" class="btn" href="#">
+        📞 Appeler
+      </a>
 
-if (!annonceId) {
-  alert("Annonce introuvable (id manquant).");
-  location.href = "index.html";
-}
+      <button id="btnReport" class="btn btn-danger" type="button">
+        🚨 Signaler
+      </button>
+    </div>
+  </section>
 
-/* ================= LOAD ANNONCE ================= */
+  <!-- ACTIONS PROPRIÉTAIRE -->
+  <section class="card hidden" id="ownerActions">
+    <h3>Gestion de l’annonce</h3>
 
-async function loadAnnonce() {
-  const ref = doc(db, "annonces_location", annonceId);
-  const snap = await getDoc(ref);
+    <a id="btnEditPhotos" class="btn" href="#">
+      ✏️ Modifier les photos
+    </a>
+  </section>
 
-  if (!snap.exists()) {
-    alert("Annonce inexistante.");
-    location.href = "index.html";
-    return;
-  }
+  <!-- FORMULAIRE CONTACT -->
+  <section class="card">
+    <h3>Envoyer une demande</h3>
 
-  annonce = snap.data();
+    <form id="form">
+      <label>
+        Nom
+        <input type="text" id="name" required>
+      </label>
 
-  // --- UI ---
-  setText("title", annonce.titre);
-  setText("desc", annonce.description);
-  setText("segment", `${annonce.type || ""} • ${annonce.ville || ""}`);
+      <label>
+        Téléphone
+        <input type="tel" id="phone" required>
+      </label>
 
-  setText(
-    "statusLine",
-    `Statut : ${annonce.status || "inconnu"}`
-  );
+      <label>
+        Message
+        <textarea id="msg" rows="4" required></textarea>
+      </label>
 
-  // --- CONTACT ---
-  if (annonce.contactEmail) {
-    btnMail.href = `mailto:${annonce.contactEmail}?subject=${encodeURIComponent(
-      "Annonce WAUKLINK : " + annonce.titre
-    )}`;
-  } else {
-    btnMail.classList.add("hidden");
-  }
+      <div class="actions">
+        <button class="btn btn-primary" type="submit">
+          Envoyer
+        </button>
+      </div>
 
-  if (annonce.contactPhone) {
-    btnCall.href = `tel:${annonce.contactPhone}`;
-  } else {
-    btnCall.classList.add("hidden");
-  }
+      <p id="note" class="small"></p>
+    </form>
+  </section>
 
-  // --- OWNER ONLY ---
-  if (
-    currentUser &&
-    annonce.ownerUid &&
-    currentUser.uid === annonce.ownerUid
-  ) {
-    btnEditPhotos.classList.remove("hidden");
-    btnEditPhotos.href = `annonce_edit.html?id=${annonceId}`;
-  }
-}
+</main>
 
-/* ================= AUTH ================= */
+<footer class="footer">
+  © WAUKLINK —
+  <a href="legal/index.html">CGU</a> |
+  <a href="legal/privacy.html">Confidentialité</a>
+</footer>
 
-onAuthStateChanged(auth, async (user) => {
-  currentUser = user || null;
-  await loadAnnonce();
-});
+<!-- SCRIPT PAGE -->
+<script type="module" src="detail.js"></script>
 
-/* ================= REPORT ================= */
+<!-- AUTH GLOBAL -->
+<script type="module" src="auth/status.js"></script>
 
-btnReport.addEventListener("click", async () => {
-  if (!currentUser) {
-    alert("Connecte-toi pour signaler une annonce.");
-    location.href = "auth/login.html";
-    return;
-  }
-
-  const reason = prompt("Pourquoi signaler cette annonce ?");
-  if (!reason) return;
-
-  try {
-    await addDoc(
-      doc(db, "reports").parent,
-      {
-        annonceId,
-        annonceTitre: annonce?.titre || "",
-        annonceVille: annonce?.ville || "",
-        annonceType: annonce?.type || "",
-        annoncePrix: annonce?.prix || 0,
-        annonceOwnerUid: annonce?.ownerUid || "",
-        reporterUid: currentUser.uid,
-        reporterEmail: currentUser.email || "",
-        reason: reason.trim(),
-        status: "open",
-        createdAt: serverTimestamp()
-      }
-    );
-
-    alert("✅ Signalement envoyé.");
-  } catch (e) {
-    console.error(e);
-    alert("❌ Erreur lors du signalement.");
-  }
-});
-
-/* ================= FORM CONTACT ================= */
-
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  if (!annonce) return;
-
-  const payload = {
-    annonceId,
-    annonceTitre: annonce.titre || "",
-    ownerUid: annonce.ownerUid || "",
-    name: nameInput.value.trim(),
-    phone: phoneInput.value.trim(),
-    message: msgInput.value.trim(),
-    createdAt: serverTimestamp()
-  };
-
-  if (!payload.name || !payload.phone || !payload.message) {
-    noteEl.textContent = "❌ Tous les champs sont obligatoires.";
-    return;
-  }
-
-  try {
-    await addDoc(doc(db, "demandes").parent, payload);
-    noteEl.textContent = "✅ Demande envoyée.";
-    form.reset();
-  } catch (e) {
-    console.error(e);
-    noteEl.textContent = "❌ Erreur lors de l’envoi.";
-  }
-});
+</body>
+</html>
