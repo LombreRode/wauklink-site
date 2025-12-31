@@ -9,33 +9,49 @@
 <body>
 
 <header class="topbar">
-  <div class="container">
-    <h1>WAUKLINK</h1>
-    <div class="subtitle">Connexion</div>
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Connexion</div>
+    </div>
+    <nav>
+      <a href="../index.html">Accueil</a>
+      <a href="register.html">Inscription</a>
+    </nav>
   </div>
 </header>
 
-<main class="container" style="max-width:680px;padding:40px 0;">
-  <h2>Connexion à votre compte</h2>
+<main class="container main-layout">
+  <section class="card" style="max-width:420px;margin:auto">
+    <h2>Se connecter</h2>
 
-  <form id="loginForm" style="display:flex;flex-direction:column;gap:12px;">
-    <input type="email" id="email" placeholder="Email" required>
-    <input type="password" id="password" placeholder="Mot de passe" required>
-    <button type="submit">Se connecter</button>
-  </form>
+    <form id="form">
+      <label>Email
+        <input type="email" id="email" required>
+      </label>
 
-  <p id="msg" style="margin-top:10px;"></p>
+      <label>Mot de passe
+        <input type="password" id="password" required>
+      </label>
 
-  <p style="margin-top:14px;">
-    <a href="./reset-password.html">Mot de passe oublié ?</a>
-  </p>
+      <button class="btn btn-ok" type="submit">
+        Connexion
+      </button>
 
-  <p>
-    <a href="../index.html">← Retour à l’accueil</a> •
-    <a href="./register.html">Créer un compte</a>
-  </p>
+      <p class="meta" id="msg"></p>
+    </form>
+
+    <p class="meta">
+      Pas encore de compte ?
+      <a href="register.html">Créer un compte</a>
+    </p>
+  </section>
 </main>
 
-<script type="module" src="./login.js"></script>
+<footer class="footer">
+  © WAUKLINK
+</footer>
+
+<script type="module" src="login.js"></script>
 </body>
 </html>
