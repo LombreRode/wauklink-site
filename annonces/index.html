@@ -6,8 +6,8 @@
   <title>WAUKLINK — Toutes les annonces</title>
   <link rel="stylesheet" href="../style.css" />
 </head>
-
 <body>
+
 <header class="topbar">
   <div class="container">
     <h1>WAUKLINK</h1>
@@ -16,22 +16,18 @@
 </header>
 
 <main class="container" style="padding:22px 0;">
-
   <h2>Annonces disponibles</h2>
 
-  <!-- MESSAGE GLOBAL -->
   <p id="statusMsg" style="opacity:.85;margin-bottom:18px;">
     Chargement…
   </p>
 
-  <!-- BLOQUÉ -->
   <section id="blocked" style="display:none" class="card">
     <p style="color:#ff6666">
-      Accès bloqué selon votre abonnement ou votre statut.
+      Abonnement requis pour consulter les annonces.
     </p>
   </section>
 
-  <!-- CONTENU -->
   <section id="content" style="display:none">
     <div id="list" class="grid"></div>
   </section>
@@ -39,11 +35,10 @@
   <div style="margin-top:20px">
     <a href="../index.html">← Accueil</a>
   </div>
-
 </main>
 
 <script type="module">
-  import { auth, db } from "../_shared/firebase.js";
+  import { auth, db } from "../shared/firebase.js";
   import { onAuthStateChanged } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
   import {
@@ -85,16 +80,21 @@
       el.className = "card";
       el.innerHTML = `
         <b>${esc(a.titre)}</b>
-        <div style="opacity:.8">${esc(a.ville)} — ${esc(a.prix)}€</div>
+        <div style="opacity:.8">${esc(a.ville)} — ${esc(a.prix)} €</div>
         <p>${esc(a.description || "")}</p>
       `;
       list.appendChild(el);
     });
   }
 
+  // 🔓 Lecture publique autorisée
+  loadAll();
+
+  // 🔒 Si connecté → on applique la logique abonnement
   onAuthStateChanged(auth, async user => {
     if (!user) {
-      location.href = "../auth/login.html";
+      statusMsg.textContent = "Consultation publique.";
+      content.style.display = "block";
       return;
     }
 
@@ -106,47 +106,27 @@
     }
 
     const u = snap.data();
-    const role = u.role || "user";
     const sub = u.abonnement?.type || "free";
+    const role = u.role || "user";
     const proValidated = u.pro?.validated === true;
 
-    // FREE → BLOQUÉ
     if (sub === "free") {
       blocked.style.display = "block";
-      statusMsg.textContent =
-        "Abonnement requis pour consulter les annonces.";
       return;
     }
 
-    // PARTIEL → OK (NON‑PRO)
     if (sub === "partial" && role !== "pro") {
-      statusMsg.textContent = "Accès autorisé (non‑professionnel).";
       content.style.display = "block";
-      loadAll();
       return;
     }
 
-    // PRO NON VALIDÉ → BLOQUÉ
     if (role === "pro" && !proValidated) {
       blocked.style.display = "block";
-      statusMsg.textContent = "Compte professionnel non validé.";
       return;
     }
 
-    // PRO VALIDÉ → OK
-    if (role === "pro" && proValidated) {
-      statusMsg.textContent =
-        "Accès autorisé (prestataire professionnel).";
-      content.style.display = "block";
-      loadAll();
-      return;
-    }
-
-    // SÉCURITÉ PAR DÉFAUT
-    blocked.style.display = "block";
-    statusMsg.textContent = "Accès non autorisé.";
+    content.style.display = "block";
   });
 </script>
-
 </body>
 </html>
