@@ -4,48 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>WAUKLINK — Modifier les photos</title>
-
-  <link rel="stylesheet" href="style.css?v=1" />
-
-  <style>
-    .wrap{ padding:40px 0 80px; }
-    .card{
-      max-width:820px;
-      margin:auto;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.14);
-      border-radius:18px;
-      padding:20px;
-      box-shadow:0 18px 40px rgba(0,0,0,.35);
-    }
-    .thumbs{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:10px;
-    }
-    .thumb{
-      width:110px;
-      height:110px;
-      object-fit:cover;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.14);
-    }
-    .meta{
-      font-size:13px;
-      opacity:.8;
-      margin-top:10px;
-    }
-    .actions{
-      display:flex;
-      gap:10px;
-      margin-top:20px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
-<body>
+
+<body class="page-edit-photos">
 
 <header class="topbar">
   <div class="container topbar-row">
@@ -60,8 +22,9 @@
 </header>
 
 <main class="container wrap">
-  <div class="card">
+  <div class="card edit-photos-card">
     <h2>Photos de l’annonce</h2>
+
     <p class="meta">
       ✔ Maximum 6 photos<br>
       ✔ Visible seulement si annonce <b>ACTIVE</b>
@@ -70,7 +33,6 @@
     <input id="photosInput" type="file" accept="image/*" multiple />
 
     <div id="preview" class="thumbs"></div>
-
     <div id="msg" class="meta"></div>
 
     <div class="actions">
@@ -79,127 +41,6 @@
     </div>
   </div>
 </main>
-
-<script type="module">
-  import { auth, db } from "./_shared/firebase.js";
-  import { onAuthStateChanged } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-  import { doc, getDoc, updateDoc, serverTimestamp } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-  import { getStorage, ref, uploadBytes, getDownloadURL } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
-
-  const params = new URLSearchParams(location.search);
-  const annonceId = params.get("id");
-
-  const input = document.getElementById("photosInput");
-  const preview = document.getElementById("preview");
-  const msg = document.getElementById("msg");
-  const saveBtn = document.getElementById("saveBtn");
-
-  const storage = getStorage();
-  let files = [];
-  let currentUser = null;
-  let annonce = null;
-  let role = "";
-
-  function setMsg(t){ msg.textContent = t || ""; }
-
-  function previewFiles(list){
-    preview.innerHTML="";
-    list.forEach(f=>{
-      const img=document.createElement("img");
-      img.className="thumb";
-      img.src=URL.createObjectURL(f);
-      preview.appendChild(img);
-    });
-  }
-
-  function safeExt(file){
-    const e=(file.name.split(".").pop()||"jpg").toLowerCase();
-    return e.replace(/[^a-z0-9]/g,"") || "jpg";
-  }
-
-  onAuthStateChanged(auth, async (u)=>{
-    if(!u){
-      alert("Connexion requise");
-      location.href="auth/login.html";
-      return;
-    }
-    currentUser=u;
-
-    const snap = await getDoc(doc(db,"annonces_location",annonceId));
-    if(!snap.exists()){
-      setMsg("❌ Annonce introuvable");
-      saveBtn.disabled=true;
-      return;
-    }
-
-    annonce = snap.data();
-    if(annonce.status!=="active"){
-      setMsg("❌ Photos modifiables uniquement si annonce ACTIVE");
-      saveBtn.disabled=true;
-      return;
-    }
-
-    const usnap = await getDoc(doc(db,"users",u.uid));
-    role = usnap.exists() ? usnap.data().role : "";
-
-    const isOwner =
-      annonce.ownerUid === u.uid || annonce.ownerId === u.uid;
-    const allowed =
-      isOwner || role==="admin" || role==="moderator";
-
-    if(!allowed){
-      setMsg("❌ Accès refusé");
-      saveBtn.disabled=true;
-    }
-  });
-
-  input.addEventListener("change",()=>{
-    files=[...input.files].slice(0,6);
-    previewFiles(files);
-  });
-
-  saveBtn.onclick = async ()=>{
-    if(!files.length){
-      setMsg("❌ Aucune photo sélectionnée");
-      return;
-    }
-
-    try{
-      saveBtn.disabled=true;
-      setMsg("⏳ Upload des photos…");
-
-      const urls=[];
-      const paths=[];
-
-      for(let i=0;i<files.length;i++){
-        const f=files[i];
-        const path=`annonces_location/${annonceId}/p${i+1}.${safeExt(f)}`;
-        const r=ref(storage,path);
-        await uploadBytes(r,f,{contentType:f.type});
-        const url=await getDownloadURL(r);
-        urls.push(url);
-        paths.push(path);
-      }
-
-      await updateDoc(doc(db,"annonces_location",annonceId),{
-        photos:urls,
-        photoPaths:paths,
-        updatedAt:serverTimestamp()
-      });
-
-      setMsg("✅ Photos mises à jour");
-      setTimeout(()=>history.back(),800);
-
-    }catch(e){
-      console.error(e);
-      setMsg("❌ Erreur upload (voir console)");
-      saveBtn.disabled=false;
-    }
-  };
-</script>
 
 <script type="module" src="./auth/status.js"></script>
 <script type="module" src="./auth/user_sync.js"></script>
