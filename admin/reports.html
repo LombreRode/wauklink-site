@@ -4,11 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Admin — Signalements</title>
-  <link rel="stylesheet" href="/wauklink-site/style.css">
+  <link rel="stylesheet" href="../style.css">
 </head>
 
 <body>
-
 <header class="topbar">
   <div class="container topbar-row">
     <div>
@@ -16,7 +15,7 @@
       <div class="subtitle">Admin — Signalements</div>
     </div>
     <nav>
-      <a class="btn" href="/wauklink-site/admin/index.html">← Dashboard</a>
+      <a class="btn" href="./index.html">← Dashboard</a>
     </nav>
   </div>
 </header>
@@ -27,8 +26,8 @@
 </main>
 
 <script type="module">
-  import { db } from "/wauklink-site/shared/firebase.js";
-  import { requireAdmin } from "/wauklink-site/shared/guard.js";
+  import { db } from "../shared/firebase.js";
+  import { requireAdmin } from "../shared/guard.js";
   import {
     collection, getDocs, doc, updateDoc
   } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
@@ -36,7 +35,7 @@
   const list = document.getElementById("list");
   const msg = document.getElementById("msg");
 
-  async function load(){
+  async function load() {
     msg.textContent = "⏳ Chargement des signalements…";
     list.innerHTML = "";
 
@@ -53,7 +52,6 @@
     snap.forEach(d => {
       const r = d.data();
       const div = document.createElement("div");
-
       div.style.marginBottom = "10px";
       div.innerHTML = `
         <b>${r.reason || "Signalement"}</b>
@@ -70,10 +68,9 @@
   }
 
   requireAdmin({
-    redirectTo: "/wauklink-site/auth/login.html",
+    redirectTo: "../auth/login.html",
     onOk: load
   });
 </script>
-
 </body>
 </html>
