@@ -2,30 +2,59 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Admin — Dashboard</title>
+  <title>WAUKLINK — Admin Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
-
 <body>
 
-  <h1>Admin</h1>
+<header class="topbar">
+  <div class="container">
+    <h1>WAUKLINK</h1>
+    <div class="subtitle">Administration</div>
+  </div>
+</header>
 
-  <ul>
-    <li><a href="/wauklink-site/admin/annonces.html">🛠️ Annonces</a></li>
-    <li><a href="/wauklink-site/admin/reports.html">🚩 Signalements</a></li>
-    <li><a href="/wauklink-site/admin/ratings.html">⭐ Notes</a></li>
-    <li><a href="/wauklink-site/admin/users.html">👤 Utilisateurs</a></li>
-  </ul>
+<main class="container" style="padding:30px 0;">
+  <h2>Dashboard administrateur</h2>
 
-  <!-- 🔐 PROTECTION ADMIN -->
-  <script type="module">
-    import { requireAdmin } from "/wauklink-site/shared/guard.js";
+  <section class="card">
+    <ul style="display:grid;gap:12px;padding-left:0;list-style:none">
+      <li>
+        <a class="btn" href="/wauklink-site/admin/annonces.html">
+          🛠️ Gestion des annonces
+        </a>
+      </li>
+      <li>
+        <a class="btn" href="/wauklink-site/admin/reports.html">
+          🚩 Signalements
+        </a>
+      </li>
+      <li>
+        <a class="btn" href="/wauklink-site/admin/ratings.html">
+          ⭐ Notes & avis
+        </a>
+      </li>
+      <li>
+        <a class="btn" href="/wauklink-site/admin/users.html">
+          👤 Utilisateurs
+        </a>
+      </li>
+    </ul>
+  </section>
 
-    requireAdmin({
-      redirectTo: "/wauklink-site/auth/login.html"
-    });
-  </script>
+  <div style="margin-top:20px">
+    <a href="/wauklink-site/index.html">← Retour accueil</a>
+  </div>
+</main>
+
+<!-- 🔐 PROTECTION ADMIN -->
+<script type="module">
+  import { requireAdmin } from "/wauklink-site/shared/guard.js";
+  requireAdmin({
+    redirectTo: "/wauklink-site/auth/login.html"
+  });
+</script>
 
 </body>
 </html>
