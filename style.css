@@ -1,9 +1,11 @@
 /* =================================================
-   GLOBAL BASE — WAUKLINK (COMPLET)
+   GLOBAL BASE — WAUKLINK
    ================================================= */
 
-/* ================= RESET ================= */
-*{
+/* RESET */
+*,
+*::before,
+*::after{
   box-sizing:border-box;
 }
 html,body{
@@ -11,29 +13,29 @@ html,body{
   padding:0;
 }
 
-/* ================= VARIABLES ================= */
+/* VARIABLES */
 :root{
   --bg:#0b1224;
-  --panel:rgba(255,255,255,.06);
+  --panel:#111a33;
   --text:#f8fafc;
   --muted:#9ca3af;
   --brand:#006b52;
+  --brand-soft:rgba(0,107,82,.18);
+  --danger:#ff6666;
   --line:rgba(255,255,255,.14);
-  --danger:#ff5a5a;
-  --success:#5aff9e;
   --radius:14px;
 }
 
-/* ================= BODY ================= */
+/* BODY */
 body{
   font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
   background:var(--bg);
   color:var(--text);
+  line-height:1.45;
   overflow-x:hidden;
-  line-height:1.5;
 }
 
-/* ================= LIENS ================= */
+/* LIENS */
 a{
   color:var(--text);
   text-decoration:none;
@@ -42,17 +44,16 @@ a:hover{
   text-decoration:underline;
 }
 
-/* ================= LAYOUT ================= */
+/* CONTAINER */
 .container{
   max-width:1100px;
   margin:0 auto;
   padding:0 16px;
 }
-.main-layout{
-  padding:60px 0 90px;
-}
 
-/* ================= HEADER ================= */
+/* =================================================
+   HEADER / TOPBAR
+   ================================================= */
 .topbar{
   background:var(--brand);
   color:#fff;
@@ -75,86 +76,111 @@ a:hover{
   opacity:.9;
 }
 
-/* ================= BOUTONS ================= */
-.btn{
-  padding:8px 12px;
+/* =================================================
+   TITRES
+   ================================================= */
+h2{
+  margin:0 0 12px;
+}
+h3{
+  margin:0 0 8px;
+}
+
+/* =================================================
+   BOUTONS
+   ================================================= */
+.btn,
+button{
+  padding:10px 14px;
   border-radius:12px;
   border:1px solid var(--line);
   background:rgba(255,255,255,.06);
   color:#fff;
   font-weight:700;
   cursor:pointer;
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
 }
-.btn:hover{
+.btn:hover,
+button:hover{
   filter:brightness(1.1);
 }
-.btnDanger{
-  border-color:rgba(255,90,90,.4);
-  background:rgba(255,90,90,.12);
+.btn-danger{
+  background:rgba(255,80,80,.18);
+  border-color:rgba(255,80,80,.4);
 }
-.btnOk{
+.btn-ok{
+  background:rgba(90,255,160,.18);
   border-color:rgba(90,255,160,.4);
-  background:rgba(90,255,160,.12);
 }
 
-/* ================= CARTES ================= */
+/* =================================================
+   FORMULAIRES
+   ================================================= */
+input,
+textarea,
+select{
+  width:100%;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.05);
+  color:#fff;
+  font-family:inherit;
+}
+textarea{
+  min-height:90px;
+  resize:vertical;
+}
+label{
+  font-size:14px;
+}
+input::placeholder,
+textarea::placeholder{
+  color:var(--muted);
+}
+
+/* =================================================
+   CARDS
+   ================================================= */
 .card{
-  background:var(--panel);
+  background:rgba(255,255,255,.06);
   border:1px solid var(--line);
   border-radius:16px;
   padding:16px;
-  box-shadow:0 14px 36px rgba(0,0,0,.35);
+}
+.card + .card{
+  margin-top:14px;
 }
 
-/* ================= GRID ================= */
+/* =================================================
+   GRID (annonces, services, urgences, admin)
+   ================================================= */
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
   gap:14px;
 }
 
-/* ================= TEXTE ================= */
+/* =================================================
+   MESSAGES
+   ================================================= */
 .meta{
   font-size:13px;
   opacity:.85;
-  color:var(--muted);
 }
-h2,h3{
-  margin-top:0;
+.error{
+  color:var(--danger);
 }
-
-/* ================= ROW ================= */
-.row{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:10px;
+.notice{
+  background:var(--brand-soft);
+  border-left:4px solid var(--brand);
+  padding:10px 12px;
+  border-radius:12px;
+  margin:12px 0;
 }
 
-/* ================= FORM ================= */
-label{
-  display:block;
-  font-size:14px;
-}
-input,textarea{
-  width:100%;
-  margin-top:6px;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid var(--line);
-  background:rgba(0,0,0,.25);
-  color:#fff;
-  outline:none;
-}
-textarea{
-  min-height:110px;
-  resize:vertical;
-}
-
-/* ================= FOOTER ================= */
+/* =================================================
+   FOOTER
+   ================================================= */
 .footer{
   text-align:center;
   padding:20px;
@@ -165,10 +191,18 @@ textarea{
   color:var(--muted);
 }
 
-/* ================= HELPERS ================= */
+/* =================================================
+   HELPERS
+   ================================================= */
 .hidden{display:none!important}
+.center{text-align:center}
+.mt{margin-top:16px}
 
-/* ================= RESPONSIVE ================= */
+/* =================================================
+   RESPONSIVE
+   ================================================= */
 @media (max-width:600px){
-  .topbar h1{font-size:22px}
+  .topbar h1{
+    font-size:22px;
+  }
 }
