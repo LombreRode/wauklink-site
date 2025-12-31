@@ -1,7 +1,7 @@
 /* =================================================
    CARROUSEL CIRCULAIRE — WAUKLINK
-   (spécifique à la page d’accueil)
-   Dépend de style.css (variables globales)
+   Page d’accueil
+   Compatible mobile • 12 cartes • Accessible
 ================================================= */
 
 /* =========================
@@ -20,7 +20,7 @@
 
 .section-subtitle{
   opacity:.8;
-  margin-bottom:28px;
+  margin-bottom:32px;
 }
 
 /* =========================
@@ -29,7 +29,7 @@
 .circle-wrapper{
   position:relative;
   width:100%;
-  max-width:520px;
+  max-width:560px;
   aspect-ratio:1 / 1;
   margin:0 auto;
   touch-action:pan-x;
@@ -52,12 +52,12 @@
   left:50%;
   width:160px;
   height:160px;
-  transform-origin:center;
 
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.14);
+  background:#ffffff;
+  color:#0b1224;
+  border:2px solid var(--brand);
   border-radius:18px;
-  box-shadow:0 14px 32px rgba(0,0,0,.35);
+  box-shadow:0 12px 26px rgba(0,0,0,.25);
 
   display:flex;
   flex-direction:column;
@@ -69,37 +69,42 @@
 
   transition:
     transform .25s ease,
-    background .2s ease,
-    box-shadow .2s ease;
+    box-shadow .25s ease;
 }
 
 .circle-card:hover{
-  background:rgba(255,255,255,.12);
-  box-shadow:0 18px 40px rgba(0,0,0,.45);
+  transform:scale(1.05);
+  box-shadow:0 18px 40px rgba(0,0,0,.35);
 }
 
 /* =========================
-   ICÔNE
+   ACCESSIBILITÉ
+========================= */
+.circle-card{
+  outline:none;
+}
+
+.circle-card:focus-visible{
+  outline:4px solid #22c55e;
+  outline-offset:4px;
+}
+
+/* =========================
+   CONTENU
 ========================= */
 .circle-icon{
   font-size:34px;
   margin-bottom:6px;
 }
 
-/* =========================
-   TITRE
-========================= */
 .circle-card h3{
   margin:0;
   font-size:14px;
-  font-weight:800;
+  font-weight:900;
   text-align:center;
   line-height:1.2;
 }
 
-/* =========================
-   ACTION
-========================= */
 .circle-card .open{
   margin-top:6px;
   font-size:12px;
@@ -107,16 +112,20 @@
 }
 
 /* =========================
-   RESPONSIVE
+   MOBILE (ANTI‑CHEVAUCHEMENT)
 ========================= */
 @media (max-width:600px){
+  .circle-wrapper{
+    max-width:420px;
+  }
+
   .circle-card{
-    width:130px;
-    height:130px;
+    width:120px;
+    height:120px;
   }
 
   .circle-icon{
-    font-size:28px;
+    font-size:26px;
   }
 
   .circle-card h3{
