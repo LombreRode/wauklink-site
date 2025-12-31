@@ -9,57 +9,49 @@
 <body>
 
 <header class="topbar">
-  <div class="container">
-    <h1>WAUKLINK</h1>
-    <div class="subtitle">Créer un compte</div>
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Création de compte</div>
+    </div>
+    <nav>
+      <a href="../index.html">Accueil</a>
+      <a href="login.html">Connexion</a>
+    </nav>
   </div>
 </header>
 
-<main class="container" style="max-width:680px;padding:40px 0;">
-  <h2>Inscription</h2>
+<main class="container main-layout">
+  <section class="card" style="max-width:420px;margin:auto">
+    <h2>Créer un compte</h2>
 
-  <form id="registerForm" style="display:flex;flex-direction:column;gap:12px;">
-    <input type="text" id="firstName" placeholder="Prénom" required>
-    <input type="text" id="lastName" placeholder="Nom" required>
-    <input type="email" id="email" placeholder="Email" required>
+    <form id="form">
+      <label>Email
+        <input type="email" id="email" required>
+      </label>
 
-    <input type="password" id="password" placeholder="Mot de passe" required>
-    <input type="password" id="password2" placeholder="Confirmation mot de passe" required>
+      <label>Mot de passe
+        <input type="password" id="password" minlength="6" required>
+      </label>
 
-    <!-- 🔒 CHAMPS MÉTIER OBLIGATOIRES -->
-    <input type="tel" id="phone" placeholder="Téléphone" required>
-    <input type="text" id="address" placeholder="Adresse" required>
+      <button class="btn btn-ok" type="submit">
+        Créer mon compte
+      </button>
 
-    <!-- OPTIONNEL -->
-    <input type="text" id="address2" placeholder="Complément d’adresse (optionnel)">
+      <p class="meta" id="msg"></p>
+    </form>
 
-    <!-- 🔒 3 CASES LÉGALES OBLIGATOIRES -->
-    <label>
-      <input type="checkbox" id="acceptCgu" required>
-      J’accepte les CGU
-    </label>
-
-    <label>
-      <input type="checkbox" id="acceptLegal" required>
-      J’ai lu les mentions légales
-    </label>
-
-    <label>
-      <input type="checkbox" id="acceptConditions" required>
-      J’accepte les conditions d’utilisation
-    </label>
-
-    <button type="submit">Créer le compte</button>
-  </form>
-
-  <p id="msg" style="margin-top:10px;"></p>
-
-  <p>
-    <a href="../index.html">← Retour</a> •
-    <a href="./login.html">Déjà un compte ?</a>
-  </p>
+    <p class="meta">
+      Déjà inscrit ?
+      <a href="login.html">Se connecter</a>
+    </p>
+  </section>
 </main>
 
-<script type="module" src="./register.page.js"></script>
+<footer class="footer">
+  © WAUKLINK
+</footer>
+
+<script type="module" src="register.js"></script>
 </body>
 </html>
