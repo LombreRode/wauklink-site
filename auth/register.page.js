@@ -1,3 +1,4 @@
+// auth/register.page.js
 import { auth, db } from "../shared/firebase.js";
 import { createUserWithEmailAndPassword } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
@@ -15,9 +16,14 @@ form.addEventListener("submit", async (e) => {
   const password = document.getElementById("password").value;
 
   try {
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    // 1️⃣ Création Auth
+    const cred = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
 
-    // ⬇️ DONNÉES OBLIGATOIRES SELON TES RULES
+    // 2️⃣ Création Firestore (CREATE ONLY — conforme aux rules)
     await setDoc(doc(db, "users", cred.user.uid), {
       firstName: "À compléter",
       lastName: "À compléter",
@@ -30,6 +36,7 @@ form.addEventListener("submit", async (e) => {
     });
 
     msg.textContent = "Compte créé ✔";
+
     setTimeout(() => {
       window.location.href = "../index.html";
     }, 800);
