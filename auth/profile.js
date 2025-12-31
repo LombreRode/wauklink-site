@@ -1,6 +1,6 @@
 // auth/profile.js
 import { auth, db } from "/wauklink-site/shared/firebase.js";
-import { doc, updateDoc, serverTimestamp } from
+import { doc, getDoc, updateDoc, serverTimestamp } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 // 🔗 DOM
@@ -19,7 +19,15 @@ profileForm.addEventListener("submit", async (e) => {
   }
 
   try {
-    await updateDoc(doc(db, "users", auth.currentUser.uid), {
+    const ref = doc(db, "users", auth.currentUser.uid);
+    const snap = await getDoc(ref);
+
+    if (!snap.exists()) {
+      msg.textContent = "❌ Profil utilisateur introuvable";
+      return;
+    }
+
+    await updateDoc(ref, {
       activity: {
         type: activity.value,
         description: description.value,
@@ -27,10 +35,11 @@ profileForm.addEventListener("submit", async (e) => {
       }
     });
 
-    // 🔁 Redirection (dashboard pro)
+    // 🔁 Redirection dashboard pro
     location.replace("/wauklink-site/dashboard/pro.html");
 
-  } catch {
+  } catch (err) {
+    console.error(err);
     msg.textContent = "❌ Erreur lors de l’enregistrement";
   }
 });
