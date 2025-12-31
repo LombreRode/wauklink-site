@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>TEST FIREBASE</title>
+</head>
+<body>
+  <h1>Test Firebase</h1>
+  <p id="out">chargement…</p>
+
+  <script type="module">
+    import { auth } from "./shared/firebase.js";
+
+    document.getElementById("out").textContent =
+      auth ? "✅ firebase chargé" : "❌ firebase NON chargé";
+
+    console.log("AUTH =", auth);
+  </script>
+</body>
+</html>
