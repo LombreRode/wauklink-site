@@ -11,14 +11,18 @@
 
   <h1>Mot de passe oublié</h1>
 
-  <form>
+  <form id="forgotForm">
     <label>
       Email<br>
-      <input type="email" required>
+      <input type="email" id="email" required>
     </label>
     <br><br>
     <button type="submit">Envoyer le lien</button>
   </form>
 
+  <p id="msg"></p>
+
+  <!-- JS DÉJÀ EXISTANT -->
+  <script type="module" src="./forgot-password.js"></script>
 </body>
 </html>
