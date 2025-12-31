@@ -49,9 +49,24 @@ body{
 .topbar nav a{
   color:#fff;
   opacity:.9;
+  text-decoration:none;
 }
 .topbar nav a:hover{
   opacity:1;
+}
+
+/* ===== CTA NAV (REMPLACE STYLE INLINE) ===== */
+.nav-cta{
+  padding:8px 12px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.06);
+  color:#fff;
+  font-weight:700;
+  text-decoration:none;
+}
+.nav-cta:hover{
+  filter:brightness(1.08);
 }
 
 /* ================= SECTIONS ================= */
@@ -77,7 +92,7 @@ body{
   margin-bottom:28px;
 }
 
-/* ================= CIRCLE / CAROUSEL ================= */
+/* ================= CIRCLE ================= */
 .circle-wrapper{
   position:relative;
   width:720px;
@@ -95,7 +110,7 @@ body{
   height:0;
 }
 
-/* ================= CIRCLE CARDS ================= */
+/* ================= CARDS ================= */
 .circle-card{
   position:absolute;
   width:170px;
@@ -107,10 +122,7 @@ body{
   text-align:center;
   cursor:pointer;
   box-shadow:0 12px 28px rgba(0,0,0,.35);
-  transition:
-    transform .18s ease,
-    box-shadow .18s ease,
-    filter .18s ease;
+  transition:transform .18s ease, box-shadow .18s ease, filter .18s ease;
 }
 .circle-card:hover{
   transform:scale(1.06);
@@ -145,15 +157,10 @@ body{
 .btn:hover{
   filter:brightness(1.08);
 }
-
-/* Bouton danger */
 .btn-danger{
   border:1px solid rgba(255,80,80,.45);
   background:rgba(255,80,80,.12);
   color:#fff;
-}
-.btn-danger:hover{
-  filter:brightness(1.12);
 }
 
 /* ================= FOOTER ================= */
@@ -168,66 +175,31 @@ body{
   text-decoration:none;
 }
 .footer a:hover{
-  text-decoration:underline;
   color:#fff;
+  text-decoration:underline;
+}
+
+/* ================= LIENS (ANTI VIOLET) ================= */
+main a,
+main a:visited{
+  color:#ffffff;
+  text-decoration:none;
+}
+main a:hover{
+  color:#e5e7eb;
+  text-decoration:underline;
 }
 
 /* ================= HELPERS ================= */
-.hidden{
-  display:none !important;
-}
+.hidden{ display:none !important; }
 
 /* ================= RESPONSIVE ================= */
 @media (max-width:900px){
-  .circle-wrapper{
-    width:480px;
-    height:480px;
-  }
-  .circle-card{
-    width:150px;
-  }
+  .circle-wrapper{ width:480px; height:480px; }
+  .circle-card{ width:150px; }
 }
 @media (max-width:600px){
-  .circle-wrapper{
-    width:340px;
-    height:340px;
-  }
-  .circle-card{
-    width:140px;
-  }
-  .topbar h1{
-    font-size:22px;
-  }
-}
-
-/* ================= FIX UX FINAL ================= */
-.circle-card a,
-.circle-card button{
-  position:relative;
-  z-index:10;
-  pointer-events:auto;
-}
-.circle-card{
-  pointer-events:auto;
-}
-
-/* ================= FREE CARD CLIQUABLE ================= */
-.free-card{
-  cursor:pointer;
-  transition:transform .15s ease, box-shadow .15s ease;
-}
-.free-card:hover{
-  transform:scale(1.04);
-  box-shadow:0 18px 42px rgba(0,0,0,.45);
-}
-.free-card h3,
-.free-card p,
-.free-card li,
-.free-card strong{
-  color:#111827;
-}
-.free-card .cta{
-  margin-top:12px;
-  font-weight:700;
-  color:#006b52;
+  .circle-wrapper{ width:340px; height:340px; }
+  .circle-card{ width:140px; }
+  .topbar h1{ font-size:22px; }
 }
