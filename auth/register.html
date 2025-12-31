@@ -5,6 +5,9 @@
 
     <form id="form">
 
+      <!-- INFOS PERSONNELLES -->
+      <h3 style="margin:14px 0 6px">Informations personnelles</h3>
+
       <label>
         Prénom
         <input id="firstName" required />
@@ -25,6 +28,9 @@
         <input id="address" required />
       </label>
 
+      <!-- CONNEXION -->
+      <h3 style="margin:16px 0 6px">Informations de connexion</h3>
+
       <label>
         Email
         <input type="email" id="email" required />
@@ -36,19 +42,30 @@
       </label>
 
       <!-- CGU -->
+      <h3 style="margin:16px 0 6px">Conditions légales</h3>
+
       <label class="checkbox">
         <input type="checkbox" id="cgu1" required />
-        J’accepte les Conditions Générales d’Utilisation
+        J’accepte les
+        <a href="/wauklink-site/legal/cgu.html" target="_blank">
+          Conditions Générales d’Utilisation
+        </a>
       </label>
 
       <label class="checkbox">
         <input type="checkbox" id="cgu2" required />
-        J’accepte la politique de confidentialité
+        J’accepte la
+        <a href="/wauklink-site/legal/privacy.html" target="_blank">
+          politique de confidentialité
+        </a>
       </label>
 
       <label class="checkbox">
         <input type="checkbox" id="cgu3" required />
-        Je certifie être majeur
+        Je certifie être majeur et accepter les
+        <a href="/wauklink-site/legal/mentions.html" target="_blank">
+          mentions légales
+        </a>
       </label>
 
       <button type="submit">Créer mon compte</button>
