@@ -1,4 +1,4 @@
-import { auth } from "../shared/firebase.js";
+import { auth } from "../wauklink-site/shared/firebase.js
 import { signInWithEmailAndPassword } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
