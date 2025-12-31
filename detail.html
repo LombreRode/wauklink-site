@@ -6,25 +6,23 @@
   <title>Détail de l’annonce — WAUKLINK</title>
 
   <!-- CSS GLOBAL -->
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/wauklink-site/style.css">
 
-  <!-- CSS PAGE DETAIL (si tu en ajoutes plus tard) -->
-  <!-- <link rel="stylesheet" href="detail.css"> -->
+  <!-- CSS DETAIL (optionnel, prêt pour plus tard) -->
+  <!-- <link rel="stylesheet" href="/wauklink-site/detail.css"> -->
 </head>
 
 <body>
-
 <header class="topbar">
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
       <div class="subtitle">Détail de l’annonce</div>
     </div>
-
     <nav>
-      <a href="index.html">Accueil</a>
-      <a href="pricing.html">Tarifs</a>
-      <a href="auth/login.html" class="nav-cta">Connexion</a>
+      <a href="/wauklink-site/index.html">Accueil</a>
+      <a href="/wauklink-site/pricing.html">Tarifs</a>
+      <a href="/wauklink-site/auth/login.html">Connexion</a>
     </nav>
   </div>
 </header>
@@ -34,27 +32,21 @@
   <!-- INFOS ANNONCE -->
   <section class="card">
     <h2 id="title">Chargement…</h2>
-
-    <p id="segment" class="small"></p>
-
+    <p id="segment" class="meta"></p>
     <p id="desc"></p>
-
-    <p id="statusLine" class="small"></p>
+    <p id="statusLine" class="meta"></p>
   </section>
 
   <!-- ACTIONS CONTACT -->
   <section class="card">
     <h3>Contacter</h3>
-
-    <div class="actions">
+    <div class="row">
       <a id="btnMail" class="btn" href="#" target="_blank">
         📧 Email
       </a>
-
       <a id="btnCall" class="btn" href="#">
         📞 Appeler
       </a>
-
       <button id="btnReport" class="btn btn-danger" type="button">
         🚨 Signaler
       </button>
@@ -64,7 +56,6 @@
   <!-- ACTIONS PROPRIÉTAIRE -->
   <section class="card hidden" id="ownerActions">
     <h3>Gestion de l’annonce</h3>
-
     <a id="btnEditPhotos" class="btn" href="#">
       ✏️ Modifier les photos
     </a>
@@ -73,30 +64,33 @@
   <!-- FORMULAIRE CONTACT -->
   <section class="card">
     <h3>Envoyer une demande</h3>
-
     <form id="form">
       <label>
         Nom
         <input type="text" id="name" required>
       </label>
 
+      <br><br>
+
       <label>
         Téléphone
         <input type="tel" id="phone" required>
       </label>
+
+      <br><br>
 
       <label>
         Message
         <textarea id="msg" rows="4" required></textarea>
       </label>
 
-      <div class="actions">
-        <button class="btn btn-primary" type="submit">
-          Envoyer
-        </button>
-      </div>
+      <br><br>
 
-      <p id="note" class="small"></p>
+      <button class="btn btn-ok" type="submit">
+        Envoyer
+      </button>
+
+      <p id="note" class="meta"></p>
     </form>
   </section>
 
@@ -104,15 +98,15 @@
 
 <footer class="footer">
   © WAUKLINK —
-  <a href="legal/index.html">CGU</a> |
-  <a href="legal/privacy.html">Confidentialité</a>
+  <a href="/wauklink-site/legal/index.html">CGU</a> |
+  <a href="/wauklink-site/legal/privacy.html">Confidentialité</a>
 </footer>
 
-<!-- SCRIPT PAGE -->
-<script type="module" src="detail.js"></script>
+<!-- SCRIPT PAGE DETAIL -->
+<script type="module" src="/wauklink-site/detail.js"></script>
 
 <!-- AUTH GLOBAL -->
-<script type="module" src="auth/status.js"></script>
+<script type="module" src="/wauklink-site/auth/status.js"></script>
 
 </body>
 </html>
