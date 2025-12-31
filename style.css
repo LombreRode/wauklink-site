@@ -1,5 +1,5 @@
 /* =================================================
-   WAUKLINK — GLOBAL DESIGN SYSTEM
+   GLOBAL BASE — WAUKLINK
    ================================================= */
 
 /* ================= RESET ================= */
@@ -14,25 +14,23 @@ html,body{
 /* ================= VARIABLES GLOBALES ================= */
 :root{
   --bg:#0b1224;
-  --panel:rgba(255,255,255,.06);
   --text:#f8fafc;
   --muted:#9ca3af;
   --brand:#006b52;
-  --accent:#22c55e;
-  --danger:#ff5050;
   --line:rgba(255,255,255,.14);
-  --radius:16px;
+  --radius:14px;
+  --danger:#ff6b6b;
 }
 
-/* ================= BASE ================= */
+/* ================= BODY ================= */
 body{
   font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
   background:var(--bg);
   color:var(--text);
-  line-height:1.5;
   overflow-x:hidden;
 }
 
+/* ================= LIENS ================= */
 a{
   color:var(--text);
   text-decoration:none;
@@ -47,7 +45,6 @@ a:hover{
   margin:0 auto;
   padding:0 16px;
 }
-
 .main-layout{
   padding:60px 0 90px;
 }
@@ -58,7 +55,6 @@ a:hover{
   color:#fff;
   padding:22px 0;
 }
-
 .topbar-row{
   display:flex;
   justify-content:space-between;
@@ -66,220 +62,73 @@ a:hover{
   gap:16px;
   flex-wrap:wrap;
 }
-
 .topbar h1{
   margin:0;
   font-size:28px;
   font-weight:900;
 }
-
 .subtitle{
   font-size:14px;
   opacity:.9;
 }
 
-/* ================= BUTTONS ================= */
-.btn{
-  padding:8px 14px;
+/* ================= NAV / CTA ================= */
+.nav-cta{
+  padding:8px 12px;
   border-radius:12px;
   border:1px solid var(--line);
   background:rgba(255,255,255,.08);
   color:#fff;
   font-weight:700;
-  cursor:pointer;
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
 }
-
-.btn:hover{
+.nav-cta:hover{
   filter:brightness(1.1);
 }
 
-.btn-danger{
-  background:rgba(255,80,80,.15);
-  border-color:rgba(255,80,80,.45);
-}
-
-/* ================= CARD ================= */
-.card{
-  background:var(--panel);
+/* ================= BOUTONS ================= */
+.btn{
+  padding:8px 12px;
+  border-radius:12px;
   border:1px solid var(--line);
-  border-radius:var(--radius);
-  padding:18px;
-  box-shadow:0 18px 40px rgba(0,0,0,.35);
-}
-
-/* ================= CIRCLE / SERVICES ================= */
-.circle-section{
-  padding:40px 0 70px;
-}
-
-.circle-section h2{
-  text-align:center;
-  font-size:26px;
-  font-weight:900;
-}
-
-.circle-subtitle{
-  text-align:center;
-  opacity:.85;
-  margin-bottom:28px;
-}
-
-.circle-wrapper{
-  position:relative;
-  width:720px;
-  height:720px;
-  margin:0 auto;
-  user-select:none;
-}
-
-.circle-card{
-  width:170px;
-  padding:14px;
-  background:#fff;
-  color:#111827;
-  border-radius:16px;
-  border:2px solid var(--accent);
-  text-align:center;
-  box-shadow:0 12px 28px rgba(0,0,0,.35);
-  transition:transform .15s ease, box-shadow .15s ease;
-}
-
-.circle-card:hover{
-  transform:scale(1.06);
-}
-
-.circle-icon{
-  font-size:28px;
-  margin-bottom:6px;
-}
-
-.circle-card h3{
-  margin:6px 0;
-  font-size:14px;
-  font-weight:900;
-}
-
-.open{
-  font-size:12px;
-  opacity:.7;
-}
-
-/* ================= FREE CARD ================= */
-.free-card{
+  background:rgba(255,255,255,.06);
+  color:#fff;
+  font-weight:700;
   cursor:pointer;
 }
-.free-card strong,
-.free-card p,
-.free-card li{
-  color:#111827;
+.btn:hover{
+  filter:brightness(1.08);
 }
-.free-card .cta{
-  margin-top:12px;
-  font-weight:700;
-  color:var(--brand);
-}
-
-/* ================= FORMS ================= */
-label{
-  display:block;
-  margin-top:10px;
-  font-size:14px;
-}
-
-input,textarea{
-  width:100%;
-  margin-top:6px;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid var(--line);
-  background:rgba(0,0,0,.3);
+.btn-danger{
+  background:rgba(255,80,80,.15);
+  border-color:rgba(255,80,80,.4);
   color:#fff;
 }
 
-textarea{
-  min-height:110px;
-  resize:vertical;
-}
-
-/* ================= ACTIONS ================= */
-.actions{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-  margin-top:14px;
-}
-
-/* ================= LEGAL THEME ================= */
-.page-legal{
-  --brand:#19c37d;
-}
-
-.page-legal .container{
-  max-width:980px;
-  padding:18px;
-}
-
-.page-legal .topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  margin-bottom:14px;
-}
-
-.page-legal .brand{
-  display:flex;
-  gap:10px;
-  align-items:center;
-}
-
-.page-legal .logo{
-  width:34px;
-  height:34px;
-  border-radius:10px;
-  background:linear-gradient(135deg,var(--brand),#23a6ff);
-}
-
-.page-legal .badge{
-  padding:6px 10px;
-  border:1px solid var(--line);
-  border-radius:999px;
+/* ================= CARTES ================= */
+.card{
   background:rgba(255,255,255,.06);
-  font-size:.85rem;
-  color:var(--muted);
-}
-
-.page-legal p,
-.page-legal li{
-  color:var(--muted);
-}
-
-.page-legal .toc{
-  display:grid;
-  gap:8px;
-  list-style:none;
-  padding:0;
-}
-
-.page-legal .toc a{
-  display:flex;
-  justify-content:space-between;
-  padding:10px 12px;
   border:1px solid var(--line);
-  border-radius:12px;
-  background:rgba(255,255,255,.04);
+  border-radius:16px;
+  padding:18px;
+  box-shadow:0 18px 44px rgba(0,0,0,.35);
 }
 
-.page-legal .notice{
-  border-left:4px solid var(--brand);
-  background:rgba(25,195,125,.1);
-  padding:10px 12px;
-  border-radius:12px;
-  margin:12px 0;
+/* ================= TEXTE / HELPERS ================= */
+.muted{
+  opacity:.8;
+}
+.text-danger{
+  color:var(--danger);
+}
+.hidden{
+  display:none !important;
+}
+
+/* ================= GRILLES (LISTES) ================= */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:16px;
 }
 
 /* ================= FOOTER ================= */
@@ -289,19 +138,16 @@ textarea{
   color:var(--muted);
   font-size:13px;
 }
-
 .footer a{
   color:var(--muted);
 }
-
-/* ================= HELPERS ================= */
-.hidden{display:none!important}
+.footer a:hover{
+  color:#fff;
+}
 
 /* ================= RESPONSIVE ================= */
-@media (max-width:900px){
-  .circle-wrapper{width:480px;height:480px}
-}
 @media (max-width:600px){
-  .circle-wrapper{width:340px;height:340px}
-  .topbar h1{font-size:22px}
+  .topbar h1{
+    font-size:22px;
+  }
 }
