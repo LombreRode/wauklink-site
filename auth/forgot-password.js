@@ -1,26 +1,30 @@
+// auth/forgot-password.js
 import { auth } from "../shared/firebase.js";
 import { sendPasswordResetEmail } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-// DOM
 const form = document.getElementById("resetForm");
-const email = document.getElementById("email");
-const msg = document.getElementById("msg");
+const msg  = document.getElementById("msg");
 
-if (!form || !email) {
-  console.error("resetForm ou email introuvable");
-} else {
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  msg.textContent = "Envoi du lien…";
 
-    if (msg) msg.textContent = "Envoi du lien…";
+  const email = document.getElementById("email").value.trim();
 
-    try {
-      await sendPasswordResetEmail(auth, email.value.trim());
-      if (msg) msg.textContent = "✅ Email de réinitialisation envoyé";
-    } catch (err) {
-      console.error(err);
-      if (msg) msg.textContent = "❌ Adresse email invalide ou erreur";
+  try {
+    await sendPasswordResetEmail(auth, email);
+    msg.textContent = "✅ Email de réinitialisation envoyé";
+  } catch (err) {
+    console.error(err);
+
+    // Messages clairs (sans exposer la sécurité)
+    if (err.code === "auth/user-not-found") {
+      msg.textContent = "❌ Aucun compte avec cet email";
+    } else if (err.code === "auth/invalid-email") {
+      msg.textContent = "❌ Email invalide";
+    } else {
+      msg.textContent = "❌ Erreur lors de l’envoi";
     }
-  });
-}
+  }
+});
