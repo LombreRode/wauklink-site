@@ -1,57 +1,35 @@
-<!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Inscription — WAUKLINK</title>
-  <link rel="stylesheet" href="../style.css">
-</head>
-<body>
+<form id="form">
+  <label>
+    Prénom<br />
+    <input id="firstName" required />
+  </label><br /><br />
 
-<header class="topbar">
-  <div class="container topbar-row">
-    <div>
-      <h1>WAUKLINK</h1>
-      <div class="subtitle">Création de compte</div>
-    </div>
-    <nav>
-      <a href="../index.html">Accueil</a>
-      <a href="login.html">Connexion</a>
-    </nav>
-  </div>
-</header>
+  <label>
+    Nom<br />
+    <input id="lastName" required />
+  </label><br /><br />
 
-<main class="container main-layout">
-  <section class="card" style="max-width:420px;margin:auto">
-    <h2>Créer un compte</h2>
+  <label>
+    Téléphone<br />
+    <input id="phone" required />
+  </label><br /><br />
 
-    <form id="form">
-      <label>Email
-        <input type="email" id="email" required>
-      </label>
+  <label>
+    Adresse<br />
+    <input id="address" required />
+  </label><br /><br />
 
-      <label>Mot de passe
-        <input type="password" id="password" minlength="6" required>
-      </label>
+  <label>
+    Email<br />
+    <input type="email" id="email" required />
+  </label><br /><br />
 
-      <button class="btn btn-ok" type="submit">
-        Créer mon compte
-      </button>
+  <label>
+    Mot de passe<br />
+    <input type="password" id="password" required />
+  </label><br /><br />
 
-      <p class="meta" id="msg"></p>
-    </form>
+  <button type="submit">Créer mon compte</button>
+</form>
 
-    <p class="meta">
-      Déjà inscrit ?
-      <a href="login.html">Se connecter</a>
-    </p>
-  </section>
-</main>
-
-<footer class="footer">
-  © WAUKLINK
-</footer>
-
-<script type="module" src="register.js"></script>
-</body>
-</html>
+<p id="msg"></p>
