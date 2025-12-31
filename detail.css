@@ -1,186 +1,116 @@
 /* =================================================
-   DETAIL / SERVICE THEME — WAUKLINK
+   DETAIL PAGE — CARROUSEL PHOTOS
    ================================================= */
 
-.page-detail{
-  --panel:rgba(255,255,255,.06);
-  --line:rgba(255,255,255,.12);
-  --brand:#006b52;
-  --accent:#ff7b9c;
+/* CONTENEUR GLOBAL */
+.detail-photos{
+  margin-top:16px;
 }
 
-/* =================================================
-   LAYOUT
-   ================================================= */
-.page-detail .container{
-  max-width:900px;
-}
-
-/* =================================================
-   TOPBAR LOCAL
-   ================================================= */
-.page-detail .topbar{
-  padding:16px 0;
-}
-
-.page-detail .topbar-inner{
-  display:flex;
-  align-items:center;
-  gap:14px;
-}
-
-.page-detail .back{
-  color:#fff;
-  text-decoration:none;
-  font-weight:800;
-  opacity:.95;
-}
-
-.page-detail .back:hover{
-  opacity:1;
-  text-decoration:underline;
-}
-
-.page-detail .brand-title{
-  font-weight:900;
-  letter-spacing:.4px;
-}
-
-.page-detail .brand-sub{
-  font-size:13px;
-  opacity:.9;
-  margin-top:2px;
-}
-
-/* =================================================
-   CARD SERVICE
-   ================================================= */
-.page-detail .service-card{
-  margin:26px 0 60px;
-  background:var(--panel);
-  border:1px solid var(--line);
+/* CARROUSEL */
+.carousel{
+  position:relative;
+  overflow:hidden;
   border-radius:16px;
-  padding:18px;
-  box-shadow:0 18px 44px rgba(0,0,0,.35);
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.04);
 }
 
-.page-detail .service-head{
+/* PISTE */
+.carousel-track{
   display:flex;
-  gap:14px;
-  align-items:flex-start;
+  gap:12px;
+  overflow-x:auto;
+  scroll-snap-type:x mandatory;
+  scroll-behavior:smooth;
+  padding:12px;
 }
 
-.page-detail .icon{
-  width:56px;
-  height:56px;
-  border-radius:14px;
-  background:#fff;
-  padding:10px;
-  object-fit:contain;
+/* CACHER SCROLLBAR */
+.carousel-track::-webkit-scrollbar{
+  display:none;
+}
+.carousel-track{
+  -ms-overflow-style:none;
+  scrollbar-width:none;
 }
 
-.page-detail .segment{
-  font-size:11px;
-  letter-spacing:.6px;
-  text-transform:uppercase;
-  color:#a7f3d0;
+/* SLIDE */
+.carousel-slide{
+  flex:0 0 100%;
+  scroll-snap-align:center;
+  position:relative;
 }
 
-.page-detail .title{
-  margin:6px 0;
-  font-size:26px;
-}
-
-.page-detail .desc{
-  margin:0;
-  color:#e5e7eb;
-  opacity:.92;
-}
-
-/* =================================================
-   SEPARATOR
-   ================================================= */
-.page-detail .sep{
-  border:none;
-  height:1px;
-  background:var(--line);
-  margin:16px 0;
-}
-
-/* =================================================
-   FORM
-   ================================================= */
-.page-detail label{
-  display:block;
-  margin-top:10px;
-  font-size:14px;
-}
-
-.page-detail input,
-.page-detail textarea{
+/* IMAGE */
+.carousel-slide img{
   width:100%;
-  margin-top:6px;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid rgba(255,255,255,.15);
-  background:rgba(0,0,0,.25);
-  color:#fff;
-}
-
-.page-detail textarea{
-  min-height:110px;
-  resize:vertical;
+  height:320px;
+  object-fit:cover;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.12);
+  background:#000;
 }
 
 /* =================================================
-   ACTIONS
+   BOUTONS PREV / NEXT
    ================================================= */
-.page-detail .actions{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-  margin-top:14px;
-}
-
-.page-detail .btn{
-  padding:10px 16px;
-  border-radius:10px;
+.carousel-btn{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:5;
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.25);
+  background:rgba(0,0,0,.45);
+  color:#fff;
+  font-size:18px;
   font-weight:900;
-  display:inline-flex;
+  cursor:pointer;
+  display:flex;
   align-items:center;
-  gap:8px;
+  justify-content:center;
 }
 
-.page-detail .primary{
-  background:var(--accent);
-  color:#fff;
+.carousel-btn:hover{
+  background:rgba(0,0,0,.65);
 }
 
-.page-detail .secondary{
-  background:rgba(255,255,255,.12);
-  color:#fff;
+.carousel-prev{
+  left:10px;
 }
-
-.page-detail .btn-danger{
-  background:rgba(255,80,80,.14);
-  border:1px solid rgba(255,80,80,.35);
-  color:#fff;
+.carousel-next{
+  right:10px;
 }
 
 /* =================================================
-   HELPERS
+   INDICATEURS
    ================================================= */
-.page-detail .note{
-  margin-top:12px;
-  color:#cbd5f5;
-  font-size:13px;
+.carousel-dots{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  padding:10px 0;
+}
+
+.carousel-dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:rgba(255,255,255,.35);
+}
+
+.carousel-dot.active{
+  background:#fff;
 }
 
 /* =================================================
    RESPONSIVE
    ================================================= */
 @media (max-width:600px){
-  .page-detail .title{font-size:22px}
-  .page-detail .service-head{align-items:center}
+  .carousel-slide img{
+    height:220px;
+  }
 }
