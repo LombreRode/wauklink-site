@@ -22,12 +22,24 @@
     <input type="text" id="firstName" placeholder="Prénom" required>
     <input type="text" id="lastName" placeholder="Nom" required>
     <input type="email" id="email" placeholder="Email" required>
+
     <input type="password" id="password" placeholder="Mot de passe" required>
     <input type="password" id="password2" placeholder="Confirmation mot de passe" required>
 
+    <!-- 🔒 3 CASES OBLIGATOIRES (CONFORME AUX RULES) -->
     <label>
-      <input type="checkbox" id="acceptAll" required>
-      J’accepte les conditions
+      <input type="checkbox" id="acceptCgu" required>
+      J’accepte les CGU
+    </label>
+
+    <label>
+      <input type="checkbox" id="acceptLegal" required>
+      J’ai lu les mentions légales
+    </label>
+
+    <label>
+      <input type="checkbox" id="acceptConditions" required>
+      J’accepte les conditions d’utilisation
     </label>
 
     <button type="submit">Créer le compte</button>
