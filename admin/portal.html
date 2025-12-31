@@ -1,11 +1,28 @@
-// admin/portal.js
-import { requireAdmin } from "/wauklink-site/shared/guard.js";
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin – WAUKLINK</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
 
-const msg = document.getElementById("msg");
+<body>
 
-requireAdmin({
-  redirectTo: "/wauklink-site/auth/login.html",
-  onOk: () => {
-    msg.textContent = "Accès admin autorisé";
-  }
-});
+  <h1>Portail admin</h1>
+  <p id="msg">Vérification des droits…</p>
+
+  <script type="module">
+    import { requireAdmin } from "../shared/guard.js";
+
+    const msg = document.getElementById("msg");
+
+    requireAdmin({
+      redirectTo: "../auth/login.html",
+      onOk: () => {
+        msg.textContent = "Accès admin autorisé";
+      }
+    });
+  </script>
+
+</body>
+</html>
