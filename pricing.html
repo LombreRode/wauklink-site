@@ -4,8 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Tarifs – WAUKLINK</title>
+
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
+
 <body>
 
 <header class="topbar">
@@ -14,7 +16,8 @@
       <h1>WAUKLINK</h1>
       <div class="subtitle">Tarifs & Abonnements</div>
     </div>
-    <nav style="display:flex;gap:10px;flex-wrap:wrap">
+
+    <nav class="nav-actions">
       <a class="btn" href="/wauklink-site/index.html">← Accueil</a>
       <a class="btn" href="/wauklink-site/auth/login.html">Connexion</a>
     </nav>
@@ -23,69 +26,71 @@
 
 <main class="container main-layout">
 
-  <section style="text-align:center;margin-bottom:40px">
+  <!-- INTRO -->
+  <section class="center mb-xl">
     <h2>Des tarifs simples et transparents</h2>
-    <p style="opacity:.85">
+    <p class="muted">
       Publiez, consultez et gérez vos annonces en toute simplicité.
     </p>
   </section>
 
-  <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px">
+  <!-- CARTES TARIFS -->
+  <section class="pricing-grid">
 
-    <!-- 🆓 FREE — CARTE ENTIÈREMENT CLIQUABLE -->
-    <a
-      href="/wauklink-site/auth/register.html"
-      class="circle-card free-card"
-      style="position:static;text-decoration:none"
-    >
+    <!-- 🆓 GRATUIT -->
+    <a href="/wauklink-site/auth/register.html"
+       class="circle-card free-card pricing-card">
       <div class="circle-icon">🆓</div>
       <h3>Gratuit</h3>
       <p class="open">Consultation</p>
-      <ul style="list-style:none;padding:0;font-size:14px;opacity:.85">
+
+      <ul class="pricing-list">
         <li>✔️ Accès aux annonces</li>
         <li>✔️ Recherche & filtres</li>
         <li>✔️ Création de compte</li>
       </ul>
+
       <strong>0 €</strong>
       <div class="cta">Cliquer pour s’inscrire →</div>
     </a>
 
     <!-- 🟡 PARTICULIER -->
-    <div class="circle-card" style="position:static;opacity:.8">
+    <div class="circle-card pricing-card disabled">
       <div class="circle-icon">🏠</div>
       <h3>Particulier</h3>
       <p class="open">Publication d’annonces</p>
-      <ul style="list-style:none;padding:0;font-size:14px;opacity:.85">
+
+      <ul class="pricing-list">
         <li>✔️ Déposer une annonce</li>
         <li>✔️ Validation admin</li>
         <li>✔️ Gestion des photos</li>
       </ul>
+
       <strong>9 € / mois<br><small>80 € / an</small></strong>
-      <div style="margin-top:14px;opacity:.6">
-        Bientôt disponible
-      </div>
+      <div class="coming">Bientôt disponible</div>
     </div>
 
     <!-- 🟢 PRO -->
-    <div class="circle-card" style="position:static;border-color:#38bdf8;opacity:.8">
+    <div class="circle-card pricing-card disabled pro">
       <div class="circle-icon">🛠️</div>
       <h3>Professionnel</h3>
       <p class="open">Visibilité maximale</p>
-      <ul style="list-style:none;padding:0;font-size:14px;opacity:.85">
+
+      <ul class="pricing-list">
         <li>✔️ Annonces illimitées</li>
         <li>✔️ Mise en avant</li>
         <li>✔️ Espace prestataire</li>
       </ul>
+
       <strong>15 € / mois<br><small>130 € / an</small></strong>
-      <div style="margin-top:14px;opacity:.6">
-        Bientôt disponible
-      </div>
+      <div class="coming">Bientôt disponible</div>
     </div>
 
   </section>
 
-  <section style="margin-top:50px;text-align:center">
-    <p style="opacity:.8;font-size:14px">
+  <!-- NOTE -->
+  <section class="center mt-xl">
+    <p class="small muted">
       Les abonnements payants seront activés prochainement.
     </p>
   </section>
