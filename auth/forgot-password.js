@@ -1,28 +1,36 @@
 import { auth } from "/wauklink-site/shared/firebase.js";
-import { sendPasswordResetEmail } from
-  "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import {
+  sendPasswordResetEmail
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("forgotForm");
-  const msg = document.getElementById("msg");
+const form = document.getElementById("form");
+const emailEl = document.getElementById("email");
+const msg = document.getElementById("msg");
 
-  if (!form) {
-    console.error("Formulaire forgotForm introuvable");
-    return;
-  }
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  msg.textContent = "⏳ Envoi en cours…";
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    msg.textContent = "Envoi du lien…";
+  try {
+    await sendPasswordResetEmail(auth, emailEl.value.trim(), {
+      url: "https://lombredode.github.io/wauklink-site/auth/login.html"
+    });
 
-    const email = document.getElementById("email").value.trim();
+    msg.textContent =
+      "✅ Email envoyé. Vérifiez votre boîte de réception.";
+    form.reset();
+  } catch (err) {
+    console.error(err);
 
-    try {
-      await sendPasswordResetEmail(auth, email);
-      msg.textContent = "Email de réinitialisation envoyé";
-    } catch (err) {
-      console.error(err);
-      msg.textContent = err.code;
+    if (err.code === "auth/user-not-found") {
+      msg.textContent =
+        "❌ Aucun compte associé à cet email.";
+    } else if (err.code === "auth/invalid-email") {
+      msg.textContent =
+        "❌ Adresse email invalide.";
+    } else {
+      msg.textContent =
+        "❌ Erreur lors de l’envoi. Réessayez.";
     }
-  });
+  }
 });
