@@ -9,12 +9,12 @@ import { getFirestore } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "XXX",
-  authDomain: "XXX.firebaseapp.com",
-  projectId: "XXX",
-  storageBucket: "XXX.appspot.com",
-  messagingSenderId: "XXX",
-  appId: "XXX"
+  apiKey: "AIzaSy...",
+  authDomain: "wauklink-9b61f.firebaseapp.com",
+  projectId: "wauklink-9b61f",
+  storageBucket: "wauklink-9b61f.appspot.com",
+  messagingSenderId: "398288789090",
+  appId: "1:398288789090:web:82b7c1cbcd4ad47af1fb3b"
 };
 
 const app = getApps().length === 0
