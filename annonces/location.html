@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="../style.css" />
 </head>
 <body>
-
 <header class="topbar">
   <div class="container">
     <h1>WAUKLINK</h1>
@@ -18,11 +17,9 @@
 <main class="container" style="padding:22px 0;">
   <h2>Annonces de location</h2>
 
-  <p id="statusMsg" style="opacity:.85;margin-bottom:18px;">
-    Chargement…
-  </p>
+  <p id="statusMsg" class="meta">Chargement…</p>
 
-  <section id="blocked" style="display:none" class="card">
+  <section id="blocked" class="card" style="display:none">
     <p style="color:#ff6666">
       Abonnement requis pour accéder aux annonces.
     </p>
@@ -52,54 +49,52 @@
   const content = document.getElementById("content");
   const list = document.getElementById("list");
 
-  function esc(s){
-    return String(s ?? "").replace(/[&<>"']/g, m =>
+  const esc = s =>
+    String(s ?? "").replace(/[&<>"']/g, m =>
       ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
     );
-  }
 
-  async function loadAnnonces(){
+  async function loadAnnonces() {
     list.innerHTML = "";
-
     const qy = query(
       collection(db, "annonces_location"),
       where("status", "==", "active"),
       orderBy("createdAt", "desc")
     );
-
     const snap = await getDocs(qy);
-
     if (snap.empty) {
       list.innerHTML = "<p>Aucune annonce disponible.</p>";
       return;
     }
-
     snap.forEach(d => {
       const a = d.data();
       const el = document.createElement("div");
       el.className = "card";
       el.innerHTML = `
         <b>${esc(a.titre)}</b>
-        <div style="opacity:.8">${esc(a.ville)} — ${esc(a.prix)} €</div>
+        <div class="meta">${esc(a.ville)} — ${esc(a.prix)} €</div>
         <p>${esc(a.description || "")}</p>
       `;
       list.appendChild(el);
     });
   }
 
-  // 🔓 Lecture publique (rules OK)
-  content.style.display = "block";
-  loadAnnonces();
-
-  // 🔒 Si connecté → filtrage abonnement UI
+  // 🔐 LOGIQUE D’ACCÈS
   onAuthStateChanged(auth, async user => {
+    blocked.style.display = "none";
+    content.style.display = "none";
+
+    // 👀 Visiteur
     if (!user) {
       statusMsg.textContent = "Consultation publique.";
+      content.style.display = "block";
+      loadAnnonces();
       return;
     }
 
     const snap = await getDoc(doc(db, "users", user.uid));
     if (!snap.exists()) {
+      statusMsg.textContent = "Profil introuvable.";
       blocked.style.display = "block";
       return;
     }
@@ -109,18 +104,28 @@
     const sub = u.abonnement?.type || "free";
     const proValidated = u.pro?.validated === true;
 
+    // FREE → bloqué
     if (sub === "free") {
       blocked.style.display = "block";
-      content.style.display = "none";
       return;
     }
 
-    if (sub === "partial" && role !== "pro") return;
+    // PARTIAL → OK pour user
+    if (sub === "partial" && role !== "pro") {
+      content.style.display = "block";
+      loadAnnonces();
+      return;
+    }
 
+    // PRO non validé → bloqué
     if (role === "pro" && !proValidated) {
       blocked.style.display = "block";
-      content.style.display = "none";
+      return;
     }
+
+    // ✅ ACCÈS OK
+    content.style.display = "block";
+    loadAnnonces();
   });
 </script>
 </body>
