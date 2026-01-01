@@ -6,9 +6,7 @@
   <title>WAUKLINK — Dashboard</title>
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
-
 <body>
-
 <header class="topbar">
   <div class="container">
     <h1>WAUKLINK</h1>
@@ -19,12 +17,10 @@
 <main class="container" style="padding:22px 0;">
   <h2>Mon espace</h2>
 
-  <!-- STATUT GLOBAL -->
   <p id="globalStatus" style="opacity:.85;margin-bottom:18px;">
     Chargement du statut…
   </p>
 
-  <!-- INFO -->
   <section class="card">
     <h3>Fonctionnement</h3>
     <p>
@@ -33,7 +29,6 @@
     </p>
   </section>
 
-  <!-- ABONNEMENT -->
   <section class="card">
     <h3>Abonnement</h3>
     <p id="subStatus">—</p>
@@ -45,7 +40,6 @@
     <a href="/wauklink-site/pricing.html">Voir les abonnements</a>
   </section>
 
-  <!-- ESPACE PRO -->
   <section class="card" id="proSection" style="display:none">
     <h3>Espace Prestataire PRO</h3>
     <p id="proMessage"></p>
@@ -58,7 +52,6 @@
     </a>
   </section>
 
-  <!-- BLOQUÉ -->
   <section class="card" id="blockedSection" style="display:none">
     <p style="color:#ff6666">
       Accès bloqué selon votre statut actuel.
@@ -92,7 +85,6 @@
     }
 
     const snap = await getDoc(doc(db, "users", user.uid));
-
     if (!snap.exists()) {
       globalStatus.textContent = "⛔ Profil utilisateur introuvable.";
       blocked.style.display = "block";
@@ -114,8 +106,8 @@
       return;
     }
 
-    // PARTIEL
-    if (sub === "partial" && role !== "pro") {
+    // PARTIEL (accès limité, pas bloqué)
+    if (sub === "partial") {
       return;
     }
 
@@ -139,6 +131,5 @@
     blocked.style.display = "block";
   });
 </script>
-
 </body>
 </html>
