@@ -6,7 +6,6 @@
   <title>Admin — Notes</title>
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
-
 <body>
 
 <header class="topbar">
@@ -37,42 +36,52 @@
   const msg = document.getElementById("msg");
 
   async function load(){
-    msg.textContent = "⏳ Chargement des notes…";
+    msg.textContent = "⏳ Chargement des notes (vue admin)…";
     list.innerHTML = "";
 
-    const snap = await getDocs(collection(db, "annonces_location"));
+    try {
+      // 🔐 Vue admin dédiée (compatible rules)
+      const snap = await getDocs(collection(db, "admin_annonces_notes"));
 
-    if (snap.empty) {
-      list.innerHTML = "<p class='meta'>Aucune annonce.</p>";
-      msg.textContent = "Aucune donnée.";
-      return;
+      if (snap.empty) {
+        list.innerHTML =
+          "<p class='meta'>Aucune annonce visible.</p>";
+        msg.textContent = "Aucune donnée.";
+        return;
+      }
+
+      msg.textContent = `📋 ${snap.size} annonce(s)`;
+
+      snap.forEach(d => {
+        const a = d.data();
+        const div = document.createElement("div");
+        div.style.marginBottom = "10px";
+
+        div.innerHTML = `
+          <b>${a.titre || "Annonce"}</b>
+          — note: ${a.ratingAvg || 0}
+          <button class="btn btn-danger" style="margin-left:10px">
+            Reset
+          </button>
+        `;
+
+        div.querySelector("button").onclick = async () => {
+          await updateDoc(
+            doc(db, "annonces_location", a.annonceId),
+            { ratingAvg: 0, ratingCount: 0 }
+          );
+          load();
+        };
+
+        list.appendChild(div);
+      });
+
+    } catch (err) {
+      console.error(err);
+      msg.textContent = "❌ Accès interdit ou erreur Firestore";
+      list.innerHTML =
+        "<p class='meta'>Lecture globale non autorisée.</p>";
     }
-
-    msg.textContent = `📋 ${snap.size} annonce(s)`;
-
-    snap.forEach(d => {
-      const a = d.data();
-      const div = document.createElement("div");
-      div.style.marginBottom = "10px";
-
-      div.innerHTML = `
-        <b>${a.titre || "Annonce"}</b>
-        — note: ${a.ratingAvg || 0}
-        <button class="btn btn-danger" style="margin-left:10px">
-          Reset
-        </button>
-      `;
-
-      div.querySelector("button").onclick = async () => {
-        await updateDoc(doc(db, "annonces_location", d.id), {
-          ratingAvg: 0,
-          ratingCount: 0
-        });
-        load();
-      };
-
-      list.appendChild(div);
-    });
   }
 
   requireAdmin({
