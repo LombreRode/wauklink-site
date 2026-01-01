@@ -4,10 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Détail annonce — WAUKLINK</title>
-  <link rel="stylesheet" href="../style.css" />
+  <link rel="stylesheet" href="/wauklink-site/style.css" />
 </head>
-<body>
 
+<body>
 <header class="topbar">
   <div class="container">
     <h1>WAUKLINK</h1>
@@ -18,11 +18,10 @@
 <main class="container" style="padding:22px 0;">
   <p id="msg">Chargement…</p>
 
-  <section id="annonce" style="display:none" class="card">
+  <section id="annonce" class="card" style="display:none">
     <h2 id="titre"></h2>
-    <p id="meta" style="opacity:.8"></p>
+    <p id="meta" class="meta"></p>
     <p id="description"></p>
-
     <div id="photos" class="grid"></div>
 
     <hr>
@@ -38,17 +37,17 @@
         <option value="4">4 ★</option>
         <option value="5">5 ★</option>
       </select>
-      <button id="rateBtn">Voter</button>
+      <button id="rateBtn" class="btn">Voter</button>
     </div>
   </section>
 
   <div style="margin-top:20px">
-    <a href="./location.html">← Retour annonces</a>
+    <a href="/wauklink-site/annonces/location.html">← Retour annonces</a>
   </div>
 </main>
 
 <script type="module">
-  import { auth, db } from "../shared/firebase.js";
+  import { auth, db } from "/wauklink-site/shared/firebase.js";
   import { onAuthStateChanged } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
   import {
@@ -74,12 +73,6 @@
 
   const annonceRef = doc(db, "annonces_location", annonceId);
 
-  function esc(s){
-    return String(s ?? "").replace(/[&<>"']/g, m =>
-      ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
-    );
-  }
-
   let annonceData = null;
   let currentUser = null;
 
@@ -98,8 +91,7 @@
     }
 
     titre.textContent = annonceData.titre;
-    meta.textContent =
-      `${annonceData.ville} • ${annonceData.prix} €`;
+    meta.textContent = `${annonceData.ville} • ${annonceData.prix} €`;
     desc.textContent = annonceData.description || "";
 
     photosEl.innerHTML = "";
@@ -114,23 +106,32 @@
     box.style.display = "block";
     msg.textContent = "";
 
-    checkRatingAccess();
+    await checkRatingAccess();
   }
 
-  function checkRatingAccess(){
+  async function checkRatingAccess(){
     if (!currentUser) return;
 
-    const owner =
-      annonceData.ownerUid || annonceData.ownerId;
-
+    const owner = annonceData.ownerUid || annonceData.ownerId;
     if (owner === currentUser.uid) return;
+
+    const rateRef = doc(
+      collection(annonceRef, "ratings"),
+      currentUser.uid
+    );
+
+    const snap = await getDoc(rateRef);
+    if (snap.exists()) return; // déjà noté
 
     ratingSection.style.display = "block";
   }
 
   rateBtn.onclick = async () => {
     const v = Number(ratingValue.value);
-    if (!v || v < 1 || v > 5) return alert("Note invalide");
+    if (!v || v < 1 || v > 5) {
+      alert("Note invalide");
+      return;
+    }
 
     const rateRef = doc(
       collection(annonceRef, "ratings"),
@@ -151,6 +152,5 @@
     await loadAnnonce();
   });
 </script>
-
 </body>
 </html>
