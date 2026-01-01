@@ -1,5 +1,5 @@
 <script type="module">
-  import { auth, db, storage } from "../shared/firebase.js";
+  import { auth, db, storage } from "/wauklink-site/shared/firebase.js";
   import { onAuthStateChanged } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
   import { doc, getDoc, updateDoc, serverTimestamp } from
@@ -8,9 +8,8 @@
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
   const msg = document.getElementById("msg");
-  const files = document.getElementById("files");
+  const files = document.getElementById("photosInput"); // ✅ FIX
   const btnReplaceAll = document.getElementById("btnReplaceAll");
-  const photosEl = document.getElementById("photos");
 
   const annonceId = new URLSearchParams(location.search).get("id");
   if (!annonceId) {
@@ -19,7 +18,6 @@
   }
 
   const annonceRef = doc(db, "annonces_location", annonceId);
-
   let currentUser = null;
   let annonceData = null;
 
@@ -27,7 +25,7 @@
 
   function storagePath(annonceId, index, file){
     const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-    return `annonces_location/${annonceId}/p${index+1}.${ext}`;
+    return `annonces_location/${annonceId}/p${index + 1}.${ext}`;
   }
 
   async function reloadAnnonce(){
@@ -54,6 +52,7 @@
   async function replaceAllPhotos(fileList){
     const filesArr = Array.from(fileList).slice(0, 6);
 
+    // 🔥 suppression anciennes photos
     const oldPaths = annonceData.photoPaths || [];
     for (const p of oldPaths) {
       try { await deleteObject(ref(storage, p)); } catch {}
@@ -85,7 +84,7 @@
 
   onAuthStateChanged(auth, async (u) => {
     if (!u) {
-      location.href = "../auth/login.html";
+      location.href = "/wauklink-site/auth/login.html";
       return;
     }
     currentUser = u;
@@ -93,7 +92,10 @@
   });
 
   btnReplaceAll.addEventListener("click", async () => {
-    if (!files.files.length) return alert("Choisis des photos.");
+    if (!files.files.length) {
+      alert("Choisis des photos.");
+      return;
+    }
     await replaceAllPhotos(files.files);
     alert("✅ Photos mises à jour.");
   });
