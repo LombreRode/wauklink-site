@@ -16,9 +16,7 @@
     .btnOk{border-color:rgba(90,255,160,.35);background:rgba(90,255,160,.10)}
   </style>
 </head>
-
 <body>
-
 <header class="topbar">
   <div class="container topbar-row">
     <div>
@@ -34,7 +32,7 @@
 
 <main class="container page">
   <h2 style="margin:0">Annonces en attente</h2>
-  <p class="meta">Valider → visible publiquement • Refuser → rejetée</p>
+  <p class="meta">Valider → visible publiquement • Refuser → retirée</p>
   <div id="msg" class="meta"></div>
   <div id="grid" class="grid"></div>
 </main>
@@ -78,7 +76,6 @@
       const a = d.data();
       const el = document.createElement("div");
       el.className = "card";
-
       el.innerHTML = `
         <div class="row">
           <div>
@@ -99,12 +96,18 @@
       const [ok, no] = el.querySelectorAll("button");
 
       ok.onclick = async () => {
-        await updateDoc(doc(db, "annonces_location", d.id), { status: "active" });
+        await updateDoc(
+          doc(db, "annonces_location", d.id),
+          { status: "active" }
+        );
         loadPending();
       };
 
       no.onclick = async () => {
-        await updateDoc(doc(db, "annonces_location", d.id), { status: "rejected" });
+        await updateDoc(
+          doc(db, "annonces_location", d.id),
+          { status: "removed" }
+        );
         loadPending();
       };
 
@@ -117,6 +120,5 @@
     onOk: loadPending
   });
 </script>
-
 </body>
 </html>
