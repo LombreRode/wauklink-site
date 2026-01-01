@@ -7,18 +7,18 @@
    CONFIG CARTES
 ========================= */
 const CAROUSEL_CARDS = [
-  { label: "Toutes les annonces", href: "#", icon: "📚" },
-  { label: "Location saisonnière", href: "#", icon: "🏖️" },
-  { label: "Location annuelle", href: "#", icon: "🏠" },
-  { label: "Travaux (PRO)", href: "#", icon: "🛠️" },
-  { label: "Services à la personne", href: "#", icon: "🧼" },
-  { label: "Urgences", href: "#", icon: "⚡" },
-  { label: "Conciergerie", href: "#", icon: "🧾" },
-  { label: "Airbnb", href: "#", icon: "🛎️" },
-  { label: "Dépannage", href: "#", icon: "🔧" },
-  { label: "Nettoyage", href: "#", icon: "🧹" },
-  { label: "Espace prestataire", href: "#", icon: "👷" },
-  { label: "Tarifs", href: "pricing.html", icon: "💶" }
+  { label: "Toutes les annonces", href: "/wauklink-site/annonces/", icon: "📚" },
+  { label: "Location saisonnière", href: "/wauklink-site/annonces/location.html", icon: "🏖️" },
+  { label: "Location annuelle", href: "/wauklink-site/annonces/location.html", icon: "🏠" },
+  { label: "Travaux (PRO)", href: "/wauklink-site/dashboard/", icon: "🛠️" },
+  { label: "Services à la personne", href: "/wauklink-site/annonces/services.html", icon: "🧼" },
+  { label: "Urgences", href: "/wauklink-site/annonces/urgences.html", icon: "⚡" },
+  { label: "Conciergerie", href: "/wauklink-site/annonces/conciergerie.html", icon: "🧾" },
+  { label: "Airbnb", href: "/wauklink-site/annonces/airbnb.html", icon: "🛎️" },
+  { label: "Dépannage", href: "/wauklink-site/annonces/depannage.html", icon: "🔧" },
+  { label: "Nettoyage", href: "/wauklink-site/annonces/nettoyage.html", icon: "🧹" },
+  { label: "Espace prestataire", href: "/wauklink-site/dashboard/", icon: "👷" },
+  { label: "Tarifs", href: "/wauklink-site/pricing.html", icon: "💶" }
 ];
 
 /* =========================
@@ -38,13 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function radius() {
     const size = Math.min(wrapper.clientWidth, wrapper.clientHeight);
-
-    // 📱 Mobile — anti chevauchement 12 cartes
-    if (size < 420) {
-      return Math.max(170, size * 0.45);
-    }
-
-    // Desktop / tablette
+    if (size < 420) return Math.max(170, size * 0.45);
     return Math.max(150, size * 0.40);
   }
 
@@ -55,7 +49,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     CAROUSEL_CARDS.forEach((c, i) => {
       const angle = i * step + rotation;
-
       const card = document.createElement("button");
       card.type = "button";
       card.className = "circle-card";
@@ -73,18 +66,13 @@ document.addEventListener("DOMContentLoaded", () => {
          translate(${r}px) rotate(${-angle}deg)`;
 
       card.addEventListener("click", () => {
-        if (c.href && c.href !== "#") {
-          window.location.href = c.href;
-        }
+        if (c.href) window.location.href = c.href;
       });
 
       circle.appendChild(card);
     });
   }
 
-  /* =========================
-     SOURIS / TACTILE
-  ========================= */
   wrapper.addEventListener("pointerdown", (e) => {
     isDown = true;
     dragged = false;
@@ -107,9 +95,6 @@ document.addEventListener("DOMContentLoaded", () => {
     dragged = false;
   });
 
-  /* =========================
-     CLAVIER (ACCESSIBLE)
-  ========================= */
   circle.addEventListener("keydown", (e) => {
     const cards = [...circle.querySelectorAll(".circle-card")];
     const index = cards.indexOf(document.activeElement);
@@ -119,18 +104,14 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       cards[(index + 1) % cards.length].focus();
     }
-
     if (e.key === "ArrowLeft") {
       e.preventDefault();
       cards[(index - 1 + cards.length) % cards.length].focus();
     }
-
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       const href = cards[index].dataset.href;
-      if (href && href !== "#") {
-        window.location.href = href;
-      }
+      if (href) window.location.href = href;
     }
   });
 
