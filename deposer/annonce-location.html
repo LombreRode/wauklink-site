@@ -122,15 +122,30 @@
   form.addEventListener("submit", async e => {
     e.preventDefault();
 
-    await addDoc(collection(db, "annonces_location"), {
-      titre: form.titre.value,
-      ville: form.ville.value,
-      prix: Number(form.prix.value),
-      description: form.description.value,
-      status: "pending",
-      ownerUid: auth.currentUser.uid,
-      createdAt: serverTimestamp()
-    });
+await addDoc(collection(db, "annonces_location"), {
+  // Contenu annonce
+  titre: form.titre.value.trim(),
+  ville: form.ville.value.trim(),
+  prix: Number(form.prix.value),
+  description: form.description.value.trim(),
+  type: "location",
+
+  // Statut & ownership
+  status: "pending",
+  ownerUid: auth.currentUser.uid,
+
+  // Médias (initialisation propre)
+  photos: [],
+  photoPaths: [],
+
+  // Notes (compatibles rules + admin)
+  ratingAvg: 0,
+  ratingCount: 0,
+
+  // Métadonnées
+  createdAt: serverTimestamp()
+});
+
 
     alert("Annonce envoyée en modération.");
     location.href = "../annonces/location.html";
