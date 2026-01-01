@@ -4,8 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>WAUKLINK — Toutes les annonces</title>
-  <link rel="stylesheet" href="../style.css" />
+  <link rel="stylesheet" href="/wauklink-site/style.css" />
 </head>
+
 <body>
 
 <header class="topbar">
@@ -18,11 +19,9 @@
 <main class="container" style="padding:22px 0;">
   <h2>Annonces disponibles</h2>
 
-  <p id="statusMsg" style="opacity:.85;margin-bottom:18px;">
-    Chargement…
-  </p>
+  <p id="statusMsg" class="meta">Chargement…</p>
 
-  <section id="blocked" style="display:none" class="card">
+  <section id="blocked" class="card" style="display:none">
     <p style="color:#ff6666">
       Abonnement requis pour consulter les annonces.
     </p>
@@ -33,12 +32,12 @@
   </section>
 
   <div style="margin-top:20px">
-    <a href="../index.html">← Accueil</a>
+    <a href="/wauklink-site/index.html">← Accueil</a>
   </div>
 </main>
 
 <script type="module">
-  import { auth, db } from "../shared/firebase.js";
+  import { auth, db } from "/wauklink-site/shared/firebase.js";
   import { onAuthStateChanged } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
   import {
@@ -52,49 +51,40 @@
   const content = document.getElementById("content");
   const list = document.getElementById("list");
 
-  function esc(s){
-    return String(s ?? "").replace(/[&<>"']/g, m =>
+  const esc = s =>
+    String(s ?? "").replace(/[&<>"']/g, m =>
       ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
     );
-  }
 
   async function loadAll(){
     list.innerHTML = "";
-
     const qy = query(
       collection(db, "annonces_location"),
       where("status", "==", "active"),
       orderBy("createdAt", "desc")
     );
-
     const snap = await getDocs(qy);
-
-    if (!snap.size) {
+    if (snap.empty) {
       list.innerHTML = "<p>Aucune annonce disponible.</p>";
       return;
     }
-
     snap.forEach(d => {
       const a = d.data();
       const el = document.createElement("div");
       el.className = "card";
       el.innerHTML = `
         <b>${esc(a.titre)}</b>
-        <div style="opacity:.8">${esc(a.ville)} — ${esc(a.prix)} €</div>
+        <div class="meta">${esc(a.ville)} — ${esc(a.prix)} €</div>
         <p>${esc(a.description || "")}</p>
       `;
       list.appendChild(el);
     });
   }
 
-  // 🔓 Lecture publique autorisée
-  loadAll();
-
-  // 🔒 Si connecté → on applique la logique abonnement
   onAuthStateChanged(auth, async user => {
     if (!user) {
-      statusMsg.textContent = "Consultation publique.";
-      content.style.display = "block";
+      blocked.style.display = "block";
+      statusMsg.textContent = "Connexion requise.";
       return;
     }
 
@@ -112,21 +102,21 @@
 
     if (sub === "free") {
       blocked.style.display = "block";
-      return;
-    }
-
-    if (sub === "partial" && role !== "pro") {
-      content.style.display = "block";
+      statusMsg.textContent = "Abonnement requis.";
       return;
     }
 
     if (role === "pro" && !proValidated) {
       blocked.style.display = "block";
+      statusMsg.textContent = "Compte PRO non validé.";
       return;
     }
 
+    statusMsg.textContent = "Annonces actives";
     content.style.display = "block";
+    loadAll();
   });
 </script>
+
 </body>
 </html>
