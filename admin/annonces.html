@@ -1,6 +1,6 @@
 <script type="module">
-  import { db } from "/shared/firebase.js";
-  import { requireModerator } from "/shared/guard.js";
+  import { db } from "/wauklink-site/shared/firebase.js";
+  import { requireModerator } from "/wauklink-site/shared/guard.js";
   import {
     collection, query, where, orderBy, getDocs,
     doc, updateDoc
@@ -14,66 +14,74 @@
     setMsg("⏳ Chargement des annonces en attente…");
     rows.innerHTML = "";
 
-    const qy = query(
-      collection(db, "annonces_location"),
-      where("status", "==", "pending"),
-      orderBy("createdAt", "desc")
-    );
+    try {
+      const qy = query(
+        collection(db, "annonces_location"),
+        where("status", "==", "pending"),
+        orderBy("createdAt", "desc")
+      );
 
-    const snap = await getDocs(qy);
+      const snap = await getDocs(qy);
 
-    if (snap.empty) {
+      if (snap.empty) {
+        rows.innerHTML =
+          `<tr><td colspan="7" class="meta">✅ Aucune annonce en attente.</td></tr>`;
+        setMsg("Tout est à jour.");
+        return;
+      }
+
+      setMsg(`📋 ${snap.size} annonce(s) en attente`);
+
+      snap.forEach(d => {
+        const a = d.data();
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+          <td><b>${a.titre || "Annonce"}</b></td>
+          <td>${a.ville || "-"}</td>
+          <td>${a.type || "-"}</td>
+          <td>${a.prix ?? "-"} €</td>
+          <td class="meta">${a.ownerEmail || a.ownerUid || "-"}</td>
+          <td><span class="pill">${a.status}</span></td>
+          <td>
+            <div class="row-actions">
+              <button class="btn btn-ok">Valider</button>
+              <button class="btn btn-danger">Refuser</button>
+            </div>
+          </td>
+        `;
+
+        const [ok, no] = tr.querySelectorAll("button");
+
+        ok.onclick = async () => {
+          await updateDoc(
+            doc(db, "annonces_location", d.id),
+            { status: "active" }
+          );
+          loadPending();
+        };
+
+        no.onclick = async () => {
+          await updateDoc(
+            doc(db, "annonces_location", d.id),
+            { status: "removed" }
+          );
+          loadPending();
+        };
+
+        rows.appendChild(tr);
+      });
+
+    } catch (err) {
+      console.error(err);
+      setMsg("❌ Erreur lors du chargement des annonces");
       rows.innerHTML =
-        `<tr><td colspan="7" class="meta">✅ Aucune annonce en attente.</td></tr>`;
-      setMsg("Tout est à jour.");
-      return;
+        `<tr><td colspan="7" class="meta">Accès impossible ou erreur Firestore.</td></tr>`;
     }
-
-    setMsg(`📋 ${snap.size} annonce(s) en attente`);
-
-    snap.forEach(d => {
-      const a = d.data();
-      const tr = document.createElement("tr");
-
-      tr.innerHTML = `
-        <td><b>${a.titre || "Annonce"}</b></td>
-        <td>${a.ville || "-"}</td>
-        <td>${a.type || "-"}</td>
-        <td>${a.prix ?? "-"} €</td>
-        <td class="meta">${a.ownerEmail || a.ownerUid || "-"}</td>
-        <td><span class="pill">${a.status}</span></td>
-        <td>
-          <div class="row-actions">
-            <button class="btn btn-ok">Valider</button>
-            <button class="btn btn-danger">Refuser</button>
-          </div>
-        </td>
-      `;
-
-      const [ok, no] = tr.querySelectorAll("button");
-
-      ok.onclick = async () => {
-        await updateDoc(
-          doc(db, "annonces_location", d.id),
-          { status: "active" }
-        );
-        loadPending();
-      };
-
-      no.onclick = async () => {
-        await updateDoc(
-          doc(db, "annonces_location", d.id),
-          { status: "removed" }
-        );
-        loadPending();
-      };
-
-      rows.appendChild(tr);
-    });
   }
 
   requireModerator({
-    redirectTo: "/auth/login.html",
+    redirectTo: "/wauklink-site/auth/login.html",
     onOk: loadPending
   });
 </script>
