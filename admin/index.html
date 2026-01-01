@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
+
 <body>
 
 <header class="topbar">
@@ -18,7 +19,9 @@
 <main class="container" style="padding:30px 0;">
   <h2>Dashboard administrateur</h2>
 
-  <section class="card">
+  <p id="msg" class="meta">Vérification des droits…</p>
+
+  <section class="card" id="adminContent" style="display:none">
     <ul style="display:grid;gap:12px;padding-left:0;list-style:none">
       <li>
         <a class="btn" href="/wauklink-site/admin/annonces.html">
@@ -51,8 +54,16 @@
 <!-- 🔐 PROTECTION ADMIN -->
 <script type="module">
   import { requireAdmin } from "/wauklink-site/shared/guard.js";
+
+  const msg = document.getElementById("msg");
+  const adminContent = document.getElementById("adminContent");
+
   requireAdmin({
-    redirectTo: "/wauklink-site/auth/login.html"
+    redirectTo: "/wauklink-site/auth/login.html",
+    onOk: () => {
+      msg.textContent = "✅ Accès administrateur confirmé";
+      adminContent.style.display = "block";
+    }
   });
 </script>
 
