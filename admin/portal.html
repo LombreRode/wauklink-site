@@ -1,25 +1,40 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Admin – WAUKLINK</title>
-  <link rel="stylesheet" href="../style.css">
+  <meta charset="utf-8">
+  <title>Admin — WAUKLINK</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
+
 <body>
-  <h1>Portail admin</h1>
-  <p id="msg">Vérification des droits…</p>
 
-  <script type="module">
-    import { requireAdmin } from "../shared/guard.js";
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Portail administrateur</div>
+    </div>
+  </div>
+</header>
 
-    const msg = document.getElementById("msg");
+<main class="container" style="padding:24px 0">
+  <h2>Portail admin</h2>
+  <p id="msg" class="meta">Vérification des droits…</p>
+</main>
 
-    requireAdmin({
-      redirectTo: "../auth/login.html",
-      onOk: () => {
-        msg.textContent = "✅ Accès admin autorisé";
-      }
-    });
-  </script>
+<script type="module">
+  import { requireAdmin } from "/wauklink-site/shared/guard.js";
+
+  const msg = document.getElementById("msg");
+
+  requireAdmin({
+    redirectTo: "/wauklink-site/auth/login.html",
+    onOk: () => {
+      msg.textContent = "✅ Accès admin autorisé";
+    }
+  });
+</script>
+
 </body>
 </html>
