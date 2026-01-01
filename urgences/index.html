@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>WAUKLINK — Urgences</title>
-  <link rel="stylesheet" href="../style.css" />
+  <link rel="stylesheet" href="/wauklink-site/style.css" />
 </head>
 
 <body>
@@ -16,19 +16,16 @@
       <div class="subtitle">Urgences & interventions rapides</div>
     </div>
     <nav>
-      <a class="btn" href="../index.html">← Accueil</a>
+      <a class="btn" href="/wauklink-site/index.html">← Accueil</a>
     </nav>
   </div>
 </header>
 
 <main class="container main-layout">
-
   <h2>Urgences disponibles</h2>
 
   <!-- MESSAGE GLOBAL -->
-  <p id="statusMsg" class="muted">
-    Chargement…
-  </p>
+  <p id="statusMsg" class="muted">Chargement…</p>
 
   <!-- BLOQUÉ -->
   <section id="blocked" class="card hidden">
@@ -41,11 +38,10 @@
   <section id="content" class="hidden">
     <div id="list" class="grid"></div>
   </section>
-
 </main>
 
 <script type="module">
-  import { auth, db } from "../_shared/firebase.js";
+  import { auth, db } from "/wauklink-site/shared/firebase.js";
   import { onAuthStateChanged } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
   import {
@@ -73,12 +69,11 @@
       orderBy("createdAt", "desc")
     );
     const snap = await getDocs(qy);
-
-    if (!snap.size) {
-      list.innerHTML = "<p class='muted'>Aucune urgence disponible.</p>";
+    if (snap.empty) {
+      list.innerHTML =
+        "<p class='muted'>Aucune urgence disponible.</p>";
       return;
     }
-
     snap.forEach(d => {
       const u = d.data();
       const el = document.createElement("div");
@@ -94,7 +89,7 @@
 
   onAuthStateChanged(auth, async user => {
     if (!user) {
-      location.href = "../auth/login.html";
+      location.href = "/wauklink-site/auth/login.html";
       return;
     }
 
@@ -105,10 +100,10 @@
       return;
     }
 
-    const data = snap.data();
-    const role = data.role || "user";
-    const sub = data.abonnement?.type || "free";
-    const proValidated = data.pro?.validated === true;
+    const u = snap.data();
+    const role = u.role || "user";
+    const sub = u.abonnement?.type || "free";
+    const proValidated = u.pro?.validated === true;
 
     if (sub === "free") {
       blocked.classList.remove("hidden");
