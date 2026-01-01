@@ -1,8 +1,6 @@
 <script type="module">
   import { db } from "../shared/firebase.js";
-  
   import { requireModerator } from "../shared/guard.js";
-  
   import {
     collection, getDocs, doc, updateDoc
   } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
@@ -14,38 +12,47 @@
     msg.textContent = "⏳ Chargement des signalements…";
     list.innerHTML = "";
 
-    const snap = await getDocs(collection(db, "reports"));
+    try {
+      const snap = await getDocs(collection(db, "reports"));
 
-    if (snap.empty) {
-      list.innerHTML = "<p class='meta'>✅ Aucun signalement.</p>";
-      msg.textContent = "Tout est à jour.";
-      return;
+      if (snap.empty) {
+        list.innerHTML =
+          "<p class='meta'>✅ Aucun signalement.</p>";
+        msg.textContent = "Tout est à jour.";
+        return;
+      }
+
+      msg.textContent = `📋 ${snap.size} signalement(s)`;
+
+      snap.forEach(d => {
+        const r = d.data();
+        const div = document.createElement("div");
+        div.style.marginBottom = "10px";
+
+        div.innerHTML = `
+          <b>${r.reason || "Signalement utilisateur"}</b>
+          <button class="btn btn-danger" style="margin-left:10px">
+            Clore
+          </button>
+        `;
+
+        div.querySelector("button").onclick = async () => {
+          await updateDoc(
+            doc(db, "reports", d.id),
+            { status: "closed" }
+          );
+          load();
+        };
+
+        list.appendChild(div);
+      });
+
+    } catch (err) {
+      console.error(err);
+      msg.textContent = "❌ Accès interdit ou erreur Firestore";
+      list.innerHTML =
+        "<p class='meta'>Impossible de charger les signalements.</p>";
     }
-
-    msg.textContent = `📋 ${snap.size} signalement(s)`;
-
-    snap.forEach(d => {
-      const r = d.data();
-      const div = document.createElement("div");
-      div.style.marginBottom = "10px";
-
-      div.innerHTML = `
-        <b>${r.reason || "Signalement"}</b>
-        <button class="btn btn-danger" style="margin-left:10px">
-          Clore
-        </button>
-      `;
-
-      div.querySelector("button").onclick = async () => {
-        await updateDoc(
-          doc(db, "reports", d.id),
-          { status: "closed" }
-        );
-        load();
-      };
-
-      list.appendChild(div);
-    });
   }
 
   requireModerator({
