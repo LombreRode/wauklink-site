@@ -18,11 +18,12 @@
 <main class="container" style="padding:22px 0;">
   <h2>Nouvelle annonce de location</h2>
 
+  <!-- MESSAGE GLOBAL -->
   <p id="statusMsg" style="opacity:.85;margin-bottom:18px;">
     Chargement…
   </p>
 
-  <!-- BLOQUÉ -->
+  <!-- ACCÈS BLOQUÉ -->
   <section id="blocked" style="display:none" class="card">
     <p style="color:#ff6666">
       Accès bloqué selon votre abonnement ou votre statut.
@@ -52,7 +53,9 @@
         <textarea id="description" rows="4"></textarea>
       </label><br /><br />
 
-      <button type="submit">Publier l’annonce</button>
+      <button type="submit">
+        Publier l’annonce
+      </button>
     </form>
   </section>
 
@@ -61,14 +64,16 @@
   </div>
 </main>
 
+<!-- SCRIPT -->
 <script type="module">
   import { auth, db } from "../shared/firebase.js";
-  import { onAuthStateChanged }
-    from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import { onAuthStateChanged } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
   import {
     collection, addDoc, serverTimestamp,
     doc, getDoc
-  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
   const statusMsg   = document.getElementById("statusMsg");
   const blocked     = document.getElementById("blocked");
@@ -76,7 +81,7 @@
   const form        = document.getElementById("form");
 
   /* =========================
-     AUTH + DROITS
+     CONTRÔLE ACCÈS UTILISATEUR
   ========================= */
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
@@ -85,9 +90,10 @@
     }
 
     const snap = await getDoc(doc(db, "users", user.uid));
+
     if (!snap.exists()) {
       blocked.style.display = "block";
-      statusMsg.textContent = "Profil utilisateur introuvable.";
+      statusMsg.textContent = "Profil introuvable.";
       return;
     }
 
@@ -96,6 +102,7 @@
     const sub  = u.abonnement?.type || "free";
     const proValidated = u.pro?.validated === true;
 
+    // FREE → BLOQUÉ
     if (sub === "free") {
       blocked.style.display = "block";
       statusMsg.textContent =
@@ -103,20 +110,23 @@
       return;
     }
 
+    // PARTIEL NON‑PRO → OK
     if (sub === "partial" && role !== "pro") {
       statusMsg.textContent =
-        "Dépôt autorisé (non‑professionnel / CESU).";
+        "Dépôt autorisé (non‑professionnel).";
       formSection.style.display = "block";
       return;
     }
 
+    // PRO NON VALIDÉ → BLOQUÉ
     if (role === "pro" && !proValidated) {
       blocked.style.display = "block";
       statusMsg.textContent =
-        "Compte professionnel en attente de validation.";
+        "Compte professionnel non validé.";
       return;
     }
 
+    // PRO VALIDÉ → OK
     if (role === "pro" && proValidated) {
       statusMsg.textContent =
         "Dépôt autorisé (prestataire professionnel).";
@@ -124,37 +134,40 @@
       return;
     }
 
+    // CAS PAR DÉFAUT
     blocked.style.display = "block";
     statusMsg.textContent = "Accès non autorisé.";
   });
 
   /* =========================
-     SUBMIT ANNONCE
+     CRÉATION ANNONCE
   ========================= */
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     await addDoc(collection(db, "annonces_location"), {
-      /* CONTENU */
+      // Contenu
       titre: form.titre.value.trim(),
       ville: form.ville.value.trim(),
       prix: Number(form.prix.value),
       description: form.description.value.trim(),
-      type: "location",
 
-      /* STATUT */
+      // Type & statut
+      type: "location",
       status: "pending",
+
+      // Propriétaire
       ownerUid: auth.currentUser.uid,
 
-      /* MÉDIAS (INIT PROPRE) */
+      // Médias (initialisation propre)
       photos: [],
       photoPaths: [],
 
-      /* NOTES (COMPAT RULES) */
+      // Notes
       ratingAvg: 0,
       ratingCount: 0,
 
-      /* MÉTADONNÉES */
+      // Métadonnées
       createdAt: serverTimestamp()
     });
 
