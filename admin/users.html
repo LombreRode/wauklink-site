@@ -6,7 +6,6 @@
   <title>Admin — Utilisateurs</title>
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
-
 <body>
 
 <header class="topbar">
@@ -23,7 +22,6 @@
 
 <main class="container" style="padding:24px 0">
   <p id="msg" class="meta">Vérification des droits…</p>
-
   <div id="list">
     <p class="meta">Chargement…</p>
   </div>
@@ -32,48 +30,49 @@
 <script type="module">
   import { db } from "/wauklink-site/shared/firebase.js";
   import { requireAdmin } from "/wauklink-site/shared/guard.js";
-  import { collection, getDocs } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  import {
+    collection, getDocs
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
   const list = document.getElementById("list");
   const msg = document.getElementById("msg");
 
   async function loadUsers() {
-    msg.textContent = "⏳ Chargement des utilisateurs…";
+    msg.textContent = "⏳ Chargement des utilisateurs (vue admin)…";
     list.innerHTML = "";
 
     try {
-      const snap = await getDocs(collection(db, "users"));
+      // 🔐 collection ADMIN dédiée (compatible rules)
+      const snap = await getDocs(collection(db, "admin_users"));
 
       if (snap.empty) {
-        msg.textContent = "Aucun utilisateur.";
-        list.innerHTML = "<p class='meta'>Aucune donnée disponible.</p>";
+        msg.textContent = "Aucun utilisateur visible.";
+        list.innerHTML =
+          "<p class='meta'>Aucune donnée admin disponible.</p>";
         return;
       }
 
       msg.textContent = `👤 ${snap.size} utilisateur(s)`;
 
-      snap.forEach(docSnap => {
-        const u = docSnap.data();
-
+      snap.forEach(d => {
+        const u = d.data();
         const row = document.createElement("div");
         row.style.padding = "10px 0";
-        row.style.borderBottom = "1px solid #eee";
-
+        row.style.borderBottom = "1px solid rgba(255,255,255,.15)";
         row.innerHTML = `
           <strong>${u.email || "—"}</strong>
           <span class="meta">
             — rôle : ${u.role || "user"}
           </span>
         `;
-
         list.appendChild(row);
       });
 
     } catch (err) {
       console.error(err);
-      msg.textContent = "❌ Erreur lors du chargement des utilisateurs";
-      list.innerHTML = "<p class='meta'>Impossible de récupérer les données.</p>";
+      msg.textContent = "❌ Accès interdit (rules Firestore)";
+      list.innerHTML =
+        "<p class='meta'>Lecture globale des users non autorisée.</p>";
     }
   }
 
