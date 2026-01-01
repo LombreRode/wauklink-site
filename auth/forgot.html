@@ -1,27 +1,45 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Mot de passe oublié – WAUKLINK</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mot de passe oublié — WAUKLINK</title>
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
 <body>
+<header class="topbar">
+  <div class="container">
+    <h1>WAUKLINK</h1>
+    <div class="subtitle">Réinitialisation du mot de passe</div>
+  </div>
+</header>
 
-  <a href="/wauklink-site/auth/login.html">← Retour</a>
+<main class="container" style="padding:22px 0;max-width:420px">
+  <h2>Mot de passe oublié</h2>
 
-  <h1>Mot de passe oublié</h1>
+  <p class="meta">
+    Entrez votre adresse email.  
+    Un lien de réinitialisation vous sera envoyé.
+  </p>
 
-  <form id="forgotForm">
+  <form id="form">
     <label>
       Email<br>
       <input type="email" id="email" required>
     </label>
     <br><br>
-    <button type="submit">Envoyer le lien</button>
+    <button class="btn" type="submit">
+      Envoyer le lien
+    </button>
   </form>
 
-  <p id="msg"></p>
+  <p id="msg" class="meta" style="margin-top:12px"></p>
 
-  <script type="module" src="/wauklink-site/auth/forgot-password.js"></script>
+  <div style="margin-top:20px">
+    <a href="/wauklink-site/auth/login.html">← Retour connexion</a>
+  </div>
+</main>
+
+<script type="module" src="/wauklink-site/auth/forgot-password.js"></script>
 </body>
 </html>
