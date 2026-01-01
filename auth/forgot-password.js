@@ -1,5 +1,6 @@
-import { auth } from "../shared/firebase.js";
-import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { auth } from "/wauklink-site/shared/firebase.js";
+import { sendPasswordResetEmail } from
+  "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("forgotForm");
