@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="../style.css" />
 </head>
 <body>
+
 <header class="topbar">
   <div class="container">
     <h1>WAUKLINK</h1>
@@ -21,12 +22,14 @@
     Chargement…
   </p>
 
+  <!-- BLOQUÉ -->
   <section id="blocked" style="display:none" class="card">
     <p style="color:#ff6666">
       Accès bloqué selon votre abonnement ou votre statut.
     </p>
   </section>
 
+  <!-- FORMULAIRE -->
   <section id="formSection" style="display:none" class="card">
     <form id="form">
       <label>
@@ -41,12 +44,12 @@
 
       <label>
         Prix (€)<br />
-        <input type="number" id="prix" required />
+        <input type="number" id="prix" min="0" required />
       </label><br /><br />
 
       <label>
         Description<br />
-        <textarea id="description"></textarea>
+        <textarea id="description" rows="4"></textarea>
       </label><br /><br />
 
       <button type="submit">Publier l’annonce</button>
@@ -60,20 +63,22 @@
 
 <script type="module">
   import { auth, db } from "../shared/firebase.js";
-  import { onAuthStateChanged } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import { onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
   import {
     collection, addDoc, serverTimestamp,
     doc, getDoc
-  } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  const statusMsg = document.getElementById("statusMsg");
-  const blocked = document.getElementById("blocked");
+  const statusMsg   = document.getElementById("statusMsg");
+  const blocked     = document.getElementById("blocked");
   const formSection = document.getElementById("formSection");
-  const form = document.getElementById("form");
+  const form        = document.getElementById("form");
 
-  onAuthStateChanged(auth, async user => {
+  /* =========================
+     AUTH + DROITS
+  ========================= */
+  onAuthStateChanged(auth, async (user) => {
     if (!user) {
       location.href = "../auth/login.html";
       return;
@@ -82,35 +87,39 @@
     const snap = await getDoc(doc(db, "users", user.uid));
     if (!snap.exists()) {
       blocked.style.display = "block";
-      statusMsg.textContent = "Profil introuvable.";
+      statusMsg.textContent = "Profil utilisateur introuvable.";
       return;
     }
 
     const u = snap.data();
     const role = u.role || "user";
-    const sub = u.abonnement?.type || "free";
+    const sub  = u.abonnement?.type || "free";
     const proValidated = u.pro?.validated === true;
 
     if (sub === "free") {
       blocked.style.display = "block";
-      statusMsg.textContent = "Abonnement requis pour déposer une annonce.";
+      statusMsg.textContent =
+        "Abonnement requis pour déposer une annonce.";
       return;
     }
 
     if (sub === "partial" && role !== "pro") {
-      statusMsg.textContent = "Dépôt autorisé (non‑professionnel).";
+      statusMsg.textContent =
+        "Dépôt autorisé (non‑professionnel / CESU).";
       formSection.style.display = "block";
       return;
     }
 
     if (role === "pro" && !proValidated) {
       blocked.style.display = "block";
-      statusMsg.textContent = "Compte professionnel non validé.";
+      statusMsg.textContent =
+        "Compte professionnel en attente de validation.";
       return;
     }
 
     if (role === "pro" && proValidated) {
-      statusMsg.textContent = "Dépôt autorisé (prestataire professionnel).";
+      statusMsg.textContent =
+        "Dépôt autorisé (prestataire professionnel).";
       formSection.style.display = "block";
       return;
     }
@@ -119,37 +128,40 @@
     statusMsg.textContent = "Accès non autorisé.";
   });
 
-  form.addEventListener("submit", async e => {
+  /* =========================
+     SUBMIT ANNONCE
+  ========================= */
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-await addDoc(collection(db, "annonces_location"), {
-  // Contenu annonce
-  titre: form.titre.value.trim(),
-  ville: form.ville.value.trim(),
-  prix: Number(form.prix.value),
-  description: form.description.value.trim(),
-  type: "location",
+    await addDoc(collection(db, "annonces_location"), {
+      /* CONTENU */
+      titre: form.titre.value.trim(),
+      ville: form.ville.value.trim(),
+      prix: Number(form.prix.value),
+      description: form.description.value.trim(),
+      type: "location",
 
-  // Statut & ownership
-  status: "pending",
-  ownerUid: auth.currentUser.uid,
+      /* STATUT */
+      status: "pending",
+      ownerUid: auth.currentUser.uid,
 
-  // Médias (initialisation propre)
-  photos: [],
-  photoPaths: [],
+      /* MÉDIAS (INIT PROPRE) */
+      photos: [],
+      photoPaths: [],
 
-  // Notes (compatibles rules + admin)
-  ratingAvg: 0,
-  ratingCount: 0,
+      /* NOTES (COMPAT RULES) */
+      ratingAvg: 0,
+      ratingCount: 0,
 
-  // Métadonnées
-  createdAt: serverTimestamp()
-});
+      /* MÉTADONNÉES */
+      createdAt: serverTimestamp()
+    });
 
-
-    alert("Annonce envoyée en modération.");
+    alert("✅ Annonce envoyée en modération.");
     location.href = "../annonces/location.html";
   });
 </script>
+
 </body>
 </html>
