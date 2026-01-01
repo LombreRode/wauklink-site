@@ -1,5 +1,4 @@
 // shared/firebase.js
-import { auth, db } from "../shared/firebase.js";
 import { initializeApp, getApps, getApp } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import { getAuth } from
@@ -18,10 +17,12 @@ const firebaseConfig = {
   appId: "XXX"
 };
 
+// 🔥 Initialisation unique
 const app = getApps().length === 0
   ? initializeApp(firebaseConfig)
   : getApp();
 
+// 🔐 Exports
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
