@@ -9,6 +9,7 @@ onAuthStateChanged(auth, (user) => {
     document.body.classList.add("user-logged");
     window.isAuthenticated = true;
     window.authUser = user;
+    
   } else {
     document.body.classList.remove("user-logged");
     window.isAuthenticated = false;
