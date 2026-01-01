@@ -6,16 +6,16 @@
   <title>WAUKLINK</title>
 
   <!-- CSS GLOBAL -->
-  <link rel="stylesheet" href="/wauklink-site/style.css">
-
-  <!-- CSS CAROUSEL (OBLIGATOIRE POUR CETTE PAGE) -->
-  <link rel="stylesheet" href="/wauklink-site/carousel.css">
+  <link rel="stylesheet" href="./style.css">
+  <!-- CSS CAROUSEL -->
+  <link rel="stylesheet" href="./carousel.css">
 
   <!-- SCRIPT CAROUSEL -->
-  <script type="module" src="/wauklink-site/script.js"></script>
+  <script type="module" src="./script.js" defer></script>
 </head>
 
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
     <div>
@@ -24,11 +24,12 @@
         Services • Travaux • Conciergerie • Airbnb
       </div>
     </div>
+
     <nav>
-      <a href="/wauklink-site/pricing.html">Tarifs</a>
-      <a href="/wauklink-site/legal/index.html">CGU</a>
-      <a href="/wauklink-site/auth/login.html">Connexion</a>
-      <a href="/wauklink-site/auth/register.html" class="nav-cta">
+      <a href="./pricing.html">Tarifs</a>
+      <a href="./legal/index.html">CGU</a>
+      <a href="./auth/login.html">Connexion</a>
+      <a href="./auth/register.html" class="nav-cta">
         Inscription
       </a>
     </nav>
@@ -36,6 +37,7 @@
 </header>
 
 <main class="main-layout container">
+
   <!-- SECTION CAROUSEL -->
   <section class="circle-section">
     <h2 class="section-title">Choisissez un service</h2>
@@ -47,22 +49,21 @@
       <div class="circle" id="circle"></div>
     </div>
   </section>
+
 </main>
 
 <footer class="footer">
   © WAUKLINK —
-  <a href="/wauklink-site/pricing.html">Tarifs</a> |
-  <a href="/wauklink-site/legal/index.html">CGU</a> |
-  <a href="/wauklink-site/legal/mentions-legales.html">Mentions légales</a> |
-  <a href="/wauklink-site/legal/privacy.html">Confidentialité</a> |
-  <a href="/wauklink-site/admin/portal.html">
-    Administrateurs / Modérateurs
-  </a>
+  <a href="./pricing.html">Tarifs</a> |
+  <a href="./legal/index.html">CGU</a> |
+  <a href="./legal/mentions-legales.html">Mentions légales</a> |
+  <a href="./legal/privacy.html">Confidentialité</a> |
+  <a href="./admin/portal.html">Administrateurs / Modérateurs</a>
 </footer>
 
 <!-- AUTH GLOBAL -->
-<script type="module" src="/wauklink-site/auth/status.js"></script>
-<script type="module" src="/wauklink-site/auth/user_sync.js"></script>
+<script type="module" src="./auth/status.js"></script>
+<script type="module" src="./auth/user_sync.js"></script>
 
 </body>
 </html>
