@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>WAUKLINK — Modifier les photos</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="/wauklink-site/style.css" />
 </head>
 
 <body class="page-edit-photos">
@@ -16,7 +16,7 @@
       <div class="subtitle">Modifier les photos</div>
     </div>
     <nav>
-      <a class="btn" href="index.html">← Accueil</a>
+      <a class="btn" href="/wauklink-site/index.html">← Accueil</a>
     </nav>
   </div>
 </header>
@@ -30,7 +30,12 @@
       ✔ Visible seulement si annonce <b>ACTIVE</b>
     </p>
 
-    <input id="photosInput" type="file" accept="image/*" multiple />
+    <input
+      id="photosInput"
+      type="file"
+      accept="image/*"
+      multiple
+    />
 
     <div id="preview" class="thumbs"></div>
     <div id="msg" class="meta"></div>
@@ -42,8 +47,45 @@
   </div>
 </main>
 
-<script type="module" src="./auth/status.js"></script>
-<script type="module" src="./auth/user_sync.js"></script>
+<!-- AUTH GLOBAL -->
+<script type="module" src="/wauklink-site/auth/status.js"></script>
+<script type="module" src="/wauklink-site/auth/user_sync.js"></script>
+
+<!-- GUARD OWNER + ACTIVE (JS MÉTIER À AJOUTER ENSUITE) -->
+<script type="module">
+  import { auth, db } from "/wauklink-site/shared/firebase.js";
+  import { onAuthStateChanged } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import { doc, getDoc } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+  const params = new URLSearchParams(location.search);
+  const annonceId = params.get("id");
+  const msg = document.getElementById("msg");
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user || !annonceId) {
+      location.replace("/wauklink-site/auth/login.html");
+      return;
+    }
+
+    const snap = await getDoc(doc(db, "annonces_location", annonceId));
+    if (!snap.exists()) {
+      msg.textContent = "❌ Annonce introuvable";
+      return;
+    }
+
+    const a = snap.data();
+    const owner = a.ownerUid || a.ownerId;
+
+    if (a.status !== "active" || owner !== user.uid) {
+      msg.textContent = "⛔ Accès interdit";
+      return;
+    }
+
+    msg.textContent = "✔ Accès autorisé";
+  });
+</script>
 
 </body>
 </html>
