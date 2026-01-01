@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
       await signInWithEmailAndPassword(auth, email, password);
       msg.textContent = "Connecté";
       setTimeout(() => {
-        location.href = "../index.html";
+        location.href = "/wauklink-site/index.html";
       }, 500);
     } catch (err) {
       console.error(err);
