@@ -4,15 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Détail de l’annonce — WAUKLINK</title>
-
-  <!-- CSS GLOBAL -->
   <link rel="stylesheet" href="/wauklink-site/style.css">
-
-  <!-- CSS DETAIL (optionnel, prêt pour plus tard) -->
-  <!-- <link rel="stylesheet" href="/wauklink-site/detail.css"> -->
 </head>
-
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
     <div>
@@ -41,19 +36,15 @@
   <section class="card">
     <h3>Contacter</h3>
     <div class="row">
-      <a id="btnMail" class="btn" href="#" target="_blank">
-        📧 Email
-      </a>
-      <a id="btnCall" class="btn" href="#">
-        📞 Appeler
-      </a>
+      <a id="btnMail" class="btn" href="#" target="_blank">📧 Email</a>
+      <a id="btnCall" class="btn" href="#">📞 Appeler</a>
       <button id="btnReport" class="btn btn-danger" type="button">
         🚨 Signaler
       </button>
     </div>
   </section>
 
-  <!-- ACTIONS PROPRIÉTAIRE -->
+  <!-- ACTIONS PROPRIÉTAIRE (CACHÉ PAR DÉFAUT) -->
   <section class="card hidden" id="ownerActions">
     <h3>Gestion de l’annonce</h3>
     <a id="btnEditPhotos" class="btn" href="#">
@@ -68,28 +59,19 @@
       <label>
         Nom
         <input type="text" id="name" required>
-      </label>
-
-      <br><br>
+      </label><br><br>
 
       <label>
         Téléphone
         <input type="tel" id="phone" required>
-      </label>
-
-      <br><br>
+      </label><br><br>
 
       <label>
         Message
         <textarea id="msg" rows="4" required></textarea>
-      </label>
+      </label><br><br>
 
-      <br><br>
-
-      <button class="btn btn-ok" type="submit">
-        Envoyer
-      </button>
-
+      <button class="btn btn-ok" type="submit">Envoyer</button>
       <p id="note" class="meta"></p>
     </form>
   </section>
@@ -104,7 +86,6 @@
 
 <!-- SCRIPT PAGE DETAIL -->
 <script type="module" src="/wauklink-site/detail.js"></script>
-
 <!-- AUTH GLOBAL -->
 <script type="module" src="/wauklink-site/auth/status.js"></script>
 
