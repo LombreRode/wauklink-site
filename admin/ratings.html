@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Admin — Notes</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin — Demandes PRO</title>
 
   <!-- STYLE GLOBAL -->
-  <link rel="stylesheet" href="/wauklink-site/style.css">
+  <link rel="stylesheet" href="../style.css">
 </head>
 
 <body>
@@ -14,24 +14,21 @@
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
-      <div class="subtitle">Admin — Notes des annonces</div>
+      <div class="subtitle">Admin — Validation PRO</div>
     </div>
-
     <nav class="topbar-nav">
-      <a class="btn" href="/wauklink-site/admin/index.html">← Dashboard</a>
+      <a class="btn" href="./index.html">← Dashboard</a>
     </nav>
   </div>
 </header>
 
 <main class="container main-layout">
-  <h2>Notes des annonces</h2>
+  <h2>Demandes PRO en attente</h2>
 
-  <!-- MESSAGE GLOBAL -->
   <p id="msg" class="meta" aria-live="polite">
     Vérification des droits…
   </p>
 
-  <!-- LISTE -->
   <section id="list" class="grid"></section>
 </main>
 
@@ -39,72 +36,86 @@
   <div class="container footer-row">
     <span>© WAUKLINK</span>
     <nav class="footer-nav">
-      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
-      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
-      <a class="link" href="/wauklink-site/legal/privacy.html">Confidentialité</a>
-      <a class="link" href="/wauklink-site/legal/mentions-legales.html">Mentions légales</a>
+      <a class="link" href="../pricing.html">Tarifs</a>
+      <a class="link" href="../legal/index.html">CGU</a>
+      <a class="link" href="../legal/privacy.html">Confidentialité</a>
+      <a class="link" href="../legal/mentions-legales.html">
+        Mentions légales
+      </a>
     </nav>
   </div>
 </footer>
 
 <script type="module">
-  import { db } from "/wauklink-site/shared/firebase.js";
-  import { requireAdmin } from "/wauklink-site/shared/guard.js";
+  import { db } from "../shared/firebase.js";
+  import { requireAdmin } from "../shared/guard.js";
   import {
-    collection, getDocs, doc, updateDoc
+    collection, getDocs, doc, updateDoc, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
   const list = document.getElementById("list");
   const msg  = document.getElementById("msg");
 
-  async function load(){
-    msg.textContent = "⏳ Chargement des notes (vue admin)…";
+  async function loadRequests() {
     list.innerHTML = "";
+    msg.textContent = "⏳ Chargement des demandes PRO…";
 
     try {
-      // 🔐 Vue admin dédiée
       const snap = await getDocs(
-        collection(db, "admin_annonces_notes")
+        collection(db, "admin_pro_requests")
       );
 
       if (snap.empty) {
-        msg.textContent = "Aucune donnée.";
-        list.innerHTML =
-          "<p class='meta'>Aucune annonce visible.</p>";
+        msg.textContent = "✅ Aucune demande PRO en attente.";
         return;
       }
 
-      msg.textContent = `📋 ${snap.size} annonce(s)`;
+      msg.textContent = `📋 ${snap.size} demande(s) PRO`;
 
       snap.forEach(d => {
-        const a = d.data();
+        const u = d.data();
 
         const card = document.createElement("div");
         card.className = "card";
-
         card.innerHTML = `
-          <strong>${a.titre || "Annonce"}</strong>
-          <div class="meta">
-            Note moyenne : ${a.ratingAvg || 0}
-            (${a.ratingCount || 0} vote(s))
-          </div>
+          <strong>${u.firstName} ${u.lastName}</strong>
+          <div class="meta">${u.email}</div>
+          <div class="meta">Téléphone : ${u.phone || "—"}</div>
 
           <div class="row-actions" style="margin-top:12px">
-            <button class="btn btn-danger">
-              Réinitialiser les notes
-            </button>
+            <button class="btn btn-ok">Valider</button>
+            <button class="btn btn-danger">Refuser</button>
           </div>
         `;
 
-        card.querySelector("button").onclick = async () => {
-          if (!confirm("Réinitialiser les notes de cette annonce ?")) return;
+        const [okBtn, noBtn] = card.querySelectorAll("button");
+
+        okBtn.onclick = async () => {
+          if (!confirm("Valider ce compte PRO ?")) return;
 
           await updateDoc(
-            doc(db, "annonces_location", a.annonceId),
-            { ratingAvg: 0, ratingCount: 0 }
+            doc(db, "users", u.userId),
+            {
+              role: "pro",
+              "pro.validated": true,
+              "pro.validatedAt": serverTimestamp()
+            }
           );
 
-          load();
+          loadRequests();
+        };
+
+        noBtn.onclick = async () => {
+          if (!confirm("Refuser cette demande PRO ?")) return;
+
+          await updateDoc(
+            doc(db, "users", u.userId),
+            {
+              "pro.requested": false
+            }
+          );
+
+          loadRequests();
         };
 
         list.appendChild(card);
@@ -113,17 +124,14 @@
     } catch (err) {
       console.error(err);
       msg.textContent = "❌ Accès interdit ou erreur Firestore";
-      list.innerHTML =
-        "<p class='meta'>Lecture globale non autorisée.</p>";
     }
   }
 
   // 🔐 ADMIN UNIQUEMENT
   requireAdmin({
-    redirectTo: "/wauklink-site/auth/login.html",
-    onOk: load
+    redirectTo: "../auth/login.html",
+    onOk: loadRequests
   });
 </script>
-
 </body>
 </html>
