@@ -1,120 +1,68 @@
-/* =================================================
-   CARROUSEL CIRCULAIRE — WAUKLINK
-   UI ONLY • Accessible • Mobile Safe
-================================================= */
+(() => {
+  const circle = document.querySelector(".circle");
+  const cards = Array.from(document.querySelectorAll(".circle-card"));
+  if (!circle || !cards.length) return;
 
-/* =========================
-   CONFIG CARTES
-========================= */
-const CAROUSEL_CARDS = [
-  { label: "Toutes les annonces", href: "/wauklink-site/annonces/", icon: "📚" },
-  { label: "Location saisonnière", href: "/wauklink-site/annonces/location.html", icon: "🏖️" },
-  { label: "Location annuelle", href: "/wauklink-site/annonces/location.html", icon: "🏠" },
-  { label: "Travaux (PRO)", href: "/wauklink-site/dashboard/", icon: "🛠️" },
-  { label: "Services à la personne", href: "/wauklink-site/annonces/services.html", icon: "🧼" },
-  { label: "Urgences", href: "/wauklink-site/annonces/urgences.html", icon: "⚡" },
-  { label: "Conciergerie", href: "/wauklink-site/annonces/conciergerie.html", icon: "🧾" },
-  { label: "Airbnb", href: "/wauklink-site/annonces/airbnb.html", icon: "🛎️" },
-  { label: "Dépannage", href: "/wauklink-site/annonces/depannage.html", icon: "🔧" },
-  { label: "Nettoyage", href: "/wauklink-site/annonces/nettoyage.html", icon: "🧹" },
-  { label: "Espace prestataire", href: "/wauklink-site/dashboard/", icon: "👷" },
-  { label: "Tarifs", href: "/wauklink-site/pricing.html", icon: "💶" }
-];
+  const total = cards.length;
+  const step = 360 / total;
 
-/* =========================
-   BOOT
-========================= */
-document.addEventListener("DOMContentLoaded", () => {
-  const wrapper = document.getElementById("circleWrapper");
-  const circle  = document.getElementById("circle");
-  if (!wrapper || !circle) return;
+  let angle = 0;
+  let velocity = 0;
+  let dragging = false;
+  let lastX = 0;
 
-  let rotation = 0;
-  let isDown = false;
-  let dragged = false;
-  let startX = 0;
-  let startRotation = 0;
-  const DRAG_THRESHOLD = 8;
+  function layout() {
+    const radius = circle.offsetWidth / 2 - 90;
 
-  function radius() {
-    const size = Math.min(wrapper.clientWidth, wrapper.clientHeight);
-    if (size < 420) return Math.max(170, size * 0.45);
-    return Math.max(150, size * 0.40);
-  }
-
-  function render() {
-    circle.innerHTML = "";
-    const step = 360 / CAROUSEL_CARDS.length;
-    const r = radius();
-
-    CAROUSEL_CARDS.forEach((c, i) => {
-      const angle = i * step + rotation;
-      const card = document.createElement("button");
-      card.type = "button";
-      card.className = "circle-card";
-      card.dataset.href = c.href;
-      card.setAttribute("aria-label", c.label);
-
-      card.innerHTML = `
-        <div class="circle-icon" aria-hidden="true">${c.icon}</div>
-        <h3>${c.label}</h3>
-        <div class="open">Ouvrir</div>
-      `;
-
+    cards.forEach((card, i) => {
+      const a = (i * step + angle) * Math.PI / 180;
+      const x = Math.cos(a) * radius;
+      const y = Math.sin(a) * radius;
       card.style.transform =
-        `translate(-50%, -50%) rotate(${angle}deg)
-         translate(${r}px) rotate(${-angle}deg)`;
-
-      card.addEventListener("click", () => {
-        if (c.href) window.location.href = c.href;
-      });
-
-      circle.appendChild(card);
+        `translate(-50%, -50%) translate(${x}px, ${y}px)`;
     });
   }
 
-  wrapper.addEventListener("pointerdown", (e) => {
-    isDown = true;
-    dragged = false;
-    startX = e.clientX;
-    startRotation = rotation;
-  });
-
-  wrapper.addEventListener("pointermove", (e) => {
-    if (!isDown) return;
-    const dx = e.clientX - startX;
-    if (Math.abs(dx) > DRAG_THRESHOLD) dragged = true;
-    if (dragged) {
-      rotation = startRotation + dx * 0.35;
-      render();
+  function animate() {
+    if (!dragging) {
+      angle += velocity;
+      velocity *= 0.98; // inertie ∞
     }
-  });
+    layout();
+    requestAnimationFrame(animate);
+  }
 
-  wrapper.addEventListener("pointerup", () => {
-    isDown = false;
-    dragged = false;
-  });
+  function start(x) {
+    dragging = true;
+    lastX = x;
+  }
 
-  circle.addEventListener("keydown", (e) => {
-    const cards = [...circle.querySelectorAll(".circle-card")];
-    const index = cards.indexOf(document.activeElement);
-    if (index === -1) return;
+  function move(x) {
+    if (!dragging) return;
+    const delta = x - lastX;
+    velocity = delta * 0.15;
+    angle += velocity;
+    lastX = x;
+  }
 
-    if (e.key === "ArrowRight") {
-      e.preventDefault();
-      cards[(index + 1) % cards.length].focus();
-    }
-    if (e.key === "ArrowLeft") {
-      e.preventDefault();
-      cards[(index - 1 + cards.length) % cards.length].focus();
-    }
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      const href = cards[index].dataset.href;
-      if (href) window.location.href = href;
-    }
-  });
+  function end() {
+    dragging = false;
+  }
 
-  window.addEventListener("resize", render);
-  render();
-});
+  circle.addEventListener("mousedown", e => start(e.clientX));
+  window.addEventListener("mousemove", e => move(e.clientX));
+  window.addEventListener("mouseup", end);
+
+  circle.addEventListener("touchstart", e => {
+    if (e.touches[0]) start(e.touches[0].clientX);
+  }, { passive: true });
+
+  window.addEventListener("touchmove", e => {
+    if (e.touches[0]) move(e.touches[0].clientX);
+  }, { passive: true });
+
+  window.addEventListener("touchend", end);
+
+  layout();
+  animate();
+})();
