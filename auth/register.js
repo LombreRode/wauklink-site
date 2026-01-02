@@ -5,17 +5,14 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-  const privacy = document.getElementById("acceptPrivacy");
-  const cgu = document.getElementById("acceptCgu");
-  const legal = document.getElementById("acceptLegal");
-  const adult = document.getElementById("isAdult");
+    const cgu = document.getElementById("acceptCgu");
+    const privacy = document.getElementById("acceptPrivacy");
+    const adult = document.getElementById("isAdult");
 
-  if (!privacy.checked || !cgu.checked || !legal.checked || !adult.checked) {
-  msg.textContent =
-    "❌ Vous devez accepter la confidentialité, les CGU, les mentions légales et confirmer être majeur.";
-  return;
-}
-
+    if (!cgu.checked || !privacy.checked || !adult.checked) {
+      msg.textContent = "❌ Vous devez accepter les conditions pour continuer.";
+      return;
+    }
 
     const firstName = document.getElementById("firstName").value.trim();
     const lastName  = document.getElementById("lastName").value.trim();
@@ -37,24 +34,20 @@ document.addEventListener("DOMContentLoaded", () => {
       const cred =
         await createUserWithEmailAndPassword(auth, email, password);
 
-    await setDoc(doc(db, "users", cred.user.uid), {
-      firstName,
-      lastName,
-      phone,
-      address,
-      email,
-      role: "user",
-      abonnement: { type: "free" },
-      legal: {
-        privacyAccepted: true,
-        cguAccepted: true,
-        mentionsAccepted: true,
-        isAdult: true,
-        acceptedAt: serverTimestamp()
-      },
-      createdAt: serverTimestamp()
-    });
-
+      await setDoc(doc(db, "users", cred.user.uid), {
+        firstName,
+        lastName,
+        phone,
+        address,
+        email,
+        role: "user",
+        abonnement: { type: "free" },
+        cgu: {
+          accepted: true,
+          acceptedAt: serverTimestamp()
+        },
+        createdAt: serverTimestamp()
+      });
 
       msg.textContent = "✅ Compte créé avec succès";
 
