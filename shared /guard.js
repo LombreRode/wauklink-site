@@ -1,5 +1,5 @@
 // shared/guard.js
-import { auth, db } from "/wauklink-site/shared/firebase.js";
+import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { doc, getDoc } from
