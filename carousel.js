@@ -1,44 +1,66 @@
 /* =================================================
-   CAROUSEL ∞ — WAULINK
-   Centrage RÉEL + mobile fluide
+   CAROUSEL ∞ — WAUKLINK
+   Centrage RÉEL parfait (desktop + mobile)
 ================================================= */
 
 const wrapper = document.querySelector(".circle-wrapper");
 const container = document.getElementById("infinityCarousel");
 
-/* SERVICES */
+/* =========================
+   SERVICES
+========================= */
 const services = [
-  "Plomberie","Électricité","Peinture","Carrelage",
-  "Maçonnerie","Couverture","Serrurerie","Urgences",
-  "Ménage","Conciergerie","Photographe","Annonces"
+  "Plomberie",
+  "Électricité",
+  "Peinture",
+  "Carrelage",
+  "Maçonnerie",
+  "Couverture",
+  "Serrurerie",
+  "Urgences",
+  "Ménage",
+  "Conciergerie",
+  "Photographe",
+  "Annonces"
 ];
 
-/* CRÉATION CARTES */
+/* =========================
+   CRÉATION DES CARTES
+========================= */
 const cards = services.map(label => {
   const el = document.createElement("div");
   el.className = "circle-card";
-  el.innerHTML = `<h3>${label}</h3><div class="open">Ouvrir</div>`;
+  el.innerHTML = `
+    <h3>${label}</h3>
+    <div class="open">Ouvrir</div>
+  `;
   container.appendChild(el);
   return el;
 });
 
-/* PARAMÈTRES ∞ */
+/* =========================
+   PARAMÈTRES DU CAROUSEL
+========================= */
 let t = 0;
-const a = 200; // largeur ∞
-const b = 90;  // hauteur ∞
+const radiusX = 200;
+const radiusY = 90;
 
-/* CENTRE DYNAMIQUE */
+/* =========================
+   CENTRE RÉEL DU WRAPPER
+========================= */
 function getCenter() {
-  const r = wrapper.getBoundingClientRect();
+  const rect = wrapper.getBoundingClientRect();
   return {
-    x: r.width / 2,
-    y: r.height / 2
+    x: rect.width / 2,
+    y: rect.height / 2
   };
 }
 
 let needsUpdate = true;
 
-/* POSITIONNEMENT */
+/* =========================
+   POSITIONNEMENT DES CARTES
+========================= */
 function layout() {
   if (!needsUpdate) return;
   needsUpdate = false;
@@ -46,27 +68,34 @@ function layout() {
   const { x: cx, y: cy } = getCenter();
 
   cards.forEach((card, i) => {
-    const p = t + (i / cards.length) * Math.PI * 2;
+    const angle = t + (i / cards.length) * Math.PI * 2;
 
-    const x = a * Math.sin(p);
-    const y = b * Math.sin(p) * Math.cos(p);
+    const x = Math.sin(angle) * radiusX;
+    const y = Math.cos(angle) * Math.sin(angle) * radiusY;
 
-    card.style.transform =
-      `translate(${cx + x - card.offsetWidth / 2}px,
-                 ${cy + y - card.offsetHeight / 2}px)`;
+    card.style.transform = `
+      translate(
+        ${cx + x - card.offsetWidth / 2}px,
+        ${cy + y - card.offsetHeight / 2}px
+      )
+    `;
 
     card.style.zIndex = Math.round(100 + y);
   });
 }
 
-/* LOOP LÉGER */
+/* =========================
+   LOOP LÉGER
+========================= */
 function loop() {
   layout();
   requestAnimationFrame(loop);
 }
 loop();
 
-/* DRAG */
+/* =========================
+   DRAG / SWIPE
+========================= */
 let dragging = false;
 let startX = 0;
 let startT = 0;
@@ -75,19 +104,22 @@ wrapper.addEventListener("pointerdown", e => {
   dragging = true;
   startX = e.clientX;
   startT = t;
+  wrapper.setPointerCapture(e.pointerId);
 });
 
-window.addEventListener("pointermove", e => {
+wrapper.addEventListener("pointermove", e => {
   if (!dragging) return;
   t = startT + (e.clientX - startX) * 0.004;
   needsUpdate = true;
 });
 
-window.addEventListener("pointerup", () => {
+wrapper.addEventListener("pointerup", () => {
   dragging = false;
 });
 
-/* RECALCUL AU RESIZE */
+/* =========================
+   RECALCUL AU RESIZE
+========================= */
 window.addEventListener("resize", () => {
   needsUpdate = true;
 });
