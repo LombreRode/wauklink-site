@@ -1,125 +1,186 @@
-/* =================================================
-   CAROUSEL ∞ — WAUKLINK
-   Centrage RÉEL parfait (desktop + mobile)
-================================================= */
+import { auth, db } from "./_shared/firebase.js";
+import { onAuthStateChanged } from
+  "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import {
+  doc, getDoc, addDoc, collection, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-const wrapper = document.querySelector(".circle-wrapper");
-const container = document.getElementById("infinityCarousel");
+(() => {
+  /* =========================
+     DOM
+  ========================= */
+  const titleEl = document.getElementById("title");
+  const segmentEl = document.getElementById("segment");
+  const descEl = document.getElementById("desc");
+  const iconEl = document.getElementById("icon");
+  const noteEl = document.getElementById("note");
+  const statusLine = document.getElementById("statusLine");
+  const btnMail = document.getElementById("btnMail");
+  const btnCall = document.getElementById("btnCall");
+  const btnReport = document.getElementById("btnReport");
+  const btnEditPhotos = document.getElementById("btnEditPhotos");
+  const form = document.getElementById("form");
 
-/* =========================
-   SERVICES
-========================= */
-const services = [
-  "Plomberie",
-  "Électricité",
-  "Peinture",
-  "Carrelage",
-  "Maçonnerie",
-  "Couverture",
-  "Serrurerie",
-  "Urgences",
-  "Ménage",
-  "Conciergerie",
-  "Photographe",
-  "Annonces"
-];
+  const setText = (el, t) => el && (el.textContent = t ?? "");
+  const setHidden = (el, h) => el && el.classList.toggle("hidden", !!h);
 
-/* =========================
-   CRÉATION DES CARTES
-========================= */
-const cards = services.map(label => {
-  const el = document.createElement("div");
-  el.className = "circle-card";
-  el.innerHTML = `
-    <h3>${label}</h3>
-    <div class="open">Ouvrir</div>
-  `;
-  container.appendChild(el);
-  return el;
-});
+  /* =========================
+     URL
+  ========================= */
+  const params = new URLSearchParams(location.search);
+  const annonceId = params.get("id");
+  const serviceKey = params.get("service");
 
-/* =========================
-   PARAMÈTRES DU CAROUSEL
-========================= */
-let t = 0;
-const radiusX = 200;
-const radiusY = 90;
+  /* =========================
+     HELPERS
+  ========================= */
+  const ownerUid = d => d?.ownerUid || d?.ownerId || "";
 
-/* =========================
-   CENTRE RÉEL DU WRAPPER
-========================= */
-function getCenter() {
-  const rect = wrapper.getBoundingClientRect();
-  return {
-    x: rect.width / 2,
-    y: rect.height / 2
-  };
-}
+  async function loadUserRole(uid){
+    if (!uid) return "";
+    const snap = await getDoc(doc(db, "users", uid));
+    return snap.exists() ? String(snap.data().role || "") : "";
+  }
 
-let needsUpdate = true;
+  async function loadAnnonce(id){
+    const snap = await getDoc(doc(db, "annonces_location", id));
+    if (!snap.exists()) throw new Error("Annonce introuvable");
+    return snap.data();
+  }
 
-/* =========================
-   POSITIONNEMENT DES CARTES
-========================= */
-function layout() {
-  if (!needsUpdate) return;
-  needsUpdate = false;
+  function canEditPhotos(annonce, user, role){
+    if (!annonce || !user) return false;
+    if (annonce.status !== "active") return false;
 
-  const { x: cx, y: cy } = getCenter();
+    // ✅ OWNER
+    if (ownerUid(annonce) === user.uid) return true;
 
-  cards.forEach((card, i) => {
-    const angle = t + (i / cards.length) * Math.PI * 2;
+    // ✅ ADMIN / MODERATOR
+    if (role === "admin" || role === "moderator") return true;
 
-    const x = Math.sin(angle) * radiusX;
-    const y = Math.cos(angle) * Math.sin(angle) * radiusY;
+    return false;
+  }
 
-    card.style.transform = `
-      translate(
-        ${cx + x - card.offsetWidth / 2}px,
-        ${cy + y - card.offsetHeight / 2}px
-      )
-    `;
+  /* =========================
+     MODE SERVICE
+  ========================= */
+  const services = [
+    {
+      key:"locataire",
+      title:"Locataire",
+      segment:"BESOIN",
+      desc:"Demande de service",
+      icon:"/wauklink-site/images/locataire.svg"
+    },
+    {
+      key:"annonce",
+      title:"Déposer vos annonces",
+      segment:"PROPRIÉTAIRE",
+      desc:"Annonce propriétaire",
+      icon:"/wauklink-site/images/proprietaire-annonce.svg"
+    },
+    {
+      key:"conciergerie",
+      title:"Conciergerie",
+      segment:"AIRBNB",
+      desc:"Gestion & accueil",
+      icon:"/wauklink-site/images/conciergerie.svg"
+    },
+    {
+      key:"photographe",
+      title:"Photographe pro",
+      segment:"AIRBNB",
+      desc:"Photos immobilières",
+      icon:"/wauklink-site/images/photographe.svg"
+    }
+  ];
 
-    card.style.zIndex = Math.round(100 + y);
+  function renderService(key){
+    const s = services.find(x => x.key === key) || services[0];
+    setText(titleEl, s.title);
+    setText(segmentEl, s.segment);
+    setText(descEl, s.desc);
+    iconEl.src = s.icon;
+
+    setHidden(btnEditPhotos, true);
+    btnMail.style.pointerEvents = "none";
+    btnCall.style.pointerEvents = "none";
+
+    btnReport.onclick = () =>
+      setText(noteEl, "✅ Signalement reçu.");
+
+    form.onsubmit = e => {
+      e.preventDefault();
+      setText(noteEl, "✅ Demande envoyée.");
+      form.reset();
+    };
+  }
+
+  /* =========================
+     MODE ANNONCE
+  ========================= */
+  async function renderAnnonce(annonce, user){
+    const role = await loadUserRole(user?.uid);
+
+    setText(titleEl, annonce.titre);
+    setText(segmentEl, annonce.ville);
+    setText(descEl, annonce.description);
+    iconEl.src =
+      annonce.photos?.[0] ||
+      "/wauklink-site/images/proprietaire-annonce.svg";
+
+    setText(statusLine, `statut : ${annonce.status}`);
+
+    btnMail.href = annonce.contactEmail
+      ? `mailto:${annonce.contactEmail}`
+      : "#";
+
+    btnCall.href = annonce.contactPhone
+      ? `tel:${annonce.contactPhone}`
+      : "#";
+
+    const canEdit = canEditPhotos(annonce, user, role);
+    setHidden(btnEditPhotos, !canEdit);
+
+    if (canEdit) {
+      btnEditPhotos.href = `annonce_edit.html?id=${annonceId}`;
+    }
+
+    btnReport.onclick = async () => {
+      await addDoc(collection(db, "reports"), {
+        annonceId,
+        reporterUid: user?.uid || null,
+        reporterRole: role || "guest",
+        message: "Signalement utilisateur",
+        createdAt: serverTimestamp()
+      });
+      setText(noteEl, "✅ Signalement envoyé.");
+    };
+
+    form.onsubmit = e => {
+      e.preventDefault();
+      const msg = document.getElementById("msg").value || "";
+      if (!annonce.contactEmail) return;
+      location.href =
+        `mailto:${annonce.contactEmail}?subject=WAUKLINK&body=${encodeURIComponent(msg)}`;
+    };
+  }
+
+  /* =========================
+     BOOT
+  ========================= */
+  onAuthStateChanged(auth, async user => {
+    if (annonceId) {
+      try {
+        const annonce = await loadAnnonce(annonceId);
+        await renderAnnonce(annonce, user);
+      } catch (e) {
+        setText(titleEl, "Erreur");
+        setText(descEl, e.message);
+      }
+    } else {
+      renderService(serviceKey || "locataire");
+    }
   });
-}
 
-/* =========================
-   LOOP LÉGER
-========================= */
-function loop() {
-  layout();
-  requestAnimationFrame(loop);
-}
-loop();
-
-/* =========================
-   DRAG / SWIPE
-========================= */
-let dragging = false;
-let startX = 0;
-let startT = 0;
-
-wrapper.addEventListener("pointerdown", e => {
-  dragging = true;
-  startX = e.clientX;
-  startT = t;
-  wrapper.setPointerCapture(e.pointerId);
-});
-
-wrapper.addEventListener("pointermove", e => {
-  if (!dragging) return;
-  t = startT + (e.clientX - startX) * 0.004;
-  needsUpdate = true;
-});
-
-wrapper.addEventListener("pointerup", () => {
-  dragging = false;
-});
-
-/* =========================
-   RECALCUL AU RESIZE
-========================= */
-window.addEventListener("resize", () => {
-  needsUpdate = true;
-});
+})();
