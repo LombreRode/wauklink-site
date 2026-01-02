@@ -5,9 +5,16 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const cgu = document.getElementById("acceptCgu");
     const privacy = document.getElementById("acceptPrivacy");
+    const cgu = document.getElementById("acceptCgu");
+    const legal = document.getElementById("acceptLegal");
     const adult = document.getElementById("isAdult");
+    
+    if (!privacy.checked || !cgu.checked || !legal.checked || !adult.checked) {
+      msg.textContent =
+        "❌ Vous devez accepter la confidentialité, les CGU, les mentions légales et confirmer être majeur.";
+      return;
+    }
 
     if (!cgu.checked || !privacy.checked || !adult.checked) {
       msg.textContent = "❌ Vous devez accepter les conditions pour continuer.";
