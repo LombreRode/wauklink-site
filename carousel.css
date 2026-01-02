@@ -1,14 +1,30 @@
+.circle-section {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.section-title {
+  font-size: 26px;
+  font-weight: 900;
+}
+
+.section-subtitle {
+  opacity: .8;
+  margin-bottom: 32px;
+}
+
 .circle-wrapper {
   position: relative;
-  max-width: 360px;
-  aspect-ratio: 1 / 1;
+  width: 360px;
+  height: 360px;
   margin: 0 auto;
   touch-action: pan-x;
 }
 
 .circle {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 .circle-card {
@@ -27,19 +43,20 @@
   justify-content: center;
   cursor: pointer;
   user-select: none;
-  transition: transform .2s ease;
+  transform: translate(-50%, -50%);
 }
 
 .circle-card:hover {
-  transform: scale(1.05);
+  background: rgba(255,255,255,.12);
 }
 
 .circle-icon {
   font-size: 28px;
+  margin-bottom: 6px;
 }
 
 .circle-card h3 {
-  margin: 6px 0 2px;
+  margin: 0;
   font-size: 14px;
   font-weight: 800;
 }
