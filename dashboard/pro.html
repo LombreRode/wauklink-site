@@ -3,66 +3,93 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WAUKLINK — Dashboard</title>
+  <title>Tableau de bord — WAUKLINK</title>
+
+  <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
+
 <body>
 <header class="topbar">
-  <div class="container">
-    <h1>WAUKLINK</h1>
-    <div class="subtitle">Tableau de bord</div>
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Tableau de bord</div>
+    </div>
   </div>
 </header>
 
-<main class="container" style="padding:22px 0;">
+<main class="container main-layout">
   <h2>Mon espace</h2>
 
-  <p id="globalStatus" style="opacity:.85;margin-bottom:18px;">
+  <!-- STATUT GLOBAL -->
+  <p id="globalStatus" class="meta" aria-live="polite">
     Chargement du statut…
   </p>
 
   <section class="card">
     <h3>Fonctionnement</h3>
     <p>
-      Les fonctionnalités sont débloquées selon votre abonnement et votre statut.
-      Aucun accès professionnel n’est possible sans validation préalable.
+      Les fonctionnalités sont débloquées selon votre abonnement
+      et votre statut. Aucun accès professionnel n’est possible
+      sans validation préalable.
     </p>
   </section>
 
   <section class="card">
     <h3>Abonnement</h3>
-    <p id="subStatus">—</p>
+    <p id="subStatus" class="meta">—</p>
     <ul>
       <li><b>Free</b> : navigation uniquement</li>
       <li><b>Partiel</b> : non‑pro / CESU / location occasionnelle</li>
       <li><b>Complet</b> : accès PRO (sous conditions)</li>
     </ul>
-    <a href="/wauklink-site/pricing.html">Voir les abonnements</a>
+    <a class="link" href="/wauklink-site/pricing.html">
+      Voir les abonnements
+    </a>
   </section>
 
-  <section class="card" id="proSection" style="display:none">
+  <section class="card hidden" id="proSection">
     <h3>Espace Prestataire PRO</h3>
-    <p id="proMessage"></p>
+    <p id="proMessage" class="meta"></p>
     <a
       id="proAction"
+      class="btn btn-ok hidden"
       href="/wauklink-site/dashboard/pro.html"
-      style="display:none"
     >
       Accéder à l’espace PRO
     </a>
   </section>
 
-  <section class="card" id="blockedSection" style="display:none">
-    <p style="color:#ff6666">
+  <section class="card hidden" id="blockedSection">
+    <p class="text-danger">
       Accès bloqué selon votre statut actuel.
     </p>
   </section>
 
-  <div style="margin-top:20px">
-    <a href="/wauklink-site/index.html">← Accueil</a> ·
-    <a href="/wauklink-site/legal/">CGU & documents</a>
+  <div class="meta" style="margin-top:20px">
+    <a class="link" href="/wauklink-site/index.html">← Accueil</a> ·
+    <a class="link" href="/wauklink-site/legal/index.html">
+      CGU & documents
+    </a>
   </div>
 </main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <span>© WAUKLINK</span>
+    <nav class="footer-nav">
+      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
+      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
+      <a class="link" href="/wauklink-site/legal/privacy.html">
+        Confidentialité
+      </a>
+      <a class="link" href="/wauklink-site/legal/mentions-legales.html">
+        Mentions légales
+      </a>
+    </nav>
+  </div>
+</footer>
 
 <script type="module">
   import { auth, db } from "/wauklink-site/shared/firebase.js";
@@ -72,11 +99,11 @@
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
   const globalStatus = document.getElementById("globalStatus");
-  const subStatus = document.getElementById("subStatus");
-  const proSection = document.getElementById("proSection");
-  const proMessage = document.getElementById("proMessage");
-  const proAction = document.getElementById("proAction");
-  const blocked = document.getElementById("blockedSection");
+  const subStatus    = document.getElementById("subStatus");
+  const proSection   = document.getElementById("proSection");
+  const proMessage   = document.getElementById("proMessage");
+  const proAction    = document.getElementById("proAction");
+  const blocked      = document.getElementById("blockedSection");
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
@@ -86,14 +113,15 @@
 
     const snap = await getDoc(doc(db, "users", user.uid));
     if (!snap.exists()) {
-      globalStatus.textContent = "⛔ Profil utilisateur introuvable.";
-      blocked.style.display = "block";
+      globalStatus.textContent =
+        "⛔ Profil utilisateur introuvable.";
+      blocked.classList.remove("hidden");
       return;
     }
 
     const u = snap.data();
     const role = u.role || "user";
-    const sub = u.abonnement?.type || "free";
+    const sub  = u.abonnement?.type || "free";
     const proValidated = u.pro?.validated === true;
 
     globalStatus.innerHTML =
@@ -102,18 +130,18 @@
 
     // FREE
     if (sub === "free") {
-      blocked.style.display = "block";
+      blocked.classList.remove("hidden");
       return;
     }
 
-    // PARTIEL (accès limité, pas bloqué)
+    // PARTIEL
     if (sub === "partial") {
       return;
     }
 
     // COMPLET SANS VALIDATION
     if (sub === "full" && !proValidated) {
-      proSection.style.display = "block";
+      proSection.classList.remove("hidden");
       proMessage.textContent =
         "Compte PRO en attente : documents requis et validation obligatoire.";
       return;
@@ -121,14 +149,14 @@
 
     // PRO VALIDÉ
     if (sub === "full" && proValidated) {
-      proSection.style.display = "block";
+      proSection.classList.remove("hidden");
       proMessage.innerHTML =
         "<b>Compte PRO validé.</b> Accès autorisé.";
-      proAction.style.display = "inline-block";
+      proAction.classList.remove("hidden");
       return;
     }
 
-    blocked.style.display = "block";
+    blocked.classList.remove("hidden");
   });
 </script>
 </body>
