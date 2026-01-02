@@ -1,3 +1,68 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WAUKLINK — Modifier les photos</title>
+
+  <!-- STYLE GLOBAL -->
+  <link rel="stylesheet" href="/wauklink-site/style.css" />
+</head>
+
+<body>
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Modifier les photos de l’annonce</div>
+    </div>
+
+    <nav class="topbar-nav">
+      <a class="btn" href="/wauklink-site/index.html">← Accueil</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container main-layout">
+  <section class="card">
+    <h2>Photos de l’annonce</h2>
+
+    <p id="msg" class="meta" aria-live="polite">
+      Chargement…
+    </p>
+
+    <p class="muted">
+      ✔ Maximum 6 photos<br>
+      ✔ Remplacement complet des photos existantes
+    </p>
+
+    <input
+      id="photosInput"
+      type="file"
+      accept="image/*"
+      multiple
+    />
+
+    <div class="row mt-xl">
+      <button id="btnReplaceAll" class="btn" disabled>
+        💾 Remplacer toutes les photos
+      </button>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <span>© WAUKLINK</span>
+    <nav class="footer-nav">
+      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
+      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
+      <a class="link" href="/wauklink-site/legal/privacy.html">Confidentialité</a>
+      <a class="link" href="/wauklink-site/legal/mentions-legales.html">Mentions légales</a>
+    </nav>
+  </div>
+</footer>
+
 <script type="module">
   import { auth, db, storage } from "/wauklink-site/shared/firebase.js";
   import { onAuthStateChanged } from
@@ -8,12 +73,12 @@
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
   const msg = document.getElementById("msg");
-  const files = document.getElementById("photosInput"); // ✅ FIX
+  const filesInput = document.getElementById("photosInput");
   const btnReplaceAll = document.getElementById("btnReplaceAll");
 
   const annonceId = new URLSearchParams(location.search).get("id");
   if (!annonceId) {
-    msg.textContent = "❌ id manquant.";
+    msg.textContent = "❌ Identifiant d’annonce manquant.";
     throw new Error("Missing id");
   }
 
@@ -50,19 +115,21 @@
   }
 
   async function replaceAllPhotos(fileList){
-    const filesArr = Array.from(fileList).slice(0, 6);
+    const files = Array.from(fileList).slice(0, 6);
 
-    // 🔥 suppression anciennes photos
+    /* 🔥 suppression anciennes photos */
     const oldPaths = annonceData.photoPaths || [];
     for (const p of oldPaths) {
-      try { await deleteObject(ref(storage, p)); } catch {}
+      try {
+        await deleteObject(ref(storage, p));
+      } catch {}
     }
 
     const newUrls = [];
     const newPaths = [];
 
-    for (let i = 0; i < filesArr.length; i++) {
-      const f = filesArr[i];
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i];
       const path = storagePath(annonceId, i, f);
       const sref = ref(storage, path);
 
@@ -92,11 +159,14 @@
   });
 
   btnReplaceAll.addEventListener("click", async () => {
-    if (!files.files.length) {
+    if (!filesInput.files.length) {
       alert("Choisis des photos.");
       return;
     }
-    await replaceAllPhotos(files.files);
+    await replaceAllPhotos(filesInput.files);
     alert("✅ Photos mises à jour.");
   });
 </script>
+
+</body>
+</html>
