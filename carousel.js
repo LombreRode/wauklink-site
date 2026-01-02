@@ -1,89 +1,89 @@
-/* =========================================
-   CARROUSEL ∞ — WAULINK
-   Animation fluide type signe infini
-========================================= */
+/* =================================================
+   CAROUSEL INFINI — WAULINK
+   Interaction souris + tactile
+   PAS d’auto-rotation
+================================================= */
 
-const container = document.getElementById("infinityCarousel");
+const carousel = document.getElementById("infinityCarousel");
 
-/* 12 CARTES OFFICIELLES */
+/* 🔁 12 CARTES — OFFICIELLES */
 const services = [
-  { title: "Locataire", href: "./detail.html?service=locataire" },
-  { title: "Déposer vos annonces", href: "./detail.html?service=annonce" },
-  { title: "Conciergerie", href: "./detail.html?service=conciergerie" },
-  { title: "Photographe Pro", href: "./detail.html?service=photographe" },
-  { title: "Travaux", href: "./travaux/index.html" },
-  { title: "Urgences", href: "./urgences/index.html" },
-  { title: "Services à la personne", href: "./services-personne/index.html" },
-  { title: "Annonces", href: "./annonces/index.html" },
-  { title: "Plomberie", href: "./services/plomberie.html" },
-  { title: "Électricité", href: "./services/electricite.html" },
-  { title: "Ménage", href: "./services/menage.html" },
-  { title: "Chauffage", href: "./services/chauffage.html" }
+  { label: "Plomberie", href: "./travaux/index.html" },
+  { label: "Électricité", href: "./travaux/index.html" },
+  { label: "Peinture", href: "./travaux/index.html" },
+  { label: "Carrelage", href: "./travaux/index.html" },
+  { label: "Maçonnerie", href: "./travaux/index.html" },
+  { label: "Toiture", href: "./travaux/index.html" },
+  { label: "Serrurerie", href: "./urgences/index.html" },
+  { label: "Urgences", href: "./urgences/index.html" },
+  { label: "Conciergerie", href: "./index.html" },
+  { label: "Photographe", href: "./index.html" },
+  { label: "Services à la personne", href: "./services-personne/index.html" },
+  { label: "Annonces", href: "./annonces/index.html" }
 ];
 
-const cards = [];
-let t = 0;
-let speed = 0.0018;
-
-/* CRÉATION DES CARTES */
-services.forEach(service => {
+/* CRÉATION CARTES */
+services.forEach(s => {
   const card = document.createElement("div");
   card.className = "circle-card";
-
   card.innerHTML = `
-    <h3>${service.title}</h3>
+    <h3>${s.label}</h3>
     <div class="open">Ouvrir</div>
   `;
-
-  card.addEventListener("click", () => {
-    window.location.href = service.href;
-  });
-
-  container.appendChild(card);
-  cards.push(card);
+  card.onclick = () => location.href = s.href;
+  carousel.appendChild(card);
 });
 
-/* ANIMATION ∞ (LEMNISCATE) */
-function animate() {
-  t += speed;
+const cards = [...document.querySelectorAll(".circle-card")];
+const count = cards.length;
+const step = (Math.PI * 2) / count;
 
-  cards.forEach((card, index) => {
-    const p = t + (index / cards.length) * Math.PI * 2;
+let angle = 0;
+const radius = 140;
 
-    const a = 220; // largeur
-    const b = 90;  // hauteur
-
-    const x = a * Math.sin(p);
-    const y = b * Math.sin(p) * Math.cos(p);
-
-    const scale = 0.85 + 0.25 * Math.cos(p);
-
-    card.style.transform =
-      `translate(${x + 300}px, ${y + 200}px) scale(${scale})`;
-
-    card.style.zIndex = Math.round(scale * 100);
+/* POSITIONNEMENT */
+function layout() {
+  cards.forEach((card, i) => {
+    const a = angle + i * step;
+    const x = Math.cos(a) * radius;
+    const y = Math.sin(a) * radius;
+    card.style.transform = `translate(${x}px, ${y}px)`;
   });
-
-  requestAnimationFrame(animate);
 }
 
-animate();
+layout();
 
-/* DRAG SOURIS */
-let dragging = false;
-let lastX = 0;
+/* 🖱️ + 📱 DRAG UNIQUEMENT */
+let isDragging = false;
+let startX = 0;
+let startAngle = 0;
 
-container.addEventListener("mousedown", e => {
-  dragging = true;
-  lastX = e.clientX;
-});
+function startDrag(x) {
+  isDragging = true;
+  startX = x;
+  startAngle = angle;
+}
 
-window.addEventListener("mousemove", e => {
-  if (!dragging) return;
-  t += (e.clientX - lastX) * 0.00001;
-  lastX = e.clientX;
-});
+function drag(x) {
+  if (!isDragging) return;
+  angle = startAngle + (x - startX) * 0.005;
+  layout();
+}
 
-window.addEventListener("mouseup", () => {
-  dragging = false;
-});
+function endDrag() {
+  isDragging = false;
+}
+
+/* SOURIS */
+carousel.addEventListener("mousedown", e => startDrag(e.clientX));
+window.addEventListener("mousemove", e => drag(e.clientX));
+window.addEventListener("mouseup", endDrag);
+
+/* TACTILE */
+carousel.addEventListener("touchstart", e =>
+  startDrag(e.touches[0].clientX)
+);
+carousel.addEventListener("touchmove", e =>
+  drag(e.touches[0].clientX)
+);
+carousel.addEventListener("touchend", endDrag);
