@@ -1,30 +1,21 @@
-import { auth, db } from "../shared/firebase.js";
-
-import { createUserWithEmailAndPassword } from
-  "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-
-import { doc, setDoc, serverTimestamp } from
-  "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("form");
   const msg  = document.getElementById("msg");
 
-  if (!form) {
-    console.error("❌ Formulaire #form introuvable");
-    return;
-  }
-
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-const cgu = document.getElementById("acceptCgu");
-const privacy = document.getElementById("acceptPrivacy");
-const adult = document.getElementById("isAdult");
 
-if (!cgu.checked || !privacy.checked || !adult.checked) {
-  msg.textContent = "❌ Vous devez accepter les conditions pour continuer.";
+  const privacy = document.getElementById("acceptPrivacy");
+  const cgu = document.getElementById("acceptCgu");
+  const legal = document.getElementById("acceptLegal");
+  const adult = document.getElementById("isAdult");
+
+  if (!privacy.checked || !cgu.checked || !legal.checked || !adult.checked) {
+  msg.textContent =
+    "❌ Vous devez accepter la confidentialité, les CGU, les mentions légales et confirmer être majeur.";
   return;
 }
+
 
     const firstName = document.getElementById("firstName").value.trim();
     const lastName  = document.getElementById("lastName").value.trim();
@@ -35,16 +26,7 @@ if (!cgu.checked || !privacy.checked || !adult.checked) {
     const passwordConfirm =
       document.getElementById("passwordConfirm")?.value;
 
-    const cgu1 = document.getElementById("cgu1").checked;
-    const cgu2 = document.getElementById("cgu2").checked;
-    const cgu3 = document.getElementById("cgu3").checked;
-
-    if (!cgu1 || !cgu2 || !cgu3) {
-      msg.textContent = "❌ Tu dois accepter toutes les conditions";
-      return;
-    }
-
-    if (passwordConfirm !== undefined && password !== passwordConfirm) {
+    if (password !== passwordConfirm) {
       msg.textContent = "❌ Les mots de passe ne correspondent pas";
       return;
     }
@@ -71,6 +53,7 @@ if (!cgu.checked || !privacy.checked || !adult.checked) {
       });
 
       msg.textContent = "✅ Compte créé avec succès";
+
       setTimeout(() => {
         location.href = "/wauklink-site/index.html";
       }, 800);
