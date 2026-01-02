@@ -1,6 +1,6 @@
 /* =================================================
    CAROUSEL ∞ — WAULINK
-   Visuel ancien (cartes blanches)
+   Cartes RECTANGULAIRES (visuel ancien)
 ================================================= */
 
 .circle-section {
@@ -14,7 +14,7 @@
 }
 
 .section-subtitle {
-  opacity: .8;
+  opacity: .85;
   margin-bottom: 28px;
 }
 
@@ -22,9 +22,9 @@
 .circle-wrapper {
   position: relative;
   width: 100%;
-  max-width: 520px;
+  max-width: 560px;
   height: 420px;
-  margin: 0 auto;
+  margin: 0 auto; /* ✅ centrage horizontal */
   overflow: visible;
   touch-action: pan-x;
 }
@@ -34,19 +34,20 @@
   inset: 0;
 }
 
-/* CARTES */
+/* CARTES — RECTANGLE COMME AVANT */
 .circle-card {
   position: absolute;
-  width: 120px;
-  height: 120px;
+
+  width: 140px;     /* ⬅️ largeur */
+  height: 180px;    /* ⬅️ hauteur (rectangle) */
 
   background: #ffffff;
   color: #0b1224;
 
   border: 2px solid #22c55e;
-  border-radius: 16px;
+  border-radius: 14px;
 
-  box-shadow: 0 12px 28px rgba(0,0,0,.35);
+  box-shadow: 0 14px 32px rgba(0,0,0,.35);
 
   display: flex;
   flex-direction: column;
@@ -56,7 +57,7 @@
   user-select: none;
   cursor: grab;
 
-  transition: transform .15s ease;
+  transition: transform .15s ease, box-shadow .15s ease;
 }
 
 .circle-card:active {
@@ -65,17 +66,19 @@
 
 .circle-card:hover {
   transform: scale(1.05);
+  box-shadow: 0 22px 44px rgba(0,0,0,.45);
 }
 
+/* TEXTE */
 .circle-card h3 {
   margin: 0;
-  font-size: 13px;
-  font-weight: 800;
+  font-size: 14px;
+  font-weight: 900;
   text-align: center;
 }
 
 .circle-card .open {
-  margin-top: 6px;
+  margin-top: 8px;
   font-size: 12px;
   opacity: .7;
 }
@@ -83,12 +86,16 @@
 /* MOBILE */
 @media (max-width: 600px) {
   .circle-wrapper {
-    max-width: 360px;
+    max-width: 380px;
     height: 360px;
   }
 
   .circle-card {
-    width: 100px;
-    height: 100px;
+    width: 110px;
+    height: 150px;
+  }
+
+  .circle-card h3 {
+    font-size: 12px;
   }
 }
