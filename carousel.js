@@ -1,45 +1,58 @@
-const carousel = document.getElementById("infinityCarousel");
+/* =================================================
+   CAROUSEL ∞ — WAULINK
+   Signe infini réel (lemniscate)
+   Interaction manuelle uniquement
+================================================= */
 
+const container = document.getElementById("infinityCarousel");
+
+/* 12 CARTES */
 const services = [
-  { label: "Plomberie", href: "./services/plomberie.html" },
-  { label: "Électricité", href: "./services/electricite.html" },
-  { label: "Peinture", href: "./services/peinture.html" },
-  { label: "Carrelage", href: "./services/carrelage.html" },
-  { label: "Chauffage", href: "./services/chauffage.html" },
-  { label: "Climatisation", href: "./services/climatisation.html" },
-  { label: "Maçonnerie", href: "./services/maconnerie.html" },
-  { label: "Couverture", href: "./services/couverture.html" },
-  { label: "Serrurerie", href: "./services/serrurerie.html" },
-  { label: "Conciergerie", href: "./services/conciergerie.html" },
-  { label: "Photographe", href: "./services/photographe.html" },
-  { label: "Ménage", href: "./services/menage.html" }
+  { label: "Plomberie", href: "./travaux/index.html" },
+  { label: "Électricité", href: "./travaux/index.html" },
+  { label: "Peinture", href: "./travaux/index.html" },
+  { label: "Carrelage", href: "./travaux/index.html" },
+  { label: "Maçonnerie", href: "./travaux/index.html" },
+  { label: "Couverture", href: "./travaux/index.html" },
+  { label: "Serrurerie", href: "./urgences/index.html" },
+  { label: "Urgences", href: "./urgences/index.html" },
+  { label: "Ménage", href: "./services-personne/index.html" },
+  { label: "Conciergerie", href: "./services-personne/index.html" },
+  { label: "Photographe", href: "./services-personne/index.html" },
+  { label: "Annonces", href: "./annonces/index.html" }
 ];
 
-/* CRÉATION CARTES */
-services.forEach(s => {
-  const card = document.createElement("div");
-  card.className = "circle-card";
-  card.innerHTML = `
-    <h3>${s.label}</h3>
-    <div class="open">Ouvrir</div>
-  `;
-  card.onclick = () => location.href = s.href;
-  carousel.appendChild(card);
+/* CRÉATION DES CARTES */
+const cards = services.map(s => {
+  const el = document.createElement("div");
+  el.className = "circle-card";
+  el.innerHTML = `<h3>${s.label}</h3><div class="open">Ouvrir</div>`;
+  el.onclick = () => location.href = s.href;
+  container.appendChild(el);
+  return el;
 });
 
-const cards = [...document.querySelectorAll(".circle-card")];
-const total = cards.length;
-const radius = 180;
-let angle = 0;
-const step = (Math.PI * 2) / total;
+/* PARAMÈTRES ∞ */
+let t = 0;
+const a = 180; // largeur
+const b = 90;  // hauteur
+const centerX = 260;
+const centerY = 210;
 
-/* POSITION */
+/* POSITIONNEMENT */
 function layout() {
   cards.forEach((card, i) => {
-    const a = i * step + angle;
-    const x = Math.cos(a) * radius;
-    const y = Math.sin(a) * radius;
-    card.style.transform = `translate(${x}px, ${y}px)`;
+    const offset = (i / cards.length) * Math.PI * 2;
+    const p = t + offset;
+
+    const x = a * Math.sin(p);
+    const y = b * Math.sin(p) * Math.cos(p);
+
+    card.style.transform =
+      `translate(${centerX + x - card.offsetWidth / 2}px,
+                 ${centerY + y - card.offsetHeight / 2}px)`;
+
+    card.style.zIndex = Math.round(100 + y);
   });
 }
 
@@ -48,29 +61,20 @@ layout();
 /* DRAG UNIQUEMENT */
 let dragging = false;
 let startX = 0;
-let startAngle = 0;
+let startT = 0;
 
-carousel.addEventListener("mousedown", e => {
+container.addEventListener("pointerdown", e => {
   dragging = true;
   startX = e.clientX;
-  startAngle = angle;
+  startT = t;
 });
 
-window.addEventListener("mousemove", e => {
+window.addEventListener("pointermove", e => {
   if (!dragging) return;
-  angle = startAngle + (e.clientX - startX) * 0.005;
+  t = startT + (e.clientX - startX) * 0.005;
   layout();
 });
 
-window.addEventListener("mouseup", () => dragging = false);
-
-/* MOBILE */
-carousel.addEventListener("touchstart", e => {
-  startX = e.touches[0].clientX;
-  startAngle = angle;
-});
-
-carousel.addEventListener("touchmove", e => {
-  angle = startAngle + (e.touches[0].clientX - startX) * 0.005;
-  layout();
+window.addEventListener("pointerup", () => {
+  dragging = false;
 });
