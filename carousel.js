@@ -1,25 +1,18 @@
-/* =================================================
-   CAROUSEL INFINI — WAULINK
-   Interaction souris + tactile
-   PAS d’auto-rotation
-================================================= */
-
 const carousel = document.getElementById("infinityCarousel");
 
-/* 🔁 12 CARTES — OFFICIELLES */
 const services = [
-  { label: "Plomberie", href: "./travaux/index.html" },
-  { label: "Électricité", href: "./travaux/index.html" },
-  { label: "Peinture", href: "./travaux/index.html" },
-  { label: "Carrelage", href: "./travaux/index.html" },
-  { label: "Maçonnerie", href: "./travaux/index.html" },
-  { label: "Toiture", href: "./travaux/index.html" },
-  { label: "Serrurerie", href: "./urgences/index.html" },
-  { label: "Urgences", href: "./urgences/index.html" },
-  { label: "Conciergerie", href: "./index.html" },
-  { label: "Photographe", href: "./index.html" },
-  { label: "Services à la personne", href: "./services-personne/index.html" },
-  { label: "Annonces", href: "./annonces/index.html" }
+  { label: "Plomberie", href: "./services/plomberie.html" },
+  { label: "Électricité", href: "./services/electricite.html" },
+  { label: "Peinture", href: "./services/peinture.html" },
+  { label: "Carrelage", href: "./services/carrelage.html" },
+  { label: "Chauffage", href: "./services/chauffage.html" },
+  { label: "Climatisation", href: "./services/climatisation.html" },
+  { label: "Maçonnerie", href: "./services/maconnerie.html" },
+  { label: "Couverture", href: "./services/couverture.html" },
+  { label: "Serrurerie", href: "./services/serrurerie.html" },
+  { label: "Conciergerie", href: "./services/conciergerie.html" },
+  { label: "Photographe", href: "./services/photographe.html" },
+  { label: "Ménage", href: "./services/menage.html" }
 ];
 
 /* CRÉATION CARTES */
@@ -35,16 +28,15 @@ services.forEach(s => {
 });
 
 const cards = [...document.querySelectorAll(".circle-card")];
-const count = cards.length;
-const step = (Math.PI * 2) / count;
-
+const total = cards.length;
+const radius = 180;
 let angle = 0;
-const radius = 140;
+const step = (Math.PI * 2) / total;
 
-/* POSITIONNEMENT */
+/* POSITION */
 function layout() {
   cards.forEach((card, i) => {
-    const a = angle + i * step;
+    const a = i * step + angle;
     const x = Math.cos(a) * radius;
     const y = Math.sin(a) * radius;
     card.style.transform = `translate(${x}px, ${y}px)`;
@@ -53,37 +45,32 @@ function layout() {
 
 layout();
 
-/* 🖱️ + 📱 DRAG UNIQUEMENT */
-let isDragging = false;
+/* DRAG UNIQUEMENT */
+let dragging = false;
 let startX = 0;
 let startAngle = 0;
 
-function startDrag(x) {
-  isDragging = true;
-  startX = x;
+carousel.addEventListener("mousedown", e => {
+  dragging = true;
+  startX = e.clientX;
   startAngle = angle;
-}
+});
 
-function drag(x) {
-  if (!isDragging) return;
-  angle = startAngle + (x - startX) * 0.005;
+window.addEventListener("mousemove", e => {
+  if (!dragging) return;
+  angle = startAngle + (e.clientX - startX) * 0.005;
   layout();
-}
+});
 
-function endDrag() {
-  isDragging = false;
-}
+window.addEventListener("mouseup", () => dragging = false);
 
-/* SOURIS */
-carousel.addEventListener("mousedown", e => startDrag(e.clientX));
-window.addEventListener("mousemove", e => drag(e.clientX));
-window.addEventListener("mouseup", endDrag);
+/* MOBILE */
+carousel.addEventListener("touchstart", e => {
+  startX = e.touches[0].clientX;
+  startAngle = angle;
+});
 
-/* TACTILE */
-carousel.addEventListener("touchstart", e =>
-  startDrag(e.touches[0].clientX)
-);
-carousel.addEventListener("touchmove", e =>
-  drag(e.touches[0].clientX)
-);
-carousel.addEventListener("touchend", endDrag);
+carousel.addEventListener("touchmove", e => {
+  angle = startAngle + (e.touches[0].clientX - startX) * 0.005;
+  layout();
+});
