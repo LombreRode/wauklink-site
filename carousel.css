@@ -1,6 +1,6 @@
-/* =================================================
-   CAROUSEL INFINI — WAULINK (MANUEL UNIQUEMENT)
-================================================= */
+/* ================================
+   CARROUSEL WAULINK – VISUEL ANCIEN
+================================ */
 
 .circle-section {
   text-align: center;
@@ -9,68 +9,56 @@
 
 .section-title {
   font-size: 26px;
-  font-weight: 800;
-  margin-bottom: 6px;
+  font-weight: 900;
 }
 
 .section-subtitle {
   opacity: .8;
-  margin-bottom: 24px;
+  margin-bottom: 30px;
 }
 
 /* ZONE */
 .circle-wrapper {
   position: relative;
   width: 100%;
-  max-width: 420px;
-  aspect-ratio: 1 / 1;
+  max-width: 520px;
+  height: 520px;
   margin: 0 auto;
-  overflow: visible;
   touch-action: pan-x;
 }
 
-/* CONTENEUR */
 .circle {
   position: absolute;
   inset: 0;
 }
 
-/* CARTES — STYLE ANCIEN (BLANC + VERT) */
+/* CARTES */
 .circle-card {
   position: absolute;
   top: 50%;
   left: 50%;
   width: 120px;
   height: 120px;
-
   background: #ffffff;
-  color: #0f172a;
-
+  color: #0b1224;
   border: 2px solid #22c55e;
   border-radius: 16px;
-
-  box-shadow: 0 10px 26px rgba(0,0,0,.25);
-
+  box-shadow: 0 12px 28px rgba(0,0,0,.35);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
-  cursor: grab;
+  cursor: pointer;
   user-select: none;
-
-  transition: transform .15s ease;
-}
-
-.circle-card:active {
-  cursor: grabbing;
+  transform-origin: center;
+  transition: transform .2s ease, box-shadow .2s ease;
 }
 
 .circle-card:hover {
-  transform: scale(1.04);
+  transform: scale(1.05);
+  box-shadow: 0 18px 40px rgba(0,0,0,.45);
 }
 
-/* TEXTE */
 .circle-card h3 {
   margin: 0;
   font-size: 13px;
@@ -79,23 +67,20 @@
 }
 
 .circle-card .open {
-  margin-top: 4px;
-  font-size: 11px;
-  color: #22c55e;
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: .7;
 }
 
-/* MOBILE : TOUT VISIBLE */
+/* MOBILE */
 @media (max-width: 600px) {
   .circle-wrapper {
-    max-width: 320px;
+    max-width: 360px;
+    height: 360px;
   }
 
   .circle-card {
-    width: 95px;
-    height: 95px;
-  }
-
-  .circle-card h3 {
-    font-size: 11px;
+    width: 100px;
+    height: 100px;
   }
 }
