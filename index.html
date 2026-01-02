@@ -1,16 +1,10 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>WAUKLINK</title>
-
-  <!-- CSS GLOBAL -->
-  <link rel="stylesheet" href="/wauklink-site/style.css">
-  <!-- CSS CAROUSEL -->
-  <link rel="stylesheet" href="/wauklink-site/carousel.css">
-  <!-- SCRIPT CAROUSEL -->
-  <script type="module" src="/wauklink-site/script.js" defer></script>
+  <meta charset="utf-8" />
+  <title>WAULINK — Services, travaux, conciergerie, Airbnb</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="./style.css" />
 </head>
 
 <body>
@@ -18,48 +12,85 @@
 <header class="topbar">
   <div class="container topbar-row">
     <div>
-      <h1>WAUKLINK</h1>
-      <div class="subtitle">
-        Services • Travaux • Conciergerie • Airbnb
-      </div>
+      <h1>WAULINK</h1>
+      <div class="subtitle">Services · Travaux · Conciergerie · Airbnb</div>
     </div>
-    <nav>
-      <a href="/wauklink-site/pricing.html">Tarifs</a>
-      <a href="/wauklink-site/legal/index.html">CGU</a>
-      <a href="/wauklink-site/auth/login.html">Connexion</a>
-      <a href="/wauklink-site/auth/register.html" class="nav-cta">
-        Inscription
-      </a>
+    <nav class="topbar-nav">
+      <a href="./pricing.html" class="link">Tarifs</a>
+      <a href="./cgu.html" class="link">CGU</a>
+      <a href="./auth/login.html" class="link">Connexion</a>
+      <a href="./auth/register.html" class="btn btn-outline">Inscription</a>
     </nav>
   </div>
 </header>
 
-<main class="main-layout container">
-  <section class="circle-section">
-    <h2 class="section-title">Choisissez un service</h2>
-    <p class="section-subtitle">
-      Clique sur une carte pour ouvrir • Glisse pour tourner
-    </p>
-    <div class="circle-wrapper" id="circleWrapper">
-      <div class="circle" id="circle"></div>
+<main class="container main-layout">
+  <section class="hero">
+    <h2>Choisissez un service</h2>
+    <p class="muted">Cliquez sur une carte pour ouvrir · Glissez pour tourner</p>
+  </section>
+
+  <section class="wheel-section">
+    <div class="wheel-wrapper">
+      <div id="serviceWheel" class="wheel"></div>
     </div>
   </section>
 </main>
 
 <footer class="footer">
-  © WAUKLINK —
-  <a href="/wauklink-site/pricing.html">Tarifs</a> |
-  <a href="/wauklink-site/legal/index.html">CGU</a> |
-  <a href="/wauklink-site/legal/mentions-legales.html">Mentions légales</a> |
-  <a href="/wauklink-site/legal/privacy.html">Confidentialité</a> |
-  <a href="/wauklink-site/admin/portal.html">
-    Administrateurs / Modérateurs
-  </a>
+  <div class="container footer-row">
+    <span>© WAULINK</span>
+    <nav class="footer-nav">
+      <a href="./pricing.html" class="link">Tarifs</a>
+      <a href="./cgu.html" class="link">CGU</a>
+      <a href="./legal/mentions-legales.html" class="link">Mentions légales</a>
+      <a href="./legal/privacy.html" class="link">Confidentialité</a>
+      <a href="./admin/index.html" class="link">Administrateurs</a>
+    </nav>
+  </div>
 </footer>
 
-<!-- AUTH GLOBAL -->
-<script type="module" src="/wauklink-site/auth/status.js"></script>
-<script type="module" src="/wauklink-site/auth/user_sync.js"></script>
+<script type="module">
+  const wheel = document.getElementById("serviceWheel");
+
+  const services = [
+    { label: "Nettoyage", href: "./services-personne/index.html", accent: "#4CAF50" },
+    { label: "Services à la personne", href: "./services-personne/index.html", accent: "#607D8B" },
+    { label: "Travaux", href: "./travaux/index.html", accent: "#795548" },
+    { label: "Urgences", href: "./urgences/index.html", accent: "#f44336" },
+    { label: "Toutes les annonces", href: "./annonces/index.html", accent: "#009688" },
+    { label: "Location", href: "./annonces/location.html", accent: "#FF9800" }
+  ];
+
+  services.forEach(s => {
+    const card = document.createElement("button");
+    card.className = "wheel-card";
+    card.innerHTML = `
+      <div class="wheel-card-label">${s.label}</div>
+      <div class="wheel-card-action">Ouvrir</div>
+    `;
+    card.onclick = () => location.href = s.href;
+    wheel.appendChild(card);
+  });
+
+  const cards = [...document.querySelectorAll(".wheel-card")];
+  const step = 360 / cards.length;
+  let angle = 0;
+
+  function layout() {
+    cards.forEach((c, i) => {
+      const a = (i * step + angle) * Math.PI / 180;
+      c.style.transform = `translate(${Math.cos(a)*140}px, ${Math.sin(a)*140}px)`;
+    });
+  }
+  layout();
+
+  let startX = 0, startA = 0, drag = false;
+  wheel.onmousedown = e => { drag = true; startX = e.clientX; startA = angle; };
+  window.onmousemove = e => { if (drag) { angle = startA + (e.clientX - startX)*0.3; layout(); }};
+  window.onmouseup = () => drag = false;
+</script>
 
 </body>
 </html>
+
