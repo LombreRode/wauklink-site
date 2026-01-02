@@ -227,21 +227,20 @@ textarea:focus {
 }
 
 /* =========================
-   FOOTER — WAUKLINK
+   FOOTER — WAUKLINK (FINAL FIX)
 ========================= */
 .site-footer {
-  position: relative;
-  margin-top: 60px;
-  padding: 18px 0;
+  margin-top: 64px;
+  padding: 20px 0;
   border-top: 1px solid rgba(255,255,255,.12);
   background: linear-gradient(
     to right,
-    rgba(6,78,59,.85),
+    rgba(6,78,59,.9),
     rgba(2,6,23,.95)
   );
 }
 
-/* CONTAINER */
+/* GRID CENTRÉE RÉELLE */
 .footer-container {
   max-width: 1100px;
   margin: 0 auto;
@@ -252,23 +251,25 @@ textarea:focus {
   align-items: center;
 }
 
-/* BLOCS */
+/* GAUCHE */
 .footer-left {
   font-size: 13px;
   color: rgba(255,255,255,.7);
 }
 
+/* CENTRE — PARFAITEMENT AU MILIEU */
 .footer-center {
   display: flex;
-  gap: 14px;
+  gap: 16px;
   justify-content: center;
-  flex-wrap: wrap;
+  white-space: nowrap;
 }
 
+/* DROITE */
 .footer-right {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 10px;
   font-size: 13px;
 }
 
@@ -278,21 +279,20 @@ textarea:focus {
   text-decoration: none;
   font-size: 13px;
 }
-
 .site-footer a:hover {
   text-decoration: underline;
 }
 
-/* SEPARATEUR */
+/* SÉPARATEUR */
 .footer-right .sep {
-  color: rgba(255,255,255,.4);
+  opacity: .4;
 }
 
 /* RESPONSIVE */
 @media (max-width: 720px) {
   .footer-container {
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: 12px;
     text-align: center;
   }
 
