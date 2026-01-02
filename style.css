@@ -227,35 +227,80 @@ textarea:focus {
 }
 
 /* =========================
-   FOOTER
+   FOOTER — WAUKLINK
 ========================= */
-.footer {
-  border-top: 1px solid rgba(255,255,255,.15);
-  padding: 16px 0;
-  font-size: 13px;
-  opacity: .85;
+.site-footer {
+  position: relative;
+  margin-top: 60px;
+  padding: 18px 0;
+  border-top: 1px solid rgba(255,255,255,.12);
+  background: linear-gradient(
+    to right,
+    rgba(6,78,59,.85),
+    rgba(2,6,23,.95)
+  );
 }
 
-.footer-row {
-  display: flex;
-  justify-content: space-between;
+/* CONTAINER */
+.footer-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 16px;
+
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 16px;
 }
 
-.footer-nav {
+/* BLOCS */
+.footer-left {
+  font-size: 13px;
+  color: rgba(255,255,255,.7);
+}
+
+.footer-center {
   display: flex;
-  gap: 10px;
+  gap: 14px;
+  justify-content: center;
   flex-wrap: wrap;
 }
 
-.footer .link {
-  color: #d1fae5;
+.footer-right {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  font-size: 13px;
 }
 
-.footer .link:hover {
+/* LIENS */
+.site-footer a {
+  color: #d1fae5;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.site-footer a:hover {
   text-decoration: underline;
 }
+
+/* SEPARATEUR */
+.footer-right .sep {
+  color: rgba(255,255,255,.4);
+}
+
+/* RESPONSIVE */
+@media (max-width: 720px) {
+  .footer-container {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .footer-right {
+    justify-content: center;
+  }
+}
+
 
 /* =========================
    VISIBILITY
