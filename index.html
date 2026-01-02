@@ -4,10 +4,8 @@
   <meta charset="utf-8">
   <title>WAUKLINK — Services</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
   <meta name="description"
         content="WAUKLINK – Trouvez des services, artisans, conciergeries et annonces près de chez vous.">
-
   <link rel="stylesheet" href="./style.css">
   <link rel="stylesheet" href="./carousel.css">
 </head>
@@ -54,6 +52,7 @@
       <a href="./legal/mentions-legales.html">Mentions légales</a>
     </nav>
 
+    <!-- ADMIN / MODÉRATION (affiché via guard.js) -->
     <div class="footer-right hidden" id="adminLinks">
       <a href="./admin/index.html">Admin</a>
       <span class="sep">·</span>
@@ -66,7 +65,7 @@
 <!-- CARROUSEL -->
 <script src="./carousel.js" defer></script>
 
-<!-- ADMIN / MODÉRATION -->
+<!-- ADMIN / MODÉRATION (obligatoirement en module) -->
 <script type="module" src="./shared/admin_links.js"></script>
 
 </body>
