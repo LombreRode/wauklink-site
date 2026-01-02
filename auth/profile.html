@@ -3,29 +3,40 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>WAUKLINK — Devenir prestataire</title>
+  <title>Devenir prestataire — WAUKLINK</title>
+
+  <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
-<body>
 
+<body>
 <header class="topbar">
-  <div class="container">
-    <h1>WAUKLINK</h1>
-    <div class="subtitle">Devenir prestataire</div>
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Devenir prestataire</div>
+    </div>
+
+    <nav class="topbar-nav">
+      <a class="btn" href="/wauklink-site/dashboard/">
+        ← Tableau de bord
+      </a>
+    </nav>
   </div>
 </header>
 
-<main class="container" style="max-width:700px;padding:40px 0;">
-  <h2>Compléter mon activité</h2>
+<main class="container main-layout">
+  <section class="card" style="max-width:700px;margin:0 auto">
+    <h2>Compléter mon activité</h2>
 
-  <section class="card">
-    <form id="profileForm" style="display:flex;flex-direction:column;gap:14px">
-      
+    <form id="profileForm" class="form-column">
       <label>
         Activité
         <select id="activity" required>
           <option value="">Choisir une activité</option>
-          <option value="non-pro">Prestataire non professionnel (CESU)</option>
+          <option value="non-pro">
+            Prestataire non professionnel (CESU)
+          </option>
           <option value="vendeur">Vendeur</option>
           <option value="loueur">Loueur</option>
         </select>
@@ -41,17 +52,32 @@
         ></textarea>
       </label>
 
-      <button class="btn">Enregistrer</button>
+      <button type="submit" class="btn btn-ok">
+        Enregistrer
+      </button>
     </form>
 
-    <p id="msg" class="note"></p>
+    <p id="msg" class="meta" aria-live="polite"></p>
   </section>
-
-  <div style="margin-top:20px">
-    <a href="/wauklink-site/dashboard/">← Retour au tableau de bord</a>
-  </div>
 </main>
 
+<footer class="footer">
+  <div class="container footer-row">
+    <span>© WAUKLINK</span>
+    <nav class="footer-nav">
+      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
+      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
+      <a class="link" href="/wauklink-site/legal/privacy.html">
+        Confidentialité
+      </a>
+      <a class="link" href="/wauklink-site/legal/mentions-legales.html">
+        Mentions légales
+      </a>
+    </nav>
+  </div>
+</footer>
+
+<!-- LOGIQUE PROFIL -->
 <script type="module" src="/wauklink-site/auth/profile.js"></script>
 </body>
 </html>
