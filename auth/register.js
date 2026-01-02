@@ -63,8 +63,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }, 800);
 
     } catch (err) {
-      console.error(err);
-      msg.textContent = "❌ " + err.code;
-    }
+  console.error(err);
+  msg.textContent =
+    err.code ? "❌ " + err.code : "❌ Erreur lors de l’inscription";
+}
   });
 });
