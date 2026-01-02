@@ -9,6 +9,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const password = document.getElementById("password");
   const msg = document.getElementById("msg");
 
+  if (!form) {
+    console.error("Form login introuvable");
+    return;
+  }
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
