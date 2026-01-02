@@ -1,6 +1,7 @@
 /* =================================================
    CAROUSEL ∞ — WAULINK
    Cartes RECTANGULAIRES (visuel ancien)
+   Stable / Centré / Fluide
 ================================================= */
 
 .circle-section {
@@ -18,13 +19,13 @@
   margin-bottom: 28px;
 }
 
-/* ZONE */
+/* ZONE ∞ */
 .circle-wrapper {
   position: relative;
   width: 100%;
-  max-width: 560px;
-  height: 420px;
-  margin: 0 auto; /* ✅ centrage horizontal */
+  max-width: 640px;
+  height: 460px;
+  margin: 0 auto;
   overflow: visible;
   touch-action: pan-x;
 }
@@ -34,12 +35,17 @@
   inset: 0;
 }
 
-/* CARTES — RECTANGLE COMME AVANT */
+/* CARTES — RECTANGLE ANCIEN VISUEL */
 .circle-card {
   position: absolute;
+  top: 50%;
+  left: 50%;
 
-  width: 140px;     /* ⬅️ largeur */
-  height: 180px;    /* ⬅️ hauteur (rectangle) */
+  width: 140px;
+  height: 180px;
+
+  transform: translate(-50%, -50%);
+  transform-origin: center;
 
   background: #ffffff;
   color: #0b1224;
@@ -57,7 +63,9 @@
   user-select: none;
   cursor: grab;
 
-  transition: transform .15s ease, box-shadow .15s ease;
+  transition:
+    box-shadow .15s ease,
+    filter .15s ease;
 }
 
 .circle-card:active {
@@ -65,8 +73,8 @@
 }
 
 .circle-card:hover {
-  transform: scale(1.05);
   box-shadow: 0 22px 44px rgba(0,0,0,.45);
+  filter: brightness(1.02);
 }
 
 /* TEXTE */
@@ -86,8 +94,8 @@
 /* MOBILE */
 @media (max-width: 600px) {
   .circle-wrapper {
-    max-width: 340px;
-    height: 320px;
+    max-width: 360px;
+    height: 340px;
   }
 
   .circle-card {
@@ -103,4 +111,3 @@
     font-size: 10px;
   }
 }
-
