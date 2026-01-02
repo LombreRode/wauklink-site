@@ -4,19 +4,22 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>WAUKLINK — Urgences</title>
-  <link rel="stylesheet" href="/wauklink-site/style.css" />
+
+  <!-- STYLE GLOBAL -->
+  <link rel="stylesheet" href="../style.css" />
 </head>
 
 <body>
-
 <header class="topbar">
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
       <div class="subtitle">Urgences & interventions rapides</div>
     </div>
-    <nav>
-      <a class="btn" href="/wauklink-site/index.html">← Accueil</a>
+
+    <!-- NAV ALIGNÉE -->
+    <nav class="topbar-nav">
+      <a class="btn" href="../index.html">← Accueil</a>
     </nav>
   </div>
 </header>
@@ -25,12 +28,15 @@
   <h2>Urgences disponibles</h2>
 
   <!-- MESSAGE GLOBAL -->
-  <p id="statusMsg" class="muted">Chargement…</p>
+  <p id="statusMsg" class="muted" aria-live="polite">
+    Chargement…
+  </p>
 
   <!-- BLOQUÉ -->
   <section id="blocked" class="card hidden">
     <p class="text-danger">
-      Accès bloqué selon votre abonnement ou votre statut.
+      Accès restreint. Cette section est réservée aux utilisateurs disposant
+      d’un abonnement compatible.
     </p>
   </section>
 
@@ -40,8 +46,20 @@
   </section>
 </main>
 
+<footer class="footer">
+  <div class="container footer-row">
+    <span>© WAUKLINK</span>
+    <nav class="footer-nav">
+      <a class="link" href="../pricing.html">Tarifs</a>
+      <a class="link" href="../legal/index.html">CGU</a>
+      <a class="link" href="../legal/privacy.html">Confidentialité</a>
+      <a class="link" href="../legal/mentions-legales.html">Mentions légales</a>
+    </nav>
+  </div>
+</footer>
+
 <script type="module">
-  import { auth, db } from "/wauklink-site/shared/firebase.js";
+  import { auth, db } from "../shared/firebase.js";
   import { onAuthStateChanged } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
   import {
@@ -51,9 +69,9 @@
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
   const statusMsg = document.getElementById("statusMsg");
-  const blocked = document.getElementById("blocked");
-  const content = document.getElementById("content");
-  const list = document.getElementById("list");
+  const blocked   = document.getElementById("blocked");
+  const content   = document.getElementById("content");
+  const list      = document.getElementById("list");
 
   function esc(s){
     return String(s ?? "").replace(/[&<>"']/g, m =>
@@ -63,17 +81,21 @@
 
   async function loadUrgences(){
     list.innerHTML = "";
+
     const qy = query(
       collection(db, "urgences"),
       where("status", "==", "active"),
       orderBy("createdAt", "desc")
     );
+
     const snap = await getDocs(qy);
+
     if (snap.empty) {
       list.innerHTML =
         "<p class='muted'>Aucune urgence disponible.</p>";
       return;
     }
+
     snap.forEach(d => {
       const u = d.data();
       const el = document.createElement("div");
@@ -89,7 +111,7 @@
 
   onAuthStateChanged(auth, async user => {
     if (!user) {
-      location.href = "/wauklink-site/auth/login.html";
+      location.href = "../auth/login.html";
       return;
     }
 
@@ -102,7 +124,7 @@
 
     const u = snap.data();
     const role = u.role || "user";
-    const sub = u.abonnement?.type || "free";
+    const sub  = u.abonnement?.type || "free";
     const proValidated = u.pro?.validated === true;
 
     if (sub === "free") {
