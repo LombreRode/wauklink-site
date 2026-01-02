@@ -1,42 +1,82 @@
-.circle-wrapper {
-  position: relative;
-  width: 420px;
-  height: 420px;
-  margin: 0 auto;
+/* =========================
+   CARROUSEL INFINI — WAULINK
+   VISUEL ANCIEN CONSERVÉ
+========================= */
+
+.circle-section{
+  text-align:center;
+  margin-top:40px;
 }
 
-.circle {
-  position: relative;
-  width: 100%;
-  height: 100%;
+.section-title{
+  font-size:26px;
+  font-weight:900;
 }
 
-.circle-card {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 160px;
-  height: 120px;
-
-  background: #ffffff;
-  color: #0b1224;
-
-  border: 2px solid #22c55e;
-  border-radius: 18px;
-
-  box-shadow: 0 12px 26px rgba(0,0,0,.25);
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  font-weight: 900;
-  text-align: center;
-
-  cursor: pointer;
-  user-select: none;
+.section-subtitle{
+  opacity:.8;
+  margin-bottom:32px;
 }
 
-.circle-card:hover {
-  transform: scale(1.05);
+.circle-wrapper{
+  position:relative;
+  width:100%;
+  max-width:620px;
+  height:420px;
+  margin:0 auto;
+  overflow:hidden;
+  touch-action:pan-x;
+}
+
+.circle{
+  position:absolute;
+  inset:0;
+}
+
+/* CARTE — EXACTEMENT COMME AVANT */
+.circle-card{
+  position:absolute;
+  width:170px;
+  height:170px;
+  background:#ffffff;
+  color:#0b1224;
+  border:2px solid #22c55e;
+  border-radius:18px;
+  box-shadow:0 14px 30px rgba(0,0,0,.25);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  transition:
+    transform .25s ease,
+    box-shadow .25s ease;
+}
+
+.circle-card:hover{
+  transform:scale(1.06);
+  box-shadow:0 22px 44px rgba(0,0,0,.35);
+}
+
+.circle-card h3{
+  margin:6px 0 2px;
+  font-size:14px;
+  font-weight:900;
+  text-align:center;
+}
+
+.circle-card .open{
+  font-size:12px;
+  opacity:.7;
+}
+
+/* MOBILE */
+@media (max-width:640px){
+  .circle-wrapper{
+    height:360px;
+  }
+  .circle-card{
+    width:130px;
+    height:130px;
+  }
 }
