@@ -2,75 +2,107 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <title>WAUKLINK — Signalements</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WAUKLINK — Signalements</title>
+
+  <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="../style.css" />
 </head>
 
 <body>
-  <div class="container">
-    <h1>Signalements</h1>
-    <div class="subtitle">
-      Liste des annonces signalées par les utilisateurs
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">
+        Annonces signalées par les utilisateurs
+      </div>
     </div>
 
-    <div id="list"></div>
-    <div id="empty" class="empty" style="display:none">
-      Aucun signalement pour le moment.
-    </div>
-
-    <a href="../index.html" class="btn">← Retour accueil</a>
+    <!-- NAV ALIGNÉE -->
+    <nav class="topbar-nav">
+      <a class="btn" href="../index.html">← Accueil</a>
+    </nav>
   </div>
+</header>
 
-  <script type="module">
-    import { db } from "../shared/firebase.js";
-    import { requireModerator } from "../shared/guard.js";
-    import {
-      collection, getDocs, query, orderBy
-    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+<main class="container main-layout">
+  <h2>Signalements</h2>
 
-    const list = document.getElementById("list");
-    const empty = document.getElementById("empty");
+  <!-- MESSAGE VIDE -->
+  <p id="empty" class="muted hidden">
+    Aucun signalement pour le moment.
+  </p>
 
-    function esc(s) {
-      return String(s ?? "").replace(/[&<>"']/g, m =>
-        ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
-      );
+  <!-- LISTE -->
+  <section id="list" class="grid"></section>
+</main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <span>© WAUKLINK</span>
+    <nav class="footer-nav">
+      <a class="link" href="../pricing.html">Tarifs</a>
+      <a class="link" href="../legal/index.html">CGU</a>
+      <a class="link" href="../legal/privacy.html">Confidentialité</a>
+      <a class="link" href="../legal/mentions-legales.html">Mentions légales</a>
+    </nav>
+  </div>
+</footer>
+
+<script type="module">
+  import { db } from "../shared/firebase.js";
+  import { requireModerator } from "../shared/guard.js";
+  import {
+    collection, getDocs, query, orderBy
+  } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+  const list  = document.getElementById("list");
+  const empty = document.getElementById("empty");
+
+  function esc(s) {
+    return String(s ?? "").replace(/[&<>"']/g, m =>
+      ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
+    );
+  }
+
+  async function loadReports() {
+    list.innerHTML = "";
+
+    const q = query(
+      collection(db, "reports"),
+      orderBy("createdAt", "desc")
+    );
+
+    const snap = await getDocs(q);
+
+    if (snap.empty) {
+      empty.classList.remove("hidden");
+      return;
     }
 
-    async function loadReports() {
-      const q = query(
-        collection(db, "reports"),
-        orderBy("createdAt", "desc")
-      );
-
-      const snap = await getDocs(q);
-
-      if (snap.empty) {
-        empty.style.display = "block";
-        return;
-      }
-
-      snap.forEach(d => {
-        const r = d.data();
-        const div = document.createElement("div");
-        div.className = "card";
-        div.innerHTML = `
-          <div><strong>Annonce :</strong> ${esc(r.annonceId)}</div>
-          <div><strong>Motif :</strong> ${esc(r.reason)}</div>
-          <div class="meta">
-            Signalé par ${esc(r.reporterEmail || "inconnu")}
-          </div>
-        `;
-        list.appendChild(div);
-      });
-    }
-
-    // 🔒 ADMIN ou MODERATOR uniquement
-    requireModerator({
-      redirectTo: "../auth/login.html",
-      onOk: loadReports
+    snap.forEach(d => {
+      const r = d.data();
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `
+        <div><strong>Annonce :</strong> ${esc(r.annonceId)}</div>
+        <div><strong>Motif :</strong> ${esc(r.reason)}</div>
+        <div class="meta">
+          Signalé par ${esc(r.reporterEmail || "inconnu")}
+        </div>
+      `;
+      list.appendChild(div);
     });
-  </script>
+  }
+
+  // 🔒 ADMIN / MODERATOR UNIQUEMENT
+  requireModerator({
+    redirectTo: "../auth/login.html",
+    onOk: loadReports
+  });
+</script>
+
 </body>
 </html>
