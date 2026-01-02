@@ -87,7 +87,7 @@
     try {
       // 🔐 Collection ADMIN dédiée
       const snap = await getDocs(
-        collection(db, "admin_users")
+        collection(db, "users")
       );
 
       if (snap.empty) {
