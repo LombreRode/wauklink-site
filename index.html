@@ -3,14 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>WAUKLINK — Services</title>
+  <title>WAUKLINK</title>
 
-  <!-- CSS GLOBAL -->
+  <!-- CSS -->
   <link rel="stylesheet" href="/wauklink-site/style.css">
-  <!-- CSS CAROUSEL -->
   <link rel="stylesheet" href="/wauklink-site/carousel.css">
 </head>
-
 <body>
 
 <header class="topbar">
@@ -40,8 +38,7 @@
     </p>
 
     <div class="circle-wrapper">
-      <!-- ID ATTENDU PAR carousel.js -->
-      <div id="infinityCarousel" class="circle"></div>
+      <div id="circle" class="circle"></div>
     </div>
   </section>
 </main>
@@ -49,33 +46,17 @@
 <footer class="site-footer">
   <div class="footer-container">
     <div class="footer-left">© WAUKLINK</div>
-
     <div class="footer-center">
       <a href="/wauklink-site/pricing.html">Tarifs</a>
       <a href="/wauklink-site/legal/index.html">CGU</a>
       <a href="/wauklink-site/legal/privacy.html">Confidentialité</a>
-      <a href="/wauklink-site/legal/mentions-legales.html">
-        Mentions légales
-      </a>
-    </div>
-
-    <div class="footer-right hidden" id="adminLinks">
-      <a href="/wauklink-site/admin/index.html">Admin</a>
-      <span class="sep">·</span>
-      <a href="/wauklink-site/dashboard/moderation-location.html">
-        Modération
-      </a>
+      <a href="/wauklink-site/legal/mentions-legales.html">Mentions légales</a>
     </div>
   </div>
 </footer>
 
-<!-- ✅ BON SCRIPT CAROUSEL -->
-<script src="/wauklink-site/carousel.js" defer></script>
-
-<!-- AUTH -->
-<script type="module" src="/wauklink-site/auth/status.js"></script>
-<script type="module" src="/wauklink-site/auth/user_sync.js"></script>
-<script type="module" src="/wauklink-site/shared/admin_links.js"></script>
+<!-- ✅ CAROUSEL (SANS MODULE / SANS IMPORT) -->
+<script src="/wauklink-site/carousel.js"></script>
 
 </body>
 </html>
