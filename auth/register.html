@@ -4,9 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Créer un compte — WAUKLINK</title>
-  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
-
 <body>
 
 <header class="topbar">
@@ -19,48 +18,39 @@
 </header>
 
 <main class="container main-layout">
-  <div class="card" style="max-width:420px;margin:auto">
-
+  <section class="card" style="max-width:420px;margin:0 auto">
     <h2>Inscription</h2>
 
     <form id="form">
-
       <label>Prénom
-        <input id="firstName" required>
-      </label>
+        <input type="text" id="firstName" required>
+      </label><br>
 
       <label>Nom
-        <input id="lastName" required>
-      </label>
+        <input type="text" id="lastName" required>
+      </label><br>
 
       <label>Téléphone
-        <input type="tel" id="phone" placeholder="06 12 34 56 78" required>
-      </label>
-      
+        <input type="tel" id="phone" required>
+      </label><br>
+
       <label>Adresse
-        <input type="text" id="address" placeholder="98 cité Paul Langevin" required>
-      </label>
-      
-      <label>Code postal
-        <input type="text" id="postalCode" placeholder="75000" required>
-      </label>
-      
-      <label>Ville
-        <input type="text" id="city" placeholder="Paris" required>
-      </label>
-      
+        <input type="text" id="address" required>
+      </label><br>
+
       <label>Email
         <input type="email" id="email" required>
-      </label>
+      </label><br>
 
       <label>Mot de passe
         <input type="password" id="password" required>
-      </label>
+      </label><br>
 
       <label>Confirmer le mot de passe
         <input type="password" id="passwordConfirm" required>
-      </label>
+      </label><br><br>
 
+      <!-- BLOC LÉGAL -->
       <div class="legal-block">
         <label class="checkbox">
           <input type="checkbox" id="acceptPrivacy">
@@ -83,18 +73,14 @@
         </label>
       </div>
 
-      <button class="btn btn-ok" type="submit">
+      <button type="submit" class="btn btn-ok">
         Créer mon compte
       </button>
-
-      <p id="msg" class="meta" style="margin-top:10px"></p>
-
     </form>
 
-  </div>
+    <p id="msg" class="meta"></p>
+  </section>
 </main>
-
-<footer class="site-footer"></footer>
 
 <script type="module" src="./register.js"></script>
 </body>
