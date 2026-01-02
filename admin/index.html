@@ -6,85 +6,147 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- STYLE GLOBAL -->
-  <link rel="stylesheet" href="/wauklink-site/style.css">
+  <link rel="stylesheet" href="../style.css">
+
+  <!-- STYLE ADMIN -->
+  <style>
+    /* ===== ADMIN LAYOUT ===== */
+    body{
+      display:flex;
+      flex-direction:column;
+      min-height:100vh;
+    }
+
+    main{
+      flex:1;
+      padding:40px 0;
+    }
+
+    .admin-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+      gap:20px;
+      margin-top:30px;
+    }
+
+    .admin-card{
+      background:rgba(0,0,0,.4);
+      border:1px solid rgba(255,255,255,.15);
+      border-radius:16px;
+      padding:20px;
+      text-align:center;
+      transition:.2s;
+    }
+
+    .admin-card:hover{
+      transform:translateY(-4px);
+      border-color:#22c55e;
+    }
+
+    .admin-card h3{
+      margin-bottom:10px;
+    }
+
+    .admin-card p{
+      font-size:14px;
+      opacity:.8;
+      margin-bottom:14px;
+    }
+
+    /* FOOTER CENTRÉ */
+    .footer{
+      margin-top:auto;
+    }
+
+    .footer-row{
+      justify-content:center;
+      text-align:center;
+    }
+
+    .footer-nav{
+      justify-content:center;
+    }
+  </style>
 </head>
 
 <body>
+
+<!-- ===== HEADER ===== -->
 <header class="topbar">
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
-      <div class="subtitle">Administration</div>
+      <div class="subtitle">Administration & Modération</div>
     </div>
-
     <nav class="topbar-nav">
-      <a class="btn" href="/wauklink-site/index.html">← Accueil</a>
+      <a class="link" href="../index.html">Accueil</a>
+      <a class="link" href="../dashboard/">Dashboard</a>
+      <a class="link" href="../auth/logout.html">Déconnexion</a>
     </nav>
   </div>
 </header>
 
-<main class="container main-layout">
-  <h2>Dashboard administrateur</h2>
+<!-- ===== MAIN ===== -->
+<main class="container">
 
-  <!-- MESSAGE GLOBAL -->
-  <p id="msg" class="meta" aria-live="polite">
-    Vérification des droits…
+  <h2>Espace Admin / Modérateur</h2>
+  <p class="meta">
+    Accès réservé aux comptes autorisés.
   </p>
 
-  <!-- CONTENU ADMIN -->
-  <section class="card hidden" id="adminContent">
-    <ul class="admin-links">
-      <li>
-        <a class="btn" href="/wauklink-site/admin/annonces.html">
-          🛠️ Gestion des annonces
-        </a>
-      </li>
-      <li>
-        <a class="btn" href="/wauklink-site/admin/reports.html">
-          🚩 Signalements
-        </a>
-      </li>
-      <li>
-        <a class="btn" href="/wauklink-site/admin/ratings.html">
-          ⭐ Notes & avis
-        </a>
-      </li>
-      <li>
-        <a class="btn" href="/wauklink-site/admin/users.html">
-          👤 Utilisateurs
-        </a>
-      </li>
-    </ul>
+  <section class="admin-grid">
+
+    <!-- ANNONCES -->
+    <div class="admin-card">
+      <h3>🛠️ Annonces</h3>
+      <p>Valider, refuser ou supprimer des annonces.</p>
+      <a class="btn btn-ok" href="./annonces.html">Gérer</a>
+    </div>
+
+    <!-- SIGNALEMENTS -->
+    <div class="admin-card">
+      <h3>🚩 Signalements</h3>
+      <p>Contenus signalés par les utilisateurs.</p>
+      <a class="btn btn-danger" href="./reports.html">Voir</a>
+    </div>
+
+    <!-- NOTES -->
+    <div class="admin-card">
+      <h3>⭐ Notes & avis</h3>
+      <p>Superviser et réinitialiser les évaluations.</p>
+      <a class="btn" href="./ratings.html">Accéder</a>
+    </div>
+
+    <!-- UTILISATEURS -->
+    <div class="admin-card">
+      <h3>👤 Utilisateurs</h3>
+      <p>Consulter les comptes et rôles.</p>
+      <a class="btn" href="./users.html">Voir</a>
+    </div>
+
+    <!-- PRO -->
+    <div class="admin-card">
+      <h3>🧾 Comptes PRO</h3>
+      <p>Valider ou refuser les demandes professionnelles.</p>
+      <a class="btn" href="./pro-requests.html">Gérer</a>
+    </div>
+
   </section>
+
 </main>
 
+<!-- ===== FOOTER ===== -->
 <footer class="footer">
   <div class="container footer-row">
     <span>© WAUKLINK</span>
     <nav class="footer-nav">
-      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
-      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
-      <a class="link" href="/wauklink-site/legal/privacy.html">Confidentialité</a>
-      <a class="link" href="/wauklink-site/legal/mentions-legales.html">Mentions légales</a>
+      <a class="link" href="../pricing.html">Tarifs</a>
+      <a class="link" href="../legal/index.html">CGU</a>
+      <a class="link" href="../legal/privacy.html">Confidentialité</a>
+      <a class="link" href="../legal/mentions-legales.html">Mentions légales</a>
     </nav>
   </div>
 </footer>
-
-<!-- 🔐 PROTECTION ADMIN -->
-<script type="module">
-  import { requireAdmin } from "/wauklink-site/shared/guard.js";
-
-  const msg = document.getElementById("msg");
-  const adminContent = document.getElementById("adminContent");
-
-  requireAdmin({
-    redirectTo: "/wauklink-site/auth/login.html",
-    onOk: () => {
-      msg.textContent = "✅ Accès administrateur confirmé";
-      adminContent.classList.remove("hidden");
-    }
-  });
-</script>
 
 </body>
 </html>
