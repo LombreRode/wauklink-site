@@ -1,4 +1,4 @@
-import { auth, db } from "./_shared/firebase.js";
+import { auth, db } from "/wauklink-site/shared/firebase.js";
 import { onAuthStateChanged } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import {
@@ -22,7 +22,8 @@ import {
   const form = document.getElementById("form");
 
   const setText = (el, t) => el && (el.textContent = t ?? "");
-  const setHidden = (el, h) => el && el.classList.toggle("hidden", !!h);
+  const setHidden = (el, h) =>
+    el && el.classList.toggle("hidden", !!h);
 
   /* =========================
      URL
@@ -92,7 +93,6 @@ import {
 
   function renderService(key) {
     const s = services.find(x => x.key === key) || services[0];
-
     setText(titleEl, s.title);
     setText(segmentEl, s.segment);
     setText(descEl, s.desc);
@@ -143,7 +143,8 @@ import {
     setHidden(btnEditPhotos, !canEdit);
 
     if (canEdit) {
-      btnEditPhotos.href = `annonce_edit.html?id=${annonceId}`;
+      btnEditPhotos.href =
+        `annonce_edit.html?id=${annonceId}`;
     }
 
     btnReport.onclick = async () => {
@@ -160,7 +161,8 @@ import {
     form.onsubmit = e => {
       e.preventDefault();
       if (!annonce.contactEmail) return;
-      const msg = document.getElementById("msg").value || "";
+      const msg =
+        document.getElementById("msg")?.value || "";
       location.href =
         `mailto:${annonce.contactEmail}?subject=WAUKLINK&body=${encodeURIComponent(msg)}`;
     };
@@ -182,5 +184,4 @@ import {
       renderService(serviceKey || "locataire");
     }
   });
-
 })();
