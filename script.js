@@ -1,30 +1,24 @@
 (() => {
   const circle = document.querySelector(".circle");
-  const cards = [...document.querySelectorAll(".circle-card")];
-  if (!circle || !cards.length) return;
+  const cards = Array.from(document.querySelectorAll(".circle-card"));
+  if (!circle || cards.length === 0) return;
 
   const step = 360 / cards.length;
   let angle = 0;
-  let velocity = 0;
   let dragging = false;
   let lastX = 0;
 
   function layout() {
-    const r = circle.offsetWidth / 2 - 90;
-    cards.forEach((c, i) => {
-      const a = (i * step + angle) * Math.PI / 180;
-      c.style.transform =
-        `translate(-50%, -50%) translate(${Math.cos(a)*r}px, ${Math.sin(a)*r}px)`;
-    });
-  }
+    const radius = circle.offsetWidth / 2 - 80;
 
-  function loop() {
-    if (!dragging) {
-      angle += velocity;
-      velocity *= 0.95;
-    }
-    layout();
-    requestAnimationFrame(loop);
+    cards.forEach((card, i) => {
+      const a = (i * step + angle) * Math.PI / 180;
+      const x = Math.cos(a) * radius;
+      const y = Math.sin(a) * radius;
+
+      card.style.transform =
+        `translate(-50%, -50%) translate(${x}px, ${y}px)`;
+    });
   }
 
   circle.addEventListener("mousedown", e => {
@@ -34,19 +28,19 @@
 
   window.addEventListener("mousemove", e => {
     if (!dragging) return;
-    velocity = (e.clientX - lastX) * 0.15;
-    angle += velocity;
+    angle += (e.clientX - lastX) * 0.3;
     lastX = e.clientX;
+    layout();
   });
 
   window.addEventListener("mouseup", () => dragging = false);
 
-  cards.forEach(c =>
-    c.addEventListener("click", () =>
-      location.href = c.dataset.link
-    )
-  );
+  cards.forEach(card => {
+    card.addEventListener("click", () => {
+      const link = card.dataset.link;
+      if (link) location.href = link;
+    });
+  });
 
   layout();
-  loop();
 })();
