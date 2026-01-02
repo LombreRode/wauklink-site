@@ -1,35 +1,79 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Connexion</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Connexion — WAUKLINK</title>
+
+  <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
+
 <body>
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Connexion</div>
+    </div>
 
-<a href="/wauklink-site/index.html">← Retour</a>
+    <nav class="topbar-nav">
+      <a class="btn" href="/wauklink-site/index.html">
+        ← Accueil
+      </a>
+    </nav>
+  </div>
+</header>
 
-<h1>Se connecter</h1>
+<main class="container main-layout">
+  <section class="card" style="max-width:420px;margin:0 auto">
+    <h2>Se connecter</h2>
 
-<form id="loginForm">
-  <label>Email<br>
-    <input type="email" id="email" required>
-  </label><br><br>
+    <form id="loginForm">
+      <label>
+        Email
+        <input type="email" id="email" required>
+      </label>
 
-  <label>Mot de passe<br>
-    <input type="password" id="password" required>
-  </label><br><br>
+      <br><br>
 
-  <button type="submit">Se connecter</button>
-</form>
+      <label>
+        Mot de passe
+        <input type="password" id="password" required>
+      </label>
 
-<p id="msg"></p>
-<br>
+      <br><br>
 
-<a href="/wauklink-site/auth/forgot-password.html">
-  Mot de passe oublié
-</a>
+      <button type="submit" class="btn btn-ok">
+        Se connecter
+      </button>
+    </form>
 
+    <p id="msg" class="meta" aria-live="polite"></p>
+
+    <div style="margin-top:12px">
+      <a class="link" href="/wauklink-site/auth/forgot-password.html">
+        Mot de passe oublié ?
+      </a>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <span>© WAUKLINK</span>
+    <nav class="footer-nav">
+      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
+      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
+      <a class="link" href="/wauklink-site/legal/privacy.html">Confidentialité</a>
+      <a class="link" href="/wauklink-site/legal/mentions-legales.html">
+        Mentions légales
+      </a>
+    </nav>
+  </div>
+</footer>
+
+<!-- AUTH -->
 <script type="module" src="/wauklink-site/auth/login.js"></script>
 </body>
 </html>
