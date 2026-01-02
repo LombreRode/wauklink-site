@@ -4,27 +4,48 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Admin — Demandes PRO</title>
+
+  <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
-<body>
 
+<body>
 <header class="topbar">
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
       <div class="subtitle">Admin — Validation PRO</div>
     </div>
-    <nav>
+
+    <nav class="topbar-nav">
       <a class="btn" href="/wauklink-site/admin/index.html">← Dashboard</a>
     </nav>
   </div>
 </header>
 
-<main class="container page">
+<main class="container main-layout">
   <h2>Demandes PRO en attente</h2>
-  <p id="msg" class="meta">Vérification des droits…</p>
-  <div id="list"></div>
+
+  <!-- MESSAGE GLOBAL -->
+  <p id="msg" class="meta" aria-live="polite">
+    Vérification des droits…
+  </p>
+
+  <!-- LISTE -->
+  <section id="list" class="grid"></section>
 </main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <span>© WAUKLINK</span>
+    <nav class="footer-nav">
+      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
+      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
+      <a class="link" href="/wauklink-site/legal/privacy.html">Confidentialité</a>
+      <a class="link" href="/wauklink-site/legal/mentions-legales.html">Mentions légales</a>
+    </nav>
+  </div>
+</footer>
 
 <script type="module">
   import { db } from "/wauklink-site/shared/firebase.js";
@@ -41,8 +62,10 @@
     msg.textContent = "⏳ Chargement des demandes PRO…";
 
     try {
-      // 🔐 Vue admin dédiée (compatible rules)
-      const snap = await getDocs(collection(db, "admin_pro_requests"));
+      // 🔐 Vue admin dédiée
+      const snap = await getDocs(
+        collection(db, "admin_pro_requests")
+      );
 
       if (snap.empty) {
         msg.textContent = "✅ Aucune demande PRO en attente.";
@@ -53,33 +76,50 @@
 
       snap.forEach(d => {
         const u = d.data();
+
         const card = document.createElement("div");
         card.className = "card";
+
         card.innerHTML = `
-          <b>${u.firstName} ${u.lastName}</b><br>
-          <span class="meta">${u.email}</span><br>
-          <span class="meta">Téléphone : ${u.phone || "—"}</span><br><br>
-          <button class="btn btn-ok">Valider</button>
-          <button class="btn btn-no">Refuser</button>
+          <strong>${u.firstName} ${u.lastName}</strong>
+          <div class="meta">${u.email}</div>
+          <div class="meta">
+            Téléphone : ${u.phone || "—"}
+          </div>
+
+          <div class="row-actions" style="margin-top:12px">
+            <button class="btn btn-ok">Valider</button>
+            <button class="btn btn-danger">Refuser</button>
+          </div>
         `;
 
         const [okBtn, noBtn] = card.querySelectorAll("button");
 
         okBtn.onclick = async () => {
           if (!confirm("Valider ce compte PRO ?")) return;
-          await updateDoc(doc(db, "users", u.userId), {
-            role: "pro",
-            "pro.validated": true,
-            "pro.validatedAt": serverTimestamp()
-          });
+
+          await updateDoc(
+            doc(db, "users", u.userId),
+            {
+              role: "pro",
+              "pro.validated": true,
+              "pro.validatedAt": serverTimestamp()
+            }
+          );
+
           loadRequests();
         };
 
         noBtn.onclick = async () => {
           if (!confirm("Refuser cette demande PRO ?")) return;
-          await updateDoc(doc(db, "users", u.userId), {
-            "pro.requested": false
-          });
+
+          await updateDoc(
+            doc(db, "users", u.userId),
+            {
+              "pro.requested": false
+            }
+          );
+
           loadRequests();
         };
 
@@ -92,6 +132,7 @@
     }
   }
 
+  // 🔐 ADMIN UNIQUEMENT
   requireAdmin({
     redirectTo: "/wauklink-site/auth/login.html",
     onOk: loadRequests
