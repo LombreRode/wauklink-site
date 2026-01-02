@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Admin — Demandes PRO</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Avis & notations — WAUKLINK</title>
 
   <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="../style.css">
@@ -14,124 +14,53 @@
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
-      <div class="subtitle">Admin — Validation PRO</div>
+      <div class="subtitle">Avis & notations</div>
     </div>
     <nav class="topbar-nav">
-      <a class="btn" href="./index.html">← Dashboard</a>
+      <a class="btn" href="../index.html">← Accueil</a>
     </nav>
   </div>
 </header>
 
-<main class="container main-layout">
-  <h2>Demandes PRO en attente</h2>
+<main class="container main-layout" style="max-width:600px">
+  <h2>Laisser un avis</h2>
 
-  <p id="msg" class="meta" aria-live="polite">
-    Vérification des droits…
-  </p>
+  <p id="msg" class="meta">Connexion requise</p>
 
-  <section id="list" class="grid"></section>
+  <form id="form" class="card hidden">
+    <label>
+      Note (1 à 5)<br>
+      <select id="rating" required>
+        <option value="">—</option>
+        <option value="1">⭐ 1</option>
+        <option value="2">⭐⭐ 2</option>
+        <option value="3">⭐⭐⭐ 3</option>
+        <option value="4">⭐⭐⭐⭐ 4</option>
+        <option value="5">⭐⭐⭐⭐⭐ 5</option>
+      </select>
+    </label>
+
+    <br><br>
+
+    <label>
+      Commentaire<br>
+      <textarea id="comment" rows="4" required></textarea>
+    </label>
+
+    <br><br>
+
+    <button class="btn btn-ok" type="submit">
+      Envoyer l’avis
+    </button>
+  </form>
 </main>
 
 <footer class="footer">
   <div class="container footer-row">
     <span>© WAUKLINK</span>
-    <nav class="footer-nav">
-      <a class="link" href="../pricing.html">Tarifs</a>
-      <a class="link" href="../legal/index.html">CGU</a>
-      <a class="link" href="../legal/privacy.html">Confidentialité</a>
-      <a class="link" href="../legal/mentions-legales.html">
-        Mentions légales
-      </a>
-    </nav>
   </div>
 </footer>
 
-<script type="module">
-  import { db } from "../shared/firebase.js";
-  import { requireAdmin } from "../shared/guard.js";
-  import {
-    collection, getDocs, doc, updateDoc, serverTimestamp
-  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
-  const list = document.getElementById("list");
-  const msg  = document.getElementById("msg");
-
-  async function loadRequests() {
-    list.innerHTML = "";
-    msg.textContent = "⏳ Chargement des demandes PRO…";
-
-    try {
-      const snap = await getDocs(
-        collection(db, "admin_pro_requests")
-      );
-
-      if (snap.empty) {
-        msg.textContent = "✅ Aucune demande PRO en attente.";
-        return;
-      }
-
-      msg.textContent = `📋 ${snap.size} demande(s) PRO`;
-
-      snap.forEach(d => {
-        const u = d.data();
-
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-          <strong>${u.firstName} ${u.lastName}</strong>
-          <div class="meta">${u.email}</div>
-          <div class="meta">Téléphone : ${u.phone || "—"}</div>
-
-          <div class="row-actions" style="margin-top:12px">
-            <button class="btn btn-ok">Valider</button>
-            <button class="btn btn-danger">Refuser</button>
-          </div>
-        `;
-
-        const [okBtn, noBtn] = card.querySelectorAll("button");
-
-        okBtn.onclick = async () => {
-          if (!confirm("Valider ce compte PRO ?")) return;
-
-          await updateDoc(
-            doc(db, "users", u.userId),
-            {
-              role: "pro",
-              "pro.validated": true,
-              "pro.validatedAt": serverTimestamp()
-            }
-          );
-
-          loadRequests();
-        };
-
-        noBtn.onclick = async () => {
-          if (!confirm("Refuser cette demande PRO ?")) return;
-
-          await updateDoc(
-            doc(db, "users", u.userId),
-            {
-              "pro.requested": false
-            }
-          );
-
-          loadRequests();
-        };
-
-        list.appendChild(card);
-      });
-
-    } catch (err) {
-      console.error(err);
-      msg.textContent = "❌ Accès interdit ou erreur Firestore";
-    }
-  }
-
-  // 🔐 ADMIN UNIQUEMENT
-  requireAdmin({
-    redirectTo: "../auth/login.html",
-    onOk: loadRequests
-  });
-</script>
+<script type="module" src="./ratings.js"></script>
 </body>
 </html>
