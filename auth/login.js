@@ -1,31 +1,35 @@
-import { auth, db } from "/wauklink-site/shared/firebase.js";
-import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { auth } from "../shared/firebase.js";
+import {
+  signInWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("loginForm");
+  const email = document.getElementById("email");
+  const password = document.getElementById("password");
   const msg = document.getElementById("msg");
-
-  if (!form) {
-    console.error("Formulaire loginForm introuvable");
-    return;
-  }
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    msg.textContent = "Connexion…";
 
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value;
+    msg.textContent = "⏳ Connexion…";
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      msg.textContent = "Connecté";
+      await signInWithEmailAndPassword(
+        auth,
+        email.value.trim(),
+        password.value
+      );
+
+      msg.textContent = "✅ Connexion réussie";
       setTimeout(() => {
         location.href = "/wauklink-site/index.html";
       }, 500);
+
     } catch (err) {
       console.error(err);
-      msg.textContent = "Email ou mot de passe incorrect";
+      msg.textContent =
+        err.code ? "❌ " + err.code : "❌ Erreur de connexion";
     }
   });
 });
