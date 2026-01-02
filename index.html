@@ -5,14 +5,10 @@
   <title>WAUKLINK — Services</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- SEO BASE -->
   <meta name="description"
         content="WAUKLINK – Trouvez des services, artisans, conciergeries et annonces près de chez vous.">
 
-  <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="./style.css">
-
-  <!-- CARROUSEL -->
   <link rel="stylesheet" href="./carousel.css">
 </head>
 
@@ -24,7 +20,6 @@
       <h1>WAUKLINK</h1>
       <div class="subtitle">Services · Travaux · Conciergerie · Airbnb</div>
     </div>
-
     <nav class="topbar-nav">
       <a class="link" href="./pricing.html">Tarifs</a>
       <a class="link" href="./legal/index.html">CGU</a>
@@ -35,7 +30,6 @@
 </header>
 
 <main class="container main-layout">
-
   <section class="circle-section">
     <h2 class="section-title">Choisissez un service</h2>
     <p class="section-subtitle">
@@ -43,25 +37,16 @@
     </p>
 
     <div class="circle-wrapper">
-      <div
-        id="infinityCarousel"
-        class="circle"
-        aria-label="Sélecteur de services WAUKLINK">
-      </div>
+      <div id="infinityCarousel" class="circle"></div>
     </div>
   </section>
-
 </main>
 
 <footer class="site-footer">
   <div class="footer-container">
 
-    <!-- GAUCHE -->
-    <div class="footer-left">
-      © WAUKLINK
-    </div>
+    <div class="footer-left">© WAUKLINK</div>
 
-    <!-- CENTRE -->
     <nav class="footer-center">
       <a href="./pricing.html">Tarifs</a>
       <a href="./legal/index.html">CGU</a>
@@ -69,7 +54,6 @@
       <a href="./legal/mentions-legales.html">Mentions légales</a>
     </nav>
 
-    <!-- DROITE (ADMIN / MODÉRATION) -->
     <div class="footer-right hidden" id="adminLinks">
       <a href="./admin/index.html">Admin</a>
       <span class="sep">·</span>
@@ -81,6 +65,9 @@
 
 <!-- CARROUSEL -->
 <script src="./carousel.js" defer></script>
+
+<!-- ADMIN / MODÉRATION -->
+<script type="module" src="./shared/admin_links.js"></script>
 
 </body>
 </html>
