@@ -3,39 +3,59 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WAUKLINK — Admin • Modération Location</title>
+  <title>Admin — Modération Locations • WAUKLINK</title>
+
+  <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="/wauklink-site/style.css">
-  <style>
-    .page{padding:24px 0}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:12px}
-    .card{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:16px;padding:14px}
-    .meta{opacity:.85;font-size:13px}
-    .row{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-    .btn{padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;cursor:pointer}
-    .btnDanger{border-color:rgba(255,90,90,.35);background:rgba(255,90,90,.10)}
-    .btnOk{border-color:rgba(90,255,160,.35);background:rgba(90,255,160,.10)}
-  </style>
 </head>
+
 <body>
 <header class="topbar">
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
-      <div class="subtitle">Admin • Modération • Location</div>
+      <div class="subtitle">Admin • Modération • Locations</div>
     </div>
-    <nav style="display:flex;gap:10px;flex-wrap:wrap">
-      <a class="btn" href="/wauklink-site/admin/index.html">← Dashboard</a>
-      <a class="btn" href="/wauklink-site/annonces/location.html">Voir annonces</a>
+
+    <nav class="topbar-nav">
+      <a class="btn" href="/wauklink-site/admin/index.html">
+        ← Dashboard
+      </a>
+      <a class="btn" href="/wauklink-site/annonces/location.html">
+        Voir annonces
+      </a>
     </nav>
   </div>
 </header>
 
-<main class="container page">
-  <h2 style="margin:0">Annonces en attente</h2>
-  <p class="meta">Valider → visible publiquement • Refuser → retirée</p>
-  <div id="msg" class="meta"></div>
-  <div id="grid" class="grid"></div>
+<main class="container main-layout">
+  <h2>Annonces en attente</h2>
+  <p class="meta">
+    Valider → visible publiquement • Refuser → retirée
+  </p>
+
+  <!-- MESSAGE GLOBAL -->
+  <p id="msg" class="meta" aria-live="polite"></p>
+
+  <!-- GRID -->
+  <section id="grid" class="grid"></section>
 </main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <span>© WAUKLINK</span>
+    <nav class="footer-nav">
+      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
+      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
+      <a class="link" href="/wauklink-site/legal/privacy.html">
+        Confidentialité
+      </a>
+      <a class="link" href="/wauklink-site/legal/mentions-legales.html">
+        Mentions légales
+      </a>
+    </nav>
+  </div>
+</footer>
 
 <script type="module">
   import { db } from "/wauklink-site/shared/firebase.js";
@@ -46,7 +66,7 @@
   } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
   const grid = document.getElementById("grid");
-  const msg = document.getElementById("msg");
+  const msg  = document.getElementById("msg");
 
   const esc = s =>
     String(s ?? "").replace(/[&<>"']/g, m =>
@@ -55,7 +75,7 @@
 
   async function loadPending(){
     grid.innerHTML = "";
-    msg.textContent = "⏳ Chargement…";
+    msg.textContent = "⏳ Chargement des annonces en attente…";
 
     const qy = query(
       collection(db, "annonces_location"),
@@ -65,37 +85,42 @@
     );
 
     const snap = await getDocs(qy);
-    msg.textContent = `📋 ${snap.size} annonce(s) en attente`;
 
-    if (!snap.size) {
-      grid.innerHTML = `<div class="meta">Aucune annonce pending.</div>`;
+    if (snap.empty) {
+      msg.textContent = "Aucune annonce en attente.";
+      grid.innerHTML =
+        "<p class='meta'>Tout est à jour.</p>";
       return;
     }
 
+    msg.textContent = `📋 ${snap.size} annonce(s) en attente`;
+
     snap.forEach(d => {
       const a = d.data();
-      const el = document.createElement("div");
-      el.className = "card";
-      el.innerHTML = `
-        <div class="row">
-          <div>
-            <div style="font-weight:900">${esc(a.titre)}</div>
-            <div class="meta">${esc(a.ville)} • ${esc(a.type)}</div>
-            <div class="meta">${esc(a.prix)} €</div>
-          </div>
+
+      const card = document.createElement("div");
+      card.className = "card";
+
+      card.innerHTML = `
+        <strong>${esc(a.titre || "Annonce")}</strong>
+        <div class="meta">
+          ${esc(a.ville || "—")} • ${esc(a.type || "—")}
         </div>
-        <div class="meta" style="margin-top:10px;white-space:pre-wrap">
+        <div class="meta">${esc(a.prix ?? "—")} €</div>
+
+        <p class="meta" style="margin-top:10px;white-space:pre-wrap">
           ${esc(a.description || "")}
-        </div>
-        <div style="display:flex;gap:10px;margin-top:12px">
-          <button class="btn btnOk">Valider</button>
-          <button class="btn btnDanger">Refuser</button>
+        </p>
+
+        <div class="row-actions">
+          <button class="btn btn-ok">Valider</button>
+          <button class="btn btn-danger">Refuser</button>
         </div>
       `;
 
-      const [ok, no] = el.querySelectorAll("button");
+      const [okBtn, noBtn] = card.querySelectorAll("button");
 
-      ok.onclick = async () => {
+      okBtn.onclick = async () => {
         await updateDoc(
           doc(db, "annonces_location", d.id),
           { status: "active" }
@@ -103,7 +128,7 @@
         loadPending();
       };
 
-      no.onclick = async () => {
+      noBtn.onclick = async () => {
         await updateDoc(
           doc(db, "annonces_location", d.id),
           { status: "removed" }
@@ -111,10 +136,11 @@
         loadPending();
       };
 
-      grid.appendChild(el);
+      grid.appendChild(card);
     });
   }
 
+  // 🔐 ADMIN UNIQUEMENT
   requireAdmin({
     redirectTo: "/wauklink-site/auth/login.html",
     onOk: loadPending
