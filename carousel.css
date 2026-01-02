@@ -1,7 +1,6 @@
 /* =================================================
    CARROUSEL CIRCULAIRE — WAUKLINK
-   Page d’accueil
-   Compatible mobile • 12 cartes • Accessible
+   Aligné avec style.css (dark theme + variables)
 ================================================= */
 
 /* =========================
@@ -11,15 +10,13 @@
   text-align:center;
   margin-top:40px;
 }
-
 .section-title{
   font-size:26px;
   font-weight:900;
   margin-bottom:6px;
 }
-
 .section-subtitle{
-  opacity:.8;
+  color: var(--muted);
   margin-bottom:32px;
 }
 
@@ -53,11 +50,12 @@
   width:160px;
   height:160px;
 
-  background:#ffffff;
-  color:#0b1224;
-  border:2px solid var(--brand);
-  border-radius:18px;
-  box-shadow:0 12px 26px rgba(0,0,0,.25);
+  background: var(--card-bg);
+  color: var(--fg);
+  border: 2px solid var(--brand);
+
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
 
   display:flex;
   flex-direction:column;
@@ -68,13 +66,15 @@
   user-select:none;
 
   transition:
-    transform .25s ease,
-    box-shadow .25s ease;
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 .circle-card:hover{
-  transform:scale(1.05);
-  box-shadow:0 18px 40px rgba(0,0,0,.35);
+  transform:scale(1.06);
+  box-shadow: 0 18px 40px rgba(0,0,0,.45);
+  border-color: var(--accent);
 }
 
 /* =========================
@@ -83,9 +83,8 @@
 .circle-card{
   outline:none;
 }
-
 .circle-card:focus-visible{
-  outline:4px solid #22c55e;
+  outline:3px solid var(--accent);
   outline-offset:4px;
 }
 
@@ -96,7 +95,6 @@
   font-size:34px;
   margin-bottom:6px;
 }
-
 .circle-card h3{
   margin:0;
   font-size:14px;
@@ -104,31 +102,28 @@
   text-align:center;
   line-height:1.2;
 }
-
 .circle-card .open{
   margin-top:6px;
   font-size:12px;
-  opacity:.7;
+  color: var(--muted);
 }
 
 /* =========================
-   MOBILE (ANTI‑CHEVAUCHEMENT)
+   MOBILE
 ========================= */
 @media (max-width:600px){
   .circle-wrapper{
     max-width:420px;
   }
-
   .circle-card{
     width:120px;
     height:120px;
   }
-
   .circle-icon{
     font-size:26px;
   }
-
   .circle-card h3{
     font-size:12px;
   }
 }
+
