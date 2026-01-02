@@ -1,7 +1,6 @@
 /* =================================================
    CAROUSEL ∞ — WAULINK
-   Cartes RECTANGULAIRES (visuel ancien)
-   Stable / Centré / Fluide
+   Cartes RECTANGULAIRES HORIZONTALES (VISUEL OFFICIEL)
 ================================================= */
 
 .circle-section {
@@ -19,12 +18,12 @@
   margin-bottom: 28px;
 }
 
-/* ZONE ∞ */
+/* ZONE */
 .circle-wrapper {
   position: relative;
   width: 100%;
-  max-width: 640px;
-  height: 460px;
+  max-width: 560px;
+  height: 360px;
   margin: 0 auto;
   overflow: visible;
   touch-action: pan-x;
@@ -35,17 +34,12 @@
   inset: 0;
 }
 
-/* CARTES — RECTANGLE ANCIEN VISUEL */
+/* CARTES — RECTANGLE HORIZONTAL ✅ */
 .circle-card {
   position: absolute;
-  top: 50%;
-  left: 50%;
 
-  width: 140px;
-  height: 180px;
-
-  transform: translate(-50%, -50%);
-  transform-origin: center;
+  width: 180px;     /* ⬅️ largeur > hauteur */
+  height: 110px;
 
   background: #ffffff;
   color: #0b1224;
@@ -63,9 +57,7 @@
   user-select: none;
   cursor: grab;
 
-  transition:
-    box-shadow .15s ease,
-    filter .15s ease;
+  transition: transform .15s ease, box-shadow .15s ease;
 }
 
 .circle-card:active {
@@ -73,8 +65,8 @@
 }
 
 .circle-card:hover {
+  transform: scale(1.05);
   box-shadow: 0 22px 44px rgba(0,0,0,.45);
-  filter: brightness(1.02);
 }
 
 /* TEXTE */
@@ -83,24 +75,25 @@
   font-size: 14px;
   font-weight: 900;
   text-align: center;
+  line-height: 1.2;
 }
 
 .circle-card .open {
-  margin-top: 8px;
+  margin-top: 6px;
   font-size: 12px;
   opacity: .7;
 }
 
-/* MOBILE */
+/* 📱 MOBILE — ADAPTÉ, FLUIDE */
 @media (max-width: 600px) {
   .circle-wrapper {
-    max-width: 360px;
-    height: 340px;
+    max-width: 340px;
+    height: 260px;
   }
 
   .circle-card {
-    width: 95px;
-    height: 135px;
+    width: 130px;
+    height: 80px;
   }
 
   .circle-card h3 {
