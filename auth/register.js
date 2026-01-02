@@ -17,6 +17,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+const cgu = document.getElementById("acceptCgu");
+const privacy = document.getElementById("acceptPrivacy");
+const adult = document.getElementById("isAdult");
+
+if (!cgu.checked || !privacy.checked || !adult.checked) {
+  msg.textContent = "❌ Vous devez accepter les conditions pour continuer.";
+  return;
+}
 
     const firstName = document.getElementById("firstName").value.trim();
     const lastName  = document.getElementById("lastName").value.trim();
