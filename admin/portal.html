@@ -4,9 +4,8 @@
   <meta charset="utf-8">
   <title>Admin — WAUKLINK</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
   <!-- STYLE GLOBAL -->
-  <link rel="stylesheet" href="/wauklink-site/style.css">
+  <link rel="stylesheet" href="../style.css">
 </head>
 
 <body>
@@ -16,17 +15,14 @@
       <h1>WAUKLINK</h1>
       <div class="subtitle">Portail administrateur</div>
     </div>
-
     <nav class="topbar-nav">
-      <a class="btn" href="/wauklink-site/index.html">← Accueil</a>
+      <a class="btn" href="../index.html">← Accueil</a>
     </nav>
   </div>
 </header>
 
 <main class="container main-layout">
   <h2>Portail admin</h2>
-
-  <!-- MESSAGE GLOBAL -->
   <p id="msg" class="meta" aria-live="polite">
     Vérification des droits…
   </p>
@@ -36,27 +32,28 @@
   <div class="container footer-row">
     <span>© WAUKLINK</span>
     <nav class="footer-nav">
-      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
-      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
-      <a class="link" href="/wauklink-site/legal/privacy.html">Confidentialité</a>
-      <a class="link" href="/wauklink-site/legal/mentions-legales.html">Mentions légales</a>
+      <a class="link" href="../pricing.html">Tarifs</a>
+      <a class="link" href="../legal/index.html">CGU</a>
+      <a class="link" href="../legal/privacy.html">Confidentialité</a>
+      <a class="link" href="../legal/mentions-legales.html">
+        Mentions légales
+      </a>
     </nav>
   </div>
 </footer>
 
 <!-- 🔐 PROTECTION ADMIN -->
 <script type="module">
-  import { requireAdmin } from "/wauklink-site/shared/guard.js";
+  import { requireAdmin } from "../shared/guard.js";
 
   const msg = document.getElementById("msg");
 
   requireAdmin({
-    redirectTo: "/wauklink-site/auth/login.html",
+    redirectTo: "../auth/login.html",
     onOk: () => {
       msg.textContent = "✅ Accès admin autorisé";
     }
   });
 </script>
-
 </body>
 </html>
