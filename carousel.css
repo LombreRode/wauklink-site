@@ -1,6 +1,7 @@
-/* ================================
-   CARROUSEL WAULINK – VISUEL ANCIEN
-================================ */
+/* =================================================
+   CAROUSEL ∞ — WAULINK
+   Visuel ancien (cartes blanches)
+================================================= */
 
 .circle-section {
   text-align: center;
@@ -14,7 +15,7 @@
 
 .section-subtitle {
   opacity: .8;
-  margin-bottom: 30px;
+  margin-bottom: 28px;
 }
 
 /* ZONE */
@@ -22,8 +23,9 @@
   position: relative;
   width: 100%;
   max-width: 520px;
-  height: 520px;
+  height: 420px;
   margin: 0 auto;
+  overflow: visible;
   touch-action: pan-x;
 }
 
@@ -35,28 +37,34 @@
 /* CARTES */
 .circle-card {
   position: absolute;
-  top: 50%;
-  left: 50%;
   width: 120px;
   height: 120px;
+
   background: #ffffff;
   color: #0b1224;
+
   border: 2px solid #22c55e;
   border-radius: 16px;
+
   box-shadow: 0 12px 28px rgba(0,0,0,.35);
+
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+
   user-select: none;
-  transform-origin: center;
-  transition: transform .2s ease, box-shadow .2s ease;
+  cursor: grab;
+
+  transition: transform .15s ease;
+}
+
+.circle-card:active {
+  cursor: grabbing;
 }
 
 .circle-card:hover {
   transform: scale(1.05);
-  box-shadow: 0 18px 40px rgba(0,0,0,.45);
 }
 
 .circle-card h3 {
