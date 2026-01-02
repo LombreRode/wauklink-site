@@ -36,28 +36,23 @@ import {
   ========================= */
   const ownerUid = d => d?.ownerUid || d?.ownerId || "";
 
-  async function loadUserRole(uid){
+  async function loadUserRole(uid) {
     if (!uid) return "";
     const snap = await getDoc(doc(db, "users", uid));
     return snap.exists() ? String(snap.data().role || "") : "";
   }
 
-  async function loadAnnonce(id){
+  async function loadAnnonce(id) {
     const snap = await getDoc(doc(db, "annonces_location", id));
     if (!snap.exists()) throw new Error("Annonce introuvable");
     return snap.data();
   }
 
-  function canEditPhotos(annonce, user, role){
+  function canEditPhotos(annonce, user, role) {
     if (!annonce || !user) return false;
     if (annonce.status !== "active") return false;
-
-    // ✅ OWNER
     if (ownerUid(annonce) === user.uid) return true;
-
-    // ✅ ADMIN / MODERATOR
     if (role === "admin" || role === "moderator") return true;
-
     return false;
   }
 
@@ -66,37 +61,38 @@ import {
   ========================= */
   const services = [
     {
-      key:"locataire",
-      title:"Locataire",
-      segment:"BESOIN",
-      desc:"Demande de service",
-      icon:"/wauklink-site/images/locataire.svg"
+      key: "locataire",
+      title: "Locataire",
+      segment: "BESOIN",
+      desc: "Demande de service",
+      icon: "/wauklink-site/images/locataire.svg"
     },
     {
-      key:"annonce",
-      title:"Déposer vos annonces",
-      segment:"PROPRIÉTAIRE",
-      desc:"Annonce propriétaire",
-      icon:"/wauklink-site/images/proprietaire-annonce.svg"
+      key: "annonce",
+      title: "Déposer vos annonces",
+      segment: "PROPRIÉTAIRE",
+      desc: "Annonce propriétaire",
+      icon: "/wauklink-site/images/proprietaire-annonce.svg"
     },
     {
-      key:"conciergerie",
-      title:"Conciergerie",
-      segment:"AIRBNB",
-      desc:"Gestion & accueil",
-      icon:"/wauklink-site/images/conciergerie.svg"
+      key: "conciergerie",
+      title: "Conciergerie",
+      segment: "AIRBNB",
+      desc: "Gestion & accueil",
+      icon: "/wauklink-site/images/conciergerie.svg"
     },
     {
-      key:"photographe",
-      title:"Photographe pro",
-      segment:"AIRBNB",
-      desc:"Photos immobilières",
-      icon:"/wauklink-site/images/photographe.svg"
+      key: "photographe",
+      title: "Photographe pro",
+      segment: "AIRBNB",
+      desc: "Photos immobilières",
+      icon: "/wauklink-site/images/photographe.svg"
     }
   ];
 
-  function renderService(key){
+  function renderService(key) {
     const s = services.find(x => x.key === key) || services[0];
+
     setText(titleEl, s.title);
     setText(segmentEl, s.segment);
     setText(descEl, s.desc);
@@ -119,8 +115,8 @@ import {
   /* =========================
      MODE ANNONCE
   ========================= */
-  async function renderAnnonce(annonce, user){
-    const role = await loadUserRole(user?.uid);
+  async function renderAnnonce(annonce, user) {
+    const role = user ? await loadUserRole(user.uid) : "";
 
     setText(titleEl, annonce.titre);
     setText(segmentEl, annonce.ville);
@@ -131,13 +127,17 @@ import {
 
     setText(statusLine, `statut : ${annonce.status}`);
 
-    btnMail.href = annonce.contactEmail
-      ? `mailto:${annonce.contactEmail}`
-      : "#";
+    if (annonce.contactEmail) {
+      btnMail.href = `mailto:${annonce.contactEmail}`;
+    } else {
+      btnMail.style.pointerEvents = "none";
+    }
 
-    btnCall.href = annonce.contactPhone
-      ? `tel:${annonce.contactPhone}`
-      : "#";
+    if (annonce.contactPhone) {
+      btnCall.href = `tel:${annonce.contactPhone}`;
+    } else {
+      btnCall.style.pointerEvents = "none";
+    }
 
     const canEdit = canEditPhotos(annonce, user, role);
     setHidden(btnEditPhotos, !canEdit);
@@ -159,8 +159,8 @@ import {
 
     form.onsubmit = e => {
       e.preventDefault();
-      const msg = document.getElementById("msg").value || "";
       if (!annonce.contactEmail) return;
+      const msg = document.getElementById("msg").value || "";
       location.href =
         `mailto:${annonce.contactEmail}?subject=WAUKLINK&body=${encodeURIComponent(msg)}`;
     };
