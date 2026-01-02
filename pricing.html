@@ -98,31 +98,36 @@
 <!-- =========================
      FOOTER — CENTRÉ + ADMIN
 ========================= -->
-<footer class="site-footer">
-  <div class="footer-container">
+<footer class="footer">
+  <div class="container footer-row">
+    <span>© WAUKLINK</span>
 
-    <!-- GAUCHE -->
-    <div class="footer-left">
-      © WAUKLINK
-    </div>
-
-    <!-- CENTRE -->
-    <div class="footer-center">
-      <a href="/wauklink-site/pricing.html">Tarifs</a>
-      <a href="/wauklink-site/legal/index.html">CGU</a>
-      <a href="/wauklink-site/legal/privacy.html">Confidentialité</a>
-      <a href="/wauklink-site/legal/mentions-legales.html">Mentions légales</a>
-    </div>
-
-    <!-- DROITE -->
-    <div class="footer-right">
-      <a href="/wauklink-site/admin/index.html" class="admin-only hidden">
-        Admin / Modération
+    <nav class="footer-nav">
+      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
+      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
+      <a class="link" href="/wauklink-site/legal/privacy.html">
+        Confidentialité
       </a>
-    </div>
+      <a class="link" href="/wauklink-site/legal/mentions-legales.html">
+        Mentions légales
+      </a>
+    </nav>
 
+    <!-- 🔐 LIENS ADMIN (CACHÉS PAR DÉFAUT) -->
+    <nav class="footer-nav hidden" id="adminLinks">
+      <a class="link" href="/wauklink-site/admin/index.html">
+        Admin
+      </a>
+      <span class="sep">·</span>
+      <a class="link" href="/wauklink-site/dashboard/moderation-location.html">
+        Modération
+      </a>
+    </nav>
   </div>
 </footer>
+
+<!-- 🔐 SCRIPT ADMIN -->
+<script type="module" src="/wauklink-site/shared/admin_links.js"></script>
 
 <!-- =========================
      AUTH STATUS
