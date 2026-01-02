@@ -11,6 +11,11 @@ import {
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("form");
   const msg = document.getElementById("msg");
+  const phone = document.getElementById("phone").value.trim();
+  const address = document.getElementById("address").value.trim();
+  const postalCode = document.getElementById("postalCode").value.trim();
+  const city = document.getElementById("city").value.trim();
+
 
   if (!form) {
     console.error("Formulaire introuvable");
