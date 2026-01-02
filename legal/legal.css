@@ -1,122 +1,189 @@
 /* =================================================
-   LEGAL THEME — WAUKLINK
-   ================================================= */
+   LEGAL THEME — WAUKLINK (FIX CONTRASTE)
+   Version production
+================================================= */
 
 .page-legal{
-  --bg:#071425;
-  --panel:#0d2238;
-  --text:#eaf2ff;
-  --muted:rgba(234,242,255,.78);
-  --line:rgba(255,255,255,.12);
-  --brand:#19c37d;
-  --radius:14px;
+  /* ALIGNÉ AVEC STYLE GLOBAL */
+  --bg-main: #020617;
+  --bg-accent: #0f3d2e;
+
+  --panel: rgba(0,0,0,.55);
+  --panel-soft: rgba(0,0,0,.35);
+
+  --text-main: #ffffff;
+  --text-muted: rgba(255,255,255,.82);
+
+  --line: rgba(255,255,255,.18);
+  --brand: #22c55e;
+
+  --radius: 14px;
 }
 
-/* CONTAINER */
+/* =========================
+   PAGE BACKGROUND
+========================= */
+.page-legal{
+  min-height: 100vh;
+  background: radial-gradient(
+    circle at top,
+    var(--bg-accent),
+    var(--bg-main)
+  );
+}
+
+/* =========================
+   CONTAINER
+========================= */
 .page-legal .container{
-  max-width:980px;
-  padding:18px;
+  max-width: 980px;
+  padding: 24px 16px 40px;
 }
 
-/* CARD */
+/* =========================
+   CARD
+========================= */
 .page-legal .card{
-  background:rgba(255,255,255,.04);
-  border:1px solid var(--line);
-  border-radius:var(--radius);
-  padding:18px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: 0 18px 40px rgba(0,0,0,.45);
 }
 
-/* TOPBAR LEGAL */
+/* =========================
+   TOPBAR
+========================= */
 .page-legal .topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  margin-bottom:14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
 }
 
 .page-legal .brand{
-  display:flex;
-  gap:10px;
-  align-items:center;
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
 .page-legal .logo{
-  width:34px;
-  height:34px;
-  border-radius:10px;
-  background:linear-gradient(135deg,var(--brand),#23a6ff);
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--brand), #23a6ff);
+}
+
+.page-legal .brand-title{
+  font-weight: 800;
+  color: var(--text-main);
 }
 
 .page-legal .badge{
-  padding:6px 10px;
-  border:1px solid var(--line);
-  border-radius:999px;
-  background:rgba(255,255,255,.04);
-  color:var(--muted);
-  font-size:.85rem;
-  text-decoration:none;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel-soft);
+  color: var(--text-main);
+  font-size: .85rem;
+  text-decoration: none;
 }
 
-/* TEXTE */
+.page-legal .badge:hover{
+  background: rgba(34,197,94,.18);
+}
+
+/* =========================
+   TEXT
+========================= */
+.page-legal h1,
+.page-legal h2,
+.page-legal h3{
+  color: var(--text-main);
+}
+
 .page-legal p,
 .page-legal li{
-  color:var(--muted);
-  line-height:1.5;
+  color: var(--text-muted);
+  line-height: 1.6;
 }
 
 .page-legal .small{
-  font-size:.9rem;
+  font-size: .9rem;
+  color: var(--text-muted);
 }
 
-/* TITRE MARQUE */
-.page-legal .brand-title{
-  font-weight:800;
-}
-
-/* TABLE DES MATIÈRES */
+/* =========================
+   TABLE DES MATIÈRES
+========================= */
 .page-legal .toc{
-  display:grid;
-  gap:8px;
-  margin:12px 0 0;
-  padding:0;
-  list-style:none;
+  display: grid;
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
 }
 
 .page-legal .toc a{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-  padding:10px 12px;
-  border:1px solid var(--line);
-  border-radius:12px;
-  background:rgba(255,255,255,.03);
-  color:var(--text);
-  text-decoration:none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel-soft);
+  color: var(--text-main);
+  text-decoration: none;
 }
 
-/* NOTICE */
+.page-legal .toc a:hover{
+  background: rgba(34,197,94,.15);
+  border-color: var(--brand);
+}
+
+/* =========================
+   NOTICE
+========================= */
 .page-legal .notice{
-  border-left:4px solid var(--brand);
-  background:rgba(25,195,125,.08);
-  padding:10px 12px;
-  border-radius:12px;
-  margin:12px 0;
+  border-left: 4px solid var(--brand);
+  background: rgba(34,197,94,.15);
+  padding: 12px 14px;
+  border-radius: 12px;
+  margin: 14px 0;
+  color: var(--text-main);
 }
 
-/* FOOTER */
+/* =========================
+   FOOTER
+========================= */
 .page-legal .footer{
-  margin-top:18px;
-  padding-top:14px;
-  border-top:1px solid var(--line);
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-  color:var(--muted);
-  font-size:.9rem;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: .9rem;
 }
 
 .page-legal .footer a{
-  color:var(--muted);
-  text-decoration:none;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.page-legal .footer a:hover{
+  color: var(--text-main);
+  text-decoration: underline;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 640px){
+  .page-legal .topbar{
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
