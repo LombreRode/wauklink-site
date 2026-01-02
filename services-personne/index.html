@@ -4,37 +4,59 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>WAUKLINK — Services à la personne</title>
+
+  <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="../style.css" />
 </head>
+
 <body>
 <header class="topbar">
-  <div class="container">
-    <h1>WAUKLINK</h1>
-    <div class="subtitle">Services à la personne</div>
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Services à la personne</div>
+    </div>
+
+    <!-- NAV ALIGNÉE -->
+    <nav class="topbar-nav">
+      <a class="btn" href="../index.html">← Accueil</a>
+    </nav>
   </div>
 </header>
 
-<main class="container" style="padding:22px 0;">
+<main class="container main-layout">
   <h2>Services disponibles</h2>
 
-  <p id="statusMsg" style="opacity:.85;margin-bottom:18px;">
+  <!-- MESSAGE GLOBAL -->
+  <p id="statusMsg" class="muted" aria-live="polite">
     Chargement…
   </p>
 
-  <section id="blocked" style="display:none" class="card">
-    <p style="color:#ff6666">
-      Accès bloqué selon votre abonnement ou votre statut.
+  <!-- BLOQUÉ -->
+  <section id="blocked" class="card hidden">
+    <p class="text-danger">
+      Accès restreint. Cette section est réservée aux utilisateurs disposant
+      d’un abonnement compatible.
     </p>
   </section>
 
-  <section id="content" style="display:none">
+  <!-- CONTENU -->
+  <section id="content" class="hidden">
     <div id="list" class="grid"></div>
   </section>
-
-  <div style="margin-top:20px">
-    <a href="../index.html">← Accueil</a>
-  </div>
 </main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <span>© WAUKLINK</span>
+    <nav class="footer-nav">
+      <a class="link" href="../pricing.html">Tarifs</a>
+      <a class="link" href="../legal/index.html">CGU</a>
+      <a class="link" href="../legal/privacy.html">Confidentialité</a>
+      <a class="link" href="../legal/mentions-legales.html">Mentions légales</a>
+    </nav>
+  </div>
+</footer>
 
 <script type="module">
   import { auth, db } from "../shared/firebase.js";
@@ -47,9 +69,9 @@
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
   const statusMsg = document.getElementById("statusMsg");
-  const blocked = document.getElementById("blocked");
-  const content = document.getElementById("content");
-  const list = document.getElementById("list");
+  const blocked   = document.getElementById("blocked");
+  const content   = document.getElementById("content");
+  const list      = document.getElementById("list");
 
   function esc(s){
     return String(s ?? "").replace(/[&<>"']/g, m =>
@@ -59,23 +81,28 @@
 
   async function loadServices(){
     list.innerHTML = "";
+
     const qy = query(
       collection(db, "services_personne"),
       where("status", "==", "active"),
       orderBy("createdAt", "desc")
     );
+
     const snap = await getDocs(qy);
-    if (!snap.size) {
-      list.innerHTML = "<p>Aucun service disponible.</p>";
+
+    if (snap.empty) {
+      list.innerHTML =
+        "<p class='muted'>Aucun service disponible.</p>";
       return;
     }
+
     snap.forEach(d => {
       const s = d.data();
       const el = document.createElement("div");
       el.className = "card";
       el.innerHTML = `
-        <b>${esc(s.titre)}</b>
-        <div style="opacity:.8">${esc(s.ville || "")}</div>
+        <strong>${esc(s.titre)}</strong>
+        <div class="muted">${esc(s.ville || "")}</div>
         <p>${esc(s.description || "")}</p>
       `;
       list.appendChild(el);
@@ -90,18 +117,18 @@
 
     const snap = await getDoc(doc(db, "users", user.uid));
     if (!snap.exists()) {
-      blocked.style.display = "block";
+      blocked.classList.remove("hidden");
       statusMsg.textContent = "Profil introuvable.";
       return;
     }
 
     const u = snap.data();
     const role = u.role || "user";
-    const sub = u.abonnement?.type || "free";
+    const sub  = u.abonnement?.type || "free";
     const proValidated = u.pro?.validated === true;
 
     if (sub === "free") {
-      blocked.style.display = "block";
+      blocked.classList.remove("hidden");
       statusMsg.textContent =
         "Abonnement requis pour accéder aux services.";
       return;
@@ -110,13 +137,13 @@
     if (sub === "partial" && role !== "pro") {
       statusMsg.textContent =
         "Accès autorisé (non‑professionnel / CESU).";
-      content.style.display = "block";
+      content.classList.remove("hidden");
       loadServices();
       return;
     }
 
     if (role === "pro" && !proValidated) {
-      blocked.style.display = "block";
+      blocked.classList.remove("hidden");
       statusMsg.textContent =
         "Compte professionnel non validé.";
       return;
@@ -125,14 +152,15 @@
     if (role === "pro" && proValidated) {
       statusMsg.textContent =
         "Accès autorisé (prestataire professionnel).";
-      content.style.display = "block";
+      content.classList.remove("hidden");
       loadServices();
       return;
     }
 
-    blocked.style.display = "block";
+    blocked.classList.remove("hidden");
     statusMsg.textContent = "Accès non autorisé.";
   });
 </script>
+
 </body>
 </html>
