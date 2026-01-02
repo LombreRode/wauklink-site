@@ -4,29 +4,31 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>WAUKLINK — Travaux</title>
+
+  <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="../style.css" />
 </head>
 
 <body>
-
 <header class="topbar">
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
       <div class="subtitle">Travaux & chantiers</div>
     </div>
-    <nav>
+
+    <!-- NAV ALIGNÉE AVEC LE RESTE -->
+    <nav class="topbar-nav">
       <a class="btn" href="../index.html">← Accueil</a>
     </nav>
   </div>
 </header>
 
 <main class="container main-layout">
-
   <h2>Travaux disponibles</h2>
 
   <!-- MESSAGE GLOBAL -->
-  <p id="statusMsg" class="muted">
+  <p id="statusMsg" class="muted" aria-live="polite">
     Chargement…
   </p>
 
@@ -41,8 +43,19 @@
   <section id="content" class="hidden">
     <div id="list" class="grid"></div>
   </section>
-
 </main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <span>© WAUKLINK</span>
+    <nav class="footer-nav">
+      <a class="link" href="../pricing.html">Tarifs</a>
+      <a class="link" href="../legal/index.html">CGU</a>
+      <a class="link" href="../legal/privacy.html">Confidentialité</a>
+      <a class="link" href="../legal/mentions-legales.html">Mentions légales</a>
+    </nav>
+  </div>
+</footer>
 
 <script type="module">
   import { auth, db } from "../shared/firebase.js";
@@ -72,9 +85,9 @@
       where("status", "==", "active"),
       orderBy("createdAt", "desc")
     );
-
     const snap = await getDocs(qy);
-    if (!snap.size) {
+
+    if (snap.empty) {
       list.innerHTML =
         "<p class='muted'>Aucun chantier disponible.</p>";
       return;
@@ -145,6 +158,5 @@
     statusMsg.textContent = "Accès non autorisé.";
   });
 </script>
-
 </body>
 </html>
