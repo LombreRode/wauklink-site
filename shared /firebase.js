@@ -1,6 +1,5 @@
 // shared/firebase.js
 import { auth, db } from "./firebase.js";
-
 import { initializeApp, getApps, getApp } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 
