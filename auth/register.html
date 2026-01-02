@@ -95,33 +95,42 @@
         Confirmer le mot de passe
         <input type="password" id="passwordConfirm" required>
       </label>
-
-      <!-- CGU -->
+      
+    <div class="legal-block">
       <label class="checkbox">
-        <input type="checkbox" id="cgu1" required>
-        J’accepte les
-        <a class="link" href="/wauklink-site/legal/cgu.html" target="_blank">
-          Conditions Générales d’Utilisation
-        </a>
-      </label>
-
-      <label class="checkbox">
-        <input type="checkbox" id="cgu2" required>
+        <input type="checkbox" id="acceptPrivacy" required>
         J’accepte la
-        <a class="link" href="/wauklink-site/legal/privacy.html" target="_blank">
+        <a href="../legal/privacy.html" target="_blank">
           politique de confidentialité
         </a>
       </label>
-
+      
       <label class="checkbox">
-        <input type="checkbox" id="cgu3" required>
+        <input type="checkbox" id="acceptCgu" required>
+        J’accepte les
+        <a href="../legal/index.html" target="_blank">
+          Conditions Générales d’Utilisation
+        </a>
+      </label>
+      
+      <label class="checkbox">
+        <input type="checkbox" id="acceptLegal" required>
+        J’ai pris connaissance des
+        <a href="../legal/mentions-legales.html" target="_blank">
+          mentions légales
+        </a>
+      </label>
+      
+      <label class="checkbox">
+        <input type="checkbox" id="isAdult" required>
         Je certifie être majeur
       </label>
-
-      <button type="submit" class="btn btn-ok">
+    </div>
+      
+      <button class="btn" type="submit">
         Créer mon compte
       </button>
-    </form>
+
 
     <p id="msg" class="meta" aria-live="polite"></p>
 
