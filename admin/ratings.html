@@ -4,26 +4,48 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Admin — Notes</title>
+
+  <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
-<body>
 
+<body>
 <header class="topbar">
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
       <div class="subtitle">Admin — Notes des annonces</div>
     </div>
-    <nav>
+
+    <nav class="topbar-nav">
       <a class="btn" href="/wauklink-site/admin/index.html">← Dashboard</a>
     </nav>
   </div>
 </header>
 
-<main class="container" style="padding:24px 0">
-  <p id="msg" class="meta">Vérification des droits…</p>
-  <div id="list">Chargement…</div>
+<main class="container main-layout">
+  <h2>Notes des annonces</h2>
+
+  <!-- MESSAGE GLOBAL -->
+  <p id="msg" class="meta" aria-live="polite">
+    Vérification des droits…
+  </p>
+
+  <!-- LISTE -->
+  <section id="list" class="grid"></section>
 </main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <span>© WAUKLINK</span>
+    <nav class="footer-nav">
+      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
+      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
+      <a class="link" href="/wauklink-site/legal/privacy.html">Confidentialité</a>
+      <a class="link" href="/wauklink-site/legal/mentions-legales.html">Mentions légales</a>
+    </nav>
+  </div>
+</footer>
 
 <script type="module">
   import { db } from "/wauklink-site/shared/firebase.js";
@@ -33,20 +55,22 @@
   } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
   const list = document.getElementById("list");
-  const msg = document.getElementById("msg");
+  const msg  = document.getElementById("msg");
 
   async function load(){
     msg.textContent = "⏳ Chargement des notes (vue admin)…";
     list.innerHTML = "";
 
     try {
-      // 🔐 Vue admin dédiée (compatible rules)
-      const snap = await getDocs(collection(db, "admin_annonces_notes"));
+      // 🔐 Vue admin dédiée
+      const snap = await getDocs(
+        collection(db, "admin_annonces_notes")
+      );
 
       if (snap.empty) {
+        msg.textContent = "Aucune donnée.";
         list.innerHTML =
           "<p class='meta'>Aucune annonce visible.</p>";
-        msg.textContent = "Aucune donnée.";
         return;
       }
 
@@ -54,26 +78,36 @@
 
       snap.forEach(d => {
         const a = d.data();
-        const div = document.createElement("div");
-        div.style.marginBottom = "10px";
 
-        div.innerHTML = `
-          <b>${a.titre || "Annonce"}</b>
-          — note: ${a.ratingAvg || 0}
-          <button class="btn btn-danger" style="margin-left:10px">
-            Reset
-          </button>
+        const card = document.createElement("div");
+        card.className = "card";
+
+        card.innerHTML = `
+          <strong>${a.titre || "Annonce"}</strong>
+          <div class="meta">
+            Note moyenne : ${a.ratingAvg || 0}
+            (${a.ratingCount || 0} vote(s))
+          </div>
+
+          <div class="row-actions" style="margin-top:12px">
+            <button class="btn btn-danger">
+              Réinitialiser les notes
+            </button>
+          </div>
         `;
 
-        div.querySelector("button").onclick = async () => {
+        card.querySelector("button").onclick = async () => {
+          if (!confirm("Réinitialiser les notes de cette annonce ?")) return;
+
           await updateDoc(
             doc(db, "annonces_location", a.annonceId),
             { ratingAvg: 0, ratingCount: 0 }
           );
+
           load();
         };
 
-        list.appendChild(div);
+        list.appendChild(card);
       });
 
     } catch (err) {
@@ -84,6 +118,7 @@
     }
   }
 
+  // 🔐 ADMIN UNIQUEMENT
   requireAdmin({
     redirectTo: "/wauklink-site/auth/login.html",
     onOk: load
