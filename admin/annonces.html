@@ -1,3 +1,70 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WAUKLINK — Annonces en attente</title>
+
+  <!-- STYLE GLOBAL -->
+  <link rel="stylesheet" href="/wauklink-site/style.css" />
+</head>
+
+<body>
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Validation des annonces</div>
+    </div>
+
+    <!-- NAV ALIGNÉE -->
+    <nav class="topbar-nav">
+      <a class="btn" href="/wauklink-site/index.html">← Accueil</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container main-layout">
+  <h2>Annonces en attente</h2>
+
+  <!-- MESSAGE GLOBAL -->
+  <p id="msg" class="meta" aria-live="polite"></p>
+
+  <!-- TABLE -->
+  <section class="card">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Titre</th>
+          <th>Ville</th>
+          <th>Type</th>
+          <th>Prix</th>
+          <th>Propriétaire</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="rows">
+        <tr>
+          <td colspan="7" class="meta">Chargement…</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <span>© WAUKLINK</span>
+    <nav class="footer-nav">
+      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
+      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
+      <a class="link" href="/wauklink-site/legal/privacy.html">Confidentialité</a>
+      <a class="link" href="/wauklink-site/legal/mentions-legales.html">Mentions légales</a>
+    </nav>
+  </div>
+</footer>
+
 <script type="module">
   import { db } from "/wauklink-site/shared/firebase.js";
   import { requireModerator } from "/wauklink-site/shared/guard.js";
@@ -7,7 +74,7 @@
   } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
   const rows = document.getElementById("rows");
-  const msg = document.getElementById("msg");
+  const msg  = document.getElementById("msg");
   const setMsg = t => msg.textContent = t || "";
 
   async function loadPending() {
@@ -25,7 +92,11 @@
 
       if (snap.empty) {
         rows.innerHTML =
-          `<tr><td colspan="7" class="meta">✅ Aucune annonce en attente.</td></tr>`;
+          `<tr>
+            <td colspan="7" class="meta">
+              ✅ Aucune annonce en attente.
+            </td>
+          </tr>`;
         setMsg("Tout est à jour.");
         return;
       }
@@ -37,12 +108,16 @@
         const tr = document.createElement("tr");
 
         tr.innerHTML = `
-          <td><b>${a.titre || "Annonce"}</b></td>
+          <td><strong>${a.titre || "Annonce"}</strong></td>
           <td>${a.ville || "-"}</td>
           <td>${a.type || "-"}</td>
           <td>${a.prix ?? "-"} €</td>
-          <td class="meta">${a.ownerEmail || a.ownerUid || "-"}</td>
-          <td><span class="pill">${a.status}</span></td>
+          <td class="meta">
+            ${a.ownerEmail || a.ownerUid || "-"}
+          </td>
+          <td>
+            <span class="pill">${a.status}</span>
+          </td>
           <td>
             <div class="row-actions">
               <button class="btn btn-ok">Valider</button>
@@ -76,12 +151,20 @@
       console.error(err);
       setMsg("❌ Erreur lors du chargement des annonces");
       rows.innerHTML =
-        `<tr><td colspan="7" class="meta">Accès impossible ou erreur Firestore.</td></tr>`;
+        `<tr>
+          <td colspan="7" class="meta">
+            Accès impossible ou erreur Firestore.
+          </td>
+        </tr>`;
     }
   }
 
+  // 🔒 MODERATOR / ADMIN UNIQUEMENT
   requireModerator({
     redirectTo: "/wauklink-site/auth/login.html",
     onOk: loadPending
   });
 </script>
+
+</body>
+</html>
