@@ -1,18 +1,18 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <title>WAULINK — Services, travaux, conciergerie, Airbnb</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="./style.css" />
+  <meta charset="utf-8">
+  <title>WAUKLINK — Services & Annonces</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./carousel.css">
 </head>
-
 <body>
 
 <header class="topbar">
   <div class="container topbar-row">
     <div>
-      <h1>WAULINK</h1>
+      <h1>WAUKLINK</h1>
       <div class="subtitle">Services · Travaux · Conciergerie · Airbnb</div>
     </div>
     <nav class="topbar-nav">
@@ -25,72 +25,50 @@
 </header>
 
 <main class="container main-layout">
-  <section class="hero">
-    <h2>Choisissez un service</h2>
-    <p class="muted">Cliquez sur une carte pour ouvrir · Glissez pour tourner</p>
-  </section>
+  <section class="circle-section">
+    <h2 class="section-title">Choisissez un service</h2>
+    <p class="section-subtitle">Glissez pour naviguer · Cliquez pour ouvrir</p>
 
-  <section class="wheel-section">
-    <div class="wheel-wrapper">
-      <div id="serviceWheel" class="wheel"></div>
+    <div class="circle-wrapper">
+      <div class="circle">
+        <div class="circle-card" data-link="./annonces/index.html">
+          <div class="circle-icon">🏠</div>
+          <h3>Annonces</h3>
+          <div class="open">Ouvrir</div>
+        </div>
+
+        <div class="circle-card" data-link="./services-personne/index.html">
+          <div class="circle-icon">🧑‍🔧</div>
+          <h3>Services à la personne</h3>
+          <div class="open">Ouvrir</div>
+        </div>
+
+        <div class="circle-card" data-link="./travaux/index.html">
+          <div class="circle-icon">🛠️</div>
+          <h3>Travaux</h3>
+          <div class="open">Ouvrir</div>
+        </div>
+
+        <div class="circle-card" data-link="./urgences/index.html">
+          <div class="circle-icon">🚨</div>
+          <h3>Urgences</h3>
+          <div class="open">Ouvrir</div>
+        </div>
+      </div>
     </div>
   </section>
 </main>
 
 <footer class="footer">
   <div class="container footer-row">
-    <span>© WAULINK</span>
+    <span>© WAUKLINK</span>
     <nav class="footer-nav">
       <a href="./pricing.html" class="link">Tarifs</a>
       <a href="./cgu.html" class="link">CGU</a>
-      <a href="./legal/mentions-legales.html" class="link">Mentions légales</a>
-      <a href="./legal/privacy.html" class="link">Confidentialité</a>
-      <a href="./admin/index.html" class="link">Administrateurs</a>
     </nav>
   </div>
 </footer>
 
-<script type="module">
-  const wheel = document.getElementById("serviceWheel");
-
-  const services = [
-    { label: "Nettoyage", href: "./services-personne/index.html", accent: "#4CAF50" },
-    { label: "Services à la personne", href: "./services-personne/index.html", accent: "#607D8B" },
-    { label: "Travaux", href: "./travaux/index.html", accent: "#795548" },
-    { label: "Urgences", href: "./urgences/index.html", accent: "#f44336" },
-    { label: "Toutes les annonces", href: "./annonces/index.html", accent: "#009688" },
-    { label: "Location", href: "./annonces/location.html", accent: "#FF9800" }
-  ];
-
-  services.forEach(s => {
-    const card = document.createElement("button");
-    card.className = "wheel-card";
-    card.innerHTML = `
-      <div class="wheel-card-label">${s.label}</div>
-      <div class="wheel-card-action">Ouvrir</div>
-    `;
-    card.onclick = () => location.href = s.href;
-    wheel.appendChild(card);
-  });
-
-  const cards = [...document.querySelectorAll(".wheel-card")];
-  const step = 360 / cards.length;
-  let angle = 0;
-
-  function layout() {
-    cards.forEach((c, i) => {
-      const a = (i * step + angle) * Math.PI / 180;
-      c.style.transform = `translate(${Math.cos(a)*140}px, ${Math.sin(a)*140}px)`;
-    });
-  }
-  layout();
-
-  let startX = 0, startA = 0, drag = false;
-  wheel.onmousedown = e => { drag = true; startX = e.clientX; startA = angle; };
-  window.onmousemove = e => { if (drag) { angle = startA + (e.clientX - startX)*0.3; layout(); }};
-  window.onmouseup = () => drag = false;
-</script>
-
+<script src="./script.js"></script>
 </body>
 </html>
-
