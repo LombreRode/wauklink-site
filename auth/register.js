@@ -63,9 +63,15 @@ document.addEventListener("DOMContentLoaded", () => {
       }, 800);
 
     } catch (err) {
-  console.error(err);
-  msg.textContent =
-    err.code ? "❌ " + err.code : "❌ Erreur lors de l’inscription";
+  console.error("ERREUR INSCRIPTION :", err);
+
+  if (err && err.code) {
+    msg.textContent = "❌ " + err.code;
+  } else if (err && err.message) {
+    msg.textContent = "❌ " + err.message;
+  } else {
+    msg.textContent = "❌ Erreur technique lors de la création du compte";
+  }
 }
   });
 });
