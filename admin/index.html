@@ -2,27 +2,38 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>WAUKLINK — Admin Dashboard</title>
+  <title>WAUKLINK — Administration</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
 
 <body>
-
 <header class="topbar">
-  <div class="container">
-    <h1>WAUKLINK</h1>
-    <div class="subtitle">Administration</div>
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Administration</div>
+    </div>
+
+    <nav class="topbar-nav">
+      <a class="btn" href="/wauklink-site/index.html">← Accueil</a>
+    </nav>
   </div>
 </header>
 
-<main class="container" style="padding:30px 0;">
+<main class="container main-layout">
   <h2>Dashboard administrateur</h2>
 
-  <p id="msg" class="meta">Vérification des droits…</p>
+  <!-- MESSAGE GLOBAL -->
+  <p id="msg" class="meta" aria-live="polite">
+    Vérification des droits…
+  </p>
 
-  <section class="card" id="adminContent" style="display:none">
-    <ul style="display:grid;gap:12px;padding-left:0;list-style:none">
+  <!-- CONTENU ADMIN -->
+  <section class="card hidden" id="adminContent">
+    <ul class="admin-links">
       <li>
         <a class="btn" href="/wauklink-site/admin/annonces.html">
           🛠️ Gestion des annonces
@@ -45,11 +56,19 @@
       </li>
     </ul>
   </section>
-
-  <div style="margin-top:20px">
-    <a href="/wauklink-site/index.html">← Retour accueil</a>
-  </div>
 </main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <span>© WAUKLINK</span>
+    <nav class="footer-nav">
+      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
+      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
+      <a class="link" href="/wauklink-site/legal/privacy.html">Confidentialité</a>
+      <a class="link" href="/wauklink-site/legal/mentions-legales.html">Mentions légales</a>
+    </nav>
+  </div>
+</footer>
 
 <!-- 🔐 PROTECTION ADMIN -->
 <script type="module">
@@ -62,7 +81,7 @@
     redirectTo: "/wauklink-site/auth/login.html",
     onOk: () => {
       msg.textContent = "✅ Accès administrateur confirmé";
-      adminContent.style.display = "block";
+      adminContent.classList.remove("hidden");
     }
   });
 </script>
