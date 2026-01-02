@@ -35,16 +35,34 @@
 <footer class="footer">
   <div class="container footer-row">
     <span>© WAUKLINK</span>
+
     <nav class="footer-nav">
-      <a class="link" href="../pricing.html">Tarifs</a>
-      <a class="link" href="../legal/index.html">CGU</a>
-      <a class="link" href="../legal/privacy.html">Confidentialité</a>
-      <a class="link" href="../legal/mentions-legales.html">
+      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
+      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
+      <a class="link" href="/wauklink-site/legal/privacy.html">
+        Confidentialité
+      </a>
+      <a class="link" href="/wauklink-site/legal/mentions-legales.html">
         Mentions légales
+      </a>
+    </nav>
+
+    <!-- 🔐 LIENS ADMIN (CACHÉS PAR DÉFAUT) -->
+    <nav class="footer-nav hidden" id="adminLinks">
+      <a class="link" href="/wauklink-site/admin/index.html">
+        Admin
+      </a>
+      <span class="sep">·</span>
+      <a class="link" href="/wauklink-site/dashboard/moderation-location.html">
+        Modération
       </a>
     </nav>
   </div>
 </footer>
+
+<!-- 🔐 SCRIPT ADMIN -->
+<script type="module" src="/wauklink-site/shared/admin_links.js"></script>
+
 
 <script type="module">
   import { db } from "../shared/firebase.js";
