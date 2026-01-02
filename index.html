@@ -2,9 +2,8 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>WAUKLINK — Services & Annonces</title>
+  <title>WAULINK — Services</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
   <link rel="stylesheet" href="./style.css">
   <link rel="stylesheet" href="./carousel.css">
 </head>
@@ -13,69 +12,39 @@
 <header class="topbar">
   <div class="container topbar-row">
     <div>
-      <h1>WAUKLINK</h1>
+      <h1>WAULINK</h1>
       <div class="subtitle">Services · Travaux · Conciergerie · Airbnb</div>
     </div>
     <nav class="topbar-nav">
-      <a href="./pricing.html" class="link">Tarifs</a>
-      <a href="./cgu.html" class="link">CGU</a>
-      <a href="./auth/login.html" class="link">Connexion</a>
-      <a href="./auth/register.html" class="btn btn-outline">Inscription</a>
+      <a class="link" href="./pricing.html">Tarifs</a>
+      <a class="link" href="./cgu.html">CGU</a>
+      <a class="link" href="./auth/login.html">Connexion</a>
+      <a class="btn btn-outline" href="./auth/register.html">Inscription</a>
     </nav>
   </div>
 </header>
 
 <main class="container main-layout">
+
   <section class="circle-section">
     <h2 class="section-title">Choisissez un service</h2>
-    <p class="section-subtitle">Glissez pour naviguer · Cliquez pour ouvrir</p>
+    <p class="section-subtitle">
+      Glissez pour naviguer · Cliquez pour ouvrir
+    </p>
 
     <div class="circle-wrapper">
-      <div class="circle">
-
-        <div class="circle-card" data-link="./detail.html?service=locataire">
-          <h3>Locataire</h3>
-        </div>
-
-        <div class="circle-card" data-link="./detail.html?service=annonce">
-          <h3>Déposer vos annonces</h3>
-        </div>
-
-        <div class="circle-card" data-link="./detail.html?service=conciergerie">
-          <h3>Conciergerie</h3>
-        </div>
-
-        <div class="circle-card" data-link="./detail.html?service=photographe">
-          <h3>Photographe Pro</h3>
-        </div>
-
-        <div class="circle-card" data-link="./travaux/index.html">
-          <h3>Travaux</h3>
-        </div>
-
-        <div class="circle-card" data-link="./urgences/index.html">
-          <h3>Urgences</h3>
-        </div>
-
-        <div class="circle-card" data-link="./services-personne/index.html">
-          <h3>Services à la personne</h3>
-        </div>
-
-        <div class="circle-card" data-link="./annonces/index.html">
-          <h3>Annonces</h3>
-        </div>
-
-      </div>
+      <div id="infinityCarousel" class="circle"></div>
     </div>
   </section>
+
 </main>
 
 <footer class="footer">
   <div class="container footer-row">
-    <span>© WAUKLINK</span>
+    <span>© WAULINK</span>
   </div>
 </footer>
 
-<script src="./script.js"></script>
+<script src="./carousel.js"></script>
 </body>
 </html>
