@@ -6,7 +6,7 @@
   <title>Admin — Signalements</title>
 
   <!-- STYLE GLOBAL -->
-  <link rel="stylesheet" href="/wauklink-site/style.css">
+  <link rel="stylesheet" href="../style.css">
 </head>
 
 <body>
@@ -16,11 +16,8 @@
       <h1>WAUKLINK</h1>
       <div class="subtitle">Admin — Signalements utilisateurs</div>
     </div>
-
     <nav class="topbar-nav">
-      <a class="btn" href="/wauklink-site/admin/index.html">
-        ← Dashboard
-      </a>
+      <a class="btn" href="./index.html">← Dashboard</a>
     </nav>
   </div>
 </header>
@@ -28,12 +25,10 @@
 <main class="container main-layout">
   <h2>Signalements</h2>
 
-  <!-- MESSAGE GLOBAL -->
   <p id="msg" class="meta" aria-live="polite">
     Vérification des droits…
   </p>
 
-  <!-- LISTE -->
   <section id="list" class="grid"></section>
 </main>
 
@@ -41,10 +36,10 @@
   <div class="container footer-row">
     <span>© WAUKLINK</span>
     <nav class="footer-nav">
-      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
-      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
-      <a class="link" href="/wauklink-site/legal/privacy.html">Confidentialité</a>
-      <a class="link" href="/wauklink-site/legal/mentions-legales.html">
+      <a class="link" href="../pricing.html">Tarifs</a>
+      <a class="link" href="../legal/index.html">CGU</a>
+      <a class="link" href="../legal/privacy.html">Confidentialité</a>
+      <a class="link" href="../legal/mentions-legales.html">
         Mentions légales
       </a>
     </nav>
@@ -52,8 +47,8 @@
 </footer>
 
 <script type="module">
-  import { db } from "/wauklink-site/shared/firebase.js";
-  import { requireModerator } from "/wauklink-site/shared/guard.js";
+  import { db } from "../shared/firebase.js";
+  import { requireModerator } from "../shared/guard.js";
   import {
     collection, getDocs, doc, updateDoc
   } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
@@ -84,13 +79,11 @@
 
         const card = document.createElement("div");
         card.className = "card";
-
         card.innerHTML = `
           <strong>${r.reason || "Signalement utilisateur"}</strong>
           <div class="meta">
             Annonce : ${r.annonceId || "—"}
           </div>
-
           <div class="row-actions" style="margin-top:12px">
             <button class="btn btn-danger">
               Clore le signalement
@@ -122,10 +115,9 @@
 
   // 🔐 MODÉRATEUR OU ADMIN
   requireModerator({
-    redirectTo: "/wauklink-site/auth/login.html",
+    redirectTo: "../auth/login.html",
     onOk: load
   });
 </script>
-
 </body>
 </html>
