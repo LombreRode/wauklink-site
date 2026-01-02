@@ -53,13 +53,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const cred =
-        await createUserWithEmailAndPassword(auth, email, password);
-
-      await setDoc(doc(db, "users", cred.user.uid), {
-        email,
-        role: "user",
-        createdAt: serverTimestamp()
-      });
+       await setDoc(doc(db, "users", cred.user.uid), {
+         firstName,
+         lastName,
+         email,
+         phone,
+         address,
+         postalCode,
+         city,
+         role: "user",
+         abonnement: { type: "free" },
+         legal: {
+           privacyAccepted: true,
+           cguAccepted: true,
+           mentionsAccepted: true,
+           isAdult: true,
+           acceptedAt: serverTimestamp()
+         },
+         createdAt: serverTimestamp()
+       });
 
       msg.textContent = "✅ Compte créé";
     } catch (err) {
