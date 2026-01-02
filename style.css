@@ -322,4 +322,37 @@ textarea:focus {
     flex-direction: column;
     align-items: flex-start;
   }
+   
+   /* =========================
+   REGISTER — FIX CHECKBOX
+========================= */
+
+/* bloc légal (CGU / RGPD / majeur) */
+.legal-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px; /* 🔴 empêche le bouton de recouvrir */
+}
+
+/* checkbox ligne */
+.legal-block .checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+/* input checkbox */
+.legal-block input[type="checkbox"] {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+/* bouton submit toujours en dessous */
+form button[type="submit"] {
+  margin-top: 12px;
+  position: relative;
+  z-index: 1;
 }
