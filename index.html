@@ -5,11 +5,13 @@
   <title>WAUKLINK — Services</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
+  <!-- SEO BASE -->
   <meta name="description"
         content="WAUKLINK – Trouvez des services, artisans, conciergeries et annonces près de chez vous.">
 
   <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="./style.css">
+
   <!-- CARROUSEL -->
   <link rel="stylesheet" href="./carousel.css">
 </head>
@@ -67,7 +69,7 @@
       <a href="./legal/mentions-legales.html">Mentions légales</a>
     </nav>
 
-    <!-- DROITE : ADMIN / MODÉRATION -->
+    <!-- DROITE (ADMIN / MODÉRATION) -->
     <div class="footer-right hidden" id="adminLinks">
       <a href="./admin/index.html">Admin</a>
       <span class="sep">·</span>
@@ -77,31 +79,8 @@
   </div>
 </footer>
 
-<!-- CARROUSEL (APRÈS DOM) -->
-<script src="./carousel.js"></script>
-
-<!-- AUTH / ROLE (EXISTANT CHEZ TOI) -->
-<script type="module">
-  import { auth, db } from "./shared/firebase.js";
-  import { onAuthStateChanged } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-  import { doc, getDoc } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
-  const adminLinks = document.getElementById("adminLinks");
-
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) return;
-
-    const snap = await getDoc(doc(db, "users", user.uid));
-    if (!snap.exists()) return;
-
-    const role = snap.data().role;
-    if (role === "admin" || role === "moderator") {
-      adminLinks.classList.remove("hidden");
-    }
-  });
-<script src="./carousel.js"></script>
+<!-- CARROUSEL -->
+<script src="./carousel.js" defer></script>
 
 </body>
 </html>
