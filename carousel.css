@@ -1,8 +1,3 @@
-/* =================================================
-   CAROUSEL ∞ — WAULINK
-   Cartes RECTANGULAIRES HORIZONTALES (VISUEL OFFICIEL)
-================================================= */
-
 .circle-section {
   text-align: center;
   margin-top: 40px;
@@ -34,29 +29,22 @@
   inset: 0;
 }
 
-/* CARTES — RECTANGLE HORIZONTAL ✅ */
+/* CARTES RECTANGULAIRES */
 .circle-card {
   position: absolute;
-
-  width: 180px;     /* ⬅️ largeur > hauteur */
+  width: 180px;
   height: 110px;
-
   background: #ffffff;
   color: #0b1224;
-
   border: 2px solid #22c55e;
   border-radius: 14px;
-
   box-shadow: 0 14px 32px rgba(0,0,0,.35);
-
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
-  user-select: none;
   cursor: grab;
-
+  user-select: none;
   transition: transform .15s ease, box-shadow .15s ease;
 }
 
@@ -69,13 +57,11 @@
   box-shadow: 0 22px 44px rgba(0,0,0,.45);
 }
 
-/* TEXTE */
 .circle-card h3 {
   margin: 0;
   font-size: 14px;
   font-weight: 900;
   text-align: center;
-  line-height: 1.2;
 }
 
 .circle-card .open {
@@ -84,23 +70,14 @@
   opacity: .7;
 }
 
-/* 📱 MOBILE — ADAPTÉ, FLUIDE */
+/* MOBILE */
 @media (max-width: 600px) {
   .circle-wrapper {
     max-width: 340px;
     height: 260px;
   }
-
   .circle-card {
     width: 130px;
     height: 80px;
-  }
-
-  .circle-card h3 {
-    font-size: 11px;
-  }
-
-  .circle-card .open {
-    font-size: 10px;
   }
 }
