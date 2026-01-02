@@ -5,7 +5,6 @@
   <title>WAUKLINK — Services</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- SEO BASE -->
   <meta name="description"
         content="WAUKLINK – Trouvez des services, artisans, conciergeries et annonces près de chez vous.">
 
@@ -16,6 +15,7 @@
 </head>
 
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
     <div>
@@ -25,7 +25,6 @@
 
     <nav class="topbar-nav">
       <a class="link" href="./pricing.html">Tarifs</a>
-      <!-- ✅ CGU CORRIGÉ -->
       <a class="link" href="./legal/index.html">CGU</a>
       <a class="link" href="./auth/login.html">Connexion</a>
       <a class="btn btn-outline" href="./auth/register.html">Inscription</a>
@@ -34,6 +33,7 @@
 </header>
 
 <main class="container main-layout">
+
   <section class="circle-section">
     <h2 class="section-title">Choisissez un service</h2>
     <p class="section-subtitle">
@@ -41,13 +41,14 @@
     </p>
 
     <div class="circle-wrapper">
-      <!-- ✅ accessibilité -->
-      <div id="infinityCarousel"
-           class="circle"
-           aria-label="Sélecteur de services WAUKLINK">
+      <div
+        id="infinityCarousel"
+        class="circle"
+        aria-label="Sélecteur de services WAUKLINK">
       </div>
     </div>
   </section>
+
 </main>
 
 <footer class="site-footer">
@@ -60,22 +61,47 @@
 
     <!-- CENTRE -->
     <nav class="footer-center">
-      <a href="/wauklink-site/pricing.html">Tarifs</a>
-      <a href="/wauklink-site/legal/index.html">CGU</a>
-      <a href="/wauklink-site/legal/privacy.html">Confidentialité</a>
-      <a href="/wauklink-site/legal/mentions-legales.html">Mentions légales</a>
+      <a href="./pricing.html">Tarifs</a>
+      <a href="./legal/index.html">CGU</a>
+      <a href="./legal/privacy.html">Confidentialité</a>
+      <a href="./legal/mentions-legales.html">Mentions légales</a>
     </nav>
 
-    <!-- DROITE (ADMIN / MODÉRATION) -->
+    <!-- DROITE : ADMIN / MODÉRATION -->
     <div class="footer-right hidden" id="adminLinks">
-      <a href="/wauklink-site/admin/index.html">Admin</a>
+      <a href="./admin/index.html">Admin</a>
       <span class="sep">·</span>
-      <a href="/wauklink-site/dashboard/moderation-location.html">Modération</a>
+      <a href="./dashboard/moderation-location.html">Modération</a>
     </div>
 
   </div>
 </footer>
 
+<!-- CARROUSEL (APRÈS DOM) -->
 <script src="./carousel.js"></script>
+
+<!-- AUTH / ROLE (EXISTANT CHEZ TOI) -->
+<script type="module">
+  import { auth, db } from "./shared/firebase.js";
+  import { onAuthStateChanged } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import { doc, getDoc } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+  const adminLinks = document.getElementById("adminLinks");
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) return;
+
+    const snap = await getDoc(doc(db, "users", user.uid));
+    if (!snap.exists()) return;
+
+    const role = snap.data().role;
+    if (role === "admin" || role === "moderator") {
+      adminLinks.classList.remove("hidden");
+    }
+  });
+</script>
+
 </body>
 </html>
