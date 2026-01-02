@@ -1,39 +1,30 @@
 (() => {
   const circle = document.querySelector(".circle");
-  const cards = Array.from(document.querySelectorAll(".circle-card"));
-  if (!circle || cards.length === 0) return;
+  const cards = [...document.querySelectorAll(".circle-card")];
+  if (!circle || !cards.length) return;
 
   const step = 360 / cards.length;
   let angle = 0;
-  let dragging = false;
-  let lastX = 0;
+  let speed = 0.02; // rotation automatique ∞
 
   function layout() {
-    const radius = circle.offsetWidth / 2 - 80;
+    const r = circle.offsetWidth / 2 - 90;
 
-    cards.forEach((card, i) => {
+    cards.forEach((c, i) => {
       const a = (i * step + angle) * Math.PI / 180;
-      const x = Math.cos(a) * radius;
-      const y = Math.sin(a) * radius;
+      const x = Math.cos(a) * r;
+      const y = Math.sin(a) * r;
 
-      card.style.transform =
+      c.style.transform =
         `translate(-50%, -50%) translate(${x}px, ${y}px)`;
     });
   }
 
-  circle.addEventListener("mousedown", e => {
-    dragging = true;
-    lastX = e.clientX;
-  });
-
-  window.addEventListener("mousemove", e => {
-    if (!dragging) return;
-    angle += (e.clientX - lastX) * 0.3;
-    lastX = e.clientX;
+  function loop() {
+    angle += speed;
     layout();
-  });
-
-  window.addEventListener("mouseup", () => dragging = false);
+    requestAnimationFrame(loop);
+  }
 
   cards.forEach(card => {
     card.addEventListener("click", () => {
@@ -43,4 +34,5 @@
   });
 
   layout();
+  loop();
 })();
