@@ -5,25 +5,77 @@ import {
   doc, getDoc, addDoc, collection, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-(() => {
-  /* =========================
-     DOM
-  ========================= */
-  const titleEl = document.getElementById("title");
-  const segmentEl = document.getElementById("segment");
-  const descEl = document.getElementById("desc");
-  const iconEl = document.getElementById("icon");
-  const noteEl = document.getElementById("note");
-  const statusLine = document.getElementById("statusLine");
-  const btnMail = document.getElementById("btnMail");
-  const btnCall = document.getElementById("btnCall");
-  const btnReport = document.getElementById("btnReport");
-  const btnEditPhotos = document.getElementById("btnEditPhotos");
-  const form = document.getElementById("form");
+// carousel.js — VERSION ALIGNÉE HTML + CSS
 
-  const setText = (el, t) => el && (el.textContent = t ?? "");
-  const setHidden = (el, h) =>
-    el && el.classList.toggle("hidden", !!h);
+const container = document.getElementById("circle");
+if (!container) {
+  console.error("❌ #circle introuvable");
+  return;
+}
+
+/* SERVICES */
+const services = [
+  { label: "Plomberie", href: "./travaux/index.html" },
+  { label: "Électricité", href: "./travaux/index.html" },
+  { label: "Peinture", href: "./travaux/index.html" },
+  { label: "Carrelage", href: "./travaux/index.html" },
+  { label: "Maçonnerie", href: "./travaux/index.html" },
+  { label: "Couverture", href: "./travaux/index.html" },
+  { label: "Serrurerie", href: "./urgences/index.html" },
+  { label: "Urgences", href: "./urgences/index.html" },
+  { label: "Ménage", href: "./services-personne/index.html" },
+  { label: "Conciergerie", href: "./services-personne/index.html" },
+  { label: "Photographe", href: "./services-personne/index.html" },
+  { label: "Annonces", href: "./annonces/index.html" }
+];
+
+/* CRÉATION DES CARTES */
+const cards = services.map(s => {
+  const el = document.createElement("div");
+  el.className = "circle-card";
+  el.innerHTML = `<h3>${s.label}</h3><div class="open">Ouvrir</div>`;
+  el.onclick = () => location.href = s.href;
+  container.appendChild(el);
+  return el;
+});
+
+/* PARAMÈTRES CERCLE */
+let angle = 0;
+const radiusX = 220;
+const radiusY = 120;
+const centerX = 260;
+const centerY = 180;
+
+/* POSITIONNEMENT */
+function layout() {
+  cards.forEach((card, i) => {
+    const a = angle + (i / cards.length) * Math.PI * 2;
+    const x = Math.cos(a) * radiusX;
+    const y = Math.sin(a) * radiusY;
+    card.style.transform =
+      `translate(${centerX + x - card.offsetWidth / 2}px,
+                 ${centerY + y - card.offsetHeight / 2}px)`;
+    card.style.zIndex = Math.round(100 + y);
+  });
+}
+layout();
+
+/* DRAG */
+let dragging = false;
+let startX = 0;
+let startAngle = 0;
+
+container.addEventListener("pointerdown", e => {
+  dragging = true;
+  startX = e.clientX;
+  startAngle = angle;
+});
+window.addEventListener("pointermove", e => {
+  if (!dragging) return;
+  angle = startAngle + (e.clientX - startX) * 0.005;
+  layout();
+});
+window.addEventListener("pointerup", () => dragging = false);
 
   /* =========================
      URL
