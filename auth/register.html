@@ -2,48 +2,66 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>WAUKLINK — Créer un compte</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Créer un compte — WAUKLINK</title>
+
+  <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
 
-<body class="auth-page">
+<body>
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Créer un compte</div>
+    </div>
 
-  <!-- ⬅️ RETOUR ACCUEIL -->
-  <a href="/wauklink-site/index.html" class="auth-back">
-    ← Retour à l’accueil
-  </a>
+    <nav class="topbar-nav">
+      <a class="btn" href="/wauklink-site/index.html">
+        ← Accueil
+      </a>
+    </nav>
+  </div>
+</header>
 
-  <div class="auth-card">
-    <h1>Créer un compte</h1>
+<main class="container main-layout">
+  <section class="card" style="max-width:520px;margin:0 auto">
+    <h2>Inscription</h2>
 
-    <form id="form">
-      <label>Prénom
+    <form id="form" class="form-column">
+      <label>
+        Prénom
         <input id="firstName" required>
       </label>
 
-      <label>Nom
+      <label>
+        Nom
         <input id="lastName" required>
       </label>
 
-      <label>Téléphone
+      <label>
+        Téléphone
         <input id="phone" required>
       </label>
 
-      <label>Adresse
+      <label>
+        Adresse
         <input id="address" required>
       </label>
 
-      <label>Email
+      <label>
+        Email
         <input type="email" id="email" required>
       </label>
 
-      <label>Mot de passe
+      <label>
+        Mot de passe
         <input type="password" id="password" required>
       </label>
 
-      <!-- ✅ CONFIRMATION MDP -->
-      <label>Confirmer le mot de passe
+      <label>
+        Confirmer le mot de passe
         <input type="password" id="passwordConfirm" required>
       </label>
 
@@ -51,7 +69,7 @@
       <label class="checkbox">
         <input type="checkbox" id="cgu1" required>
         J’accepte les
-        <a href="/wauklink-site/legal/cgu.html" target="_blank">
+        <a class="link" href="/wauklink-site/legal/cgu.html" target="_blank">
           Conditions Générales d’Utilisation
         </a>
       </label>
@@ -59,7 +77,7 @@
       <label class="checkbox">
         <input type="checkbox" id="cgu2" required>
         J’accepte la
-        <a href="/wauklink-site/legal/privacy.html" target="_blank">
+        <a class="link" href="/wauklink-site/legal/privacy.html" target="_blank">
           politique de confidentialité
         </a>
       </label>
@@ -69,12 +87,38 @@
         Je certifie être majeur
       </label>
 
-      <button type="submit">Créer mon compte</button>
+      <button type="submit" class="btn btn-ok">
+        Créer mon compte
+      </button>
     </form>
 
-    <p id="msg"></p>
-  </div>
+    <p id="msg" class="meta" aria-live="polite"></p>
 
- <script type="module" src="/wauklink-site/auth/register.js"></script>
+    <div style="margin-top:14px">
+      <a class="link" href="/wauklink-site/auth/login.html">
+        Déjà un compte ? Se connecter
+      </a>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <span>© WAUKLINK</span>
+    <nav class="footer-nav">
+      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
+      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
+      <a class="link" href="/wauklink-site/legal/privacy.html">
+        Confidentialité
+      </a>
+      <a class="link" href="/wauklink-site/legal/mentions-legales.html">
+        Mentions légales
+      </a>
+    </nav>
+  </div>
+</footer>
+
+<!-- LOGIQUE INSCRIPTION -->
+<script type="module" src="/wauklink-site/auth/register.js"></script>
 </body>
 </html>
