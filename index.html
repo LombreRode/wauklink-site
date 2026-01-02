@@ -2,26 +2,31 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>WAULINK — Services</title>
+  <title>WAUKLINK — Services</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- SEO BASE -->
+  <meta name="description"
+        content="WAUKLINK – Trouvez des services, artisans, conciergeries et annonces près de chez vous.">
 
   <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="./style.css">
-
   <!-- CARROUSEL -->
   <link rel="stylesheet" href="./carousel.css">
 </head>
-<body>
 
+<body>
 <header class="topbar">
   <div class="container topbar-row">
     <div>
-      <h1>WAULINK</h1>
+      <h1>WAUKLINK</h1>
       <div class="subtitle">Services · Travaux · Conciergerie · Airbnb</div>
     </div>
+
     <nav class="topbar-nav">
       <a class="link" href="./pricing.html">Tarifs</a>
-      <a class="link" href="./cgu.html">CGU</a>
+      <!-- ✅ CGU CORRIGÉ -->
+      <a class="link" href="./legal/index.html">CGU</a>
       <a class="link" href="./auth/login.html">Connexion</a>
       <a class="btn btn-outline" href="./auth/register.html">Inscription</a>
     </nav>
@@ -29,7 +34,6 @@
 </header>
 
 <main class="container main-layout">
-
   <section class="circle-section">
     <h2 class="section-title">Choisissez un service</h2>
     <p class="section-subtitle">
@@ -37,15 +41,18 @@
     </p>
 
     <div class="circle-wrapper">
-      <div id="infinityCarousel" class="circle"></div>
+      <!-- ✅ accessibilité -->
+      <div id="infinityCarousel"
+           class="circle"
+           aria-label="Sélecteur de services WAUKLINK">
+      </div>
     </div>
   </section>
-
 </main>
 
 <footer class="footer">
   <div class="container footer-row">
-    <span>© WAULINK</span>
+    <span>© WAUKLINK</span>
     <nav class="footer-nav">
       <a class="link" href="./pricing.html">Tarifs</a>
       <a class="link" href="./legal/index.html">CGU</a>
