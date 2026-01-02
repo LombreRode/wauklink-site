@@ -1,9 +1,7 @@
 /* =================================================
-   CARROUSEL ∞ — WAULINK
-   VISUEL ANCIEN (cartes blanches, bord vert)
+   CAROUSEL INFINI — WAULINK (MANUEL UNIQUEMENT)
 ================================================= */
 
-/* SECTION */
 .circle-section {
   text-align: center;
   margin-top: 40px;
@@ -11,22 +9,23 @@
 
 .section-title {
   font-size: 26px;
-  font-weight: 900;
+  font-weight: 800;
+  margin-bottom: 6px;
 }
 
 .section-subtitle {
-  opacity: 0.8;
-  margin-bottom: 32px;
+  opacity: .8;
+  margin-bottom: 24px;
 }
 
-/* ZONE CARROUSEL */
+/* ZONE */
 .circle-wrapper {
   position: relative;
   width: 100%;
-  max-width: 620px;
-  height: 420px;
+  max-width: 420px;
+  aspect-ratio: 1 / 1;
   margin: 0 auto;
-  overflow: hidden;
+  overflow: visible;
   touch-action: pan-x;
 }
 
@@ -36,60 +35,67 @@
   inset: 0;
 }
 
-/* CARTES (STYLE HISTORIQUE) */
+/* CARTES — STYLE ANCIEN (BLANC + VERT) */
 .circle-card {
   position: absolute;
-
-  width: 170px;
-  height: 170px;
+  top: 50%;
+  left: 50%;
+  width: 120px;
+  height: 120px;
 
   background: #ffffff;
-  color: #0b1224;
+  color: #0f172a;
 
   border: 2px solid #22c55e;
-  border-radius: 18px;
+  border-radius: 16px;
 
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 10px 26px rgba(0,0,0,.25);
 
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 
-  cursor: pointer;
+  cursor: grab;
   user-select: none;
 
-  transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease;
+  transition: transform .15s ease;
+}
+
+.circle-card:active {
+  cursor: grabbing;
 }
 
 .circle-card:hover {
-  transform: scale(1.06);
-  box-shadow: 0 22px 44px rgba(0, 0, 0, 0.35);
+  transform: scale(1.04);
 }
 
 /* TEXTE */
 .circle-card h3 {
-  margin: 6px 0 2px;
-  font-size: 14px;
-  font-weight: 900;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
   text-align: center;
 }
 
 .circle-card .open {
-  font-size: 12px;
-  opacity: 0.7;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #22c55e;
 }
 
-/* MOBILE */
-@media (max-width: 640px) {
+/* MOBILE : TOUT VISIBLE */
+@media (max-width: 600px) {
   .circle-wrapper {
-    height: 360px;
+    max-width: 320px;
   }
 
   .circle-card {
-    width: 130px;
-    height: 130px;
+    width: 95px;
+    height: 95px;
+  }
+
+  .circle-card h3 {
+    font-size: 11px;
   }
 }
