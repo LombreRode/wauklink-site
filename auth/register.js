@@ -1,10 +1,7 @@
-console.log("✅ register.js chargé");
 import { auth, db } from "../shared/firebase.js";
-
 import {
   createUserWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-
 import {
   doc,
   setDoc,
@@ -19,6 +16,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!form) {
     console.error("❌ Formulaire #form introuvable");
+    return;
+  }
+  if (!msg) {
+    console.error("❌ Élément #msg introuvable");
     return;
   }
 
@@ -36,7 +37,6 @@ document.addEventListener("DOMContentLoaded", () => {
       msg.textContent = "❌ Case obligatoire manquante";
       return;
     }
-
     if (!privacy.checked || !cgu.checked || !legal.checked || !adult.checked) {
       msg.textContent =
         "❌ Vous devez accepter la confidentialité, les CGU, les mentions légales et être majeur";
@@ -49,12 +49,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const email       = document.getElementById("email").value.trim();
     const password    = document.getElementById("password").value;
     const confirmPass = document.getElementById("passwordConfirm").value;
+
     const phone       = document.getElementById("phone")?.value.trim() || "";
     const address     = document.getElementById("address")?.value.trim() || "";
     const postalCode  = document.getElementById("postalCode")?.value.trim() || "";
     const city        = document.getElementById("city")?.value.trim() || "";
 
-    if (!firstName || !lastName || !email || !password) {
+    if (!firstName || !lastName || !email || !password || !confirmPass) {
       msg.textContent = "❌ Tous les champs obligatoires doivent être remplis";
       return;
     }
@@ -67,16 +68,11 @@ document.addEventListener("DOMContentLoaded", () => {
     msg.textContent = "⏳ Création du compte…";
 
     try {
-      // 🔐 CRÉATION AUTH FIREBASE
-      const cred = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-
+      // 🔐 AUTH
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
       console.log("🆔 UID créé :", cred.user.uid);
 
-      // 🗄️ ENREGISTREMENT FIRESTORE
+      // 🗄️ FIRESTORE
       await setDoc(doc(db, "users", cred.user.uid), {
         firstName,
         lastName,
