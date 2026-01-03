@@ -5,60 +5,70 @@ import { onAuthStateChanged } from
 import { doc, getDoc } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
+function safeRedirect(to) {
+  location.replace(to || "/auth/login.html");
+}
+
 /* =========================
    AUTH SIMPLE (connecté)
 ========================= */
-export function requireAuth({ redirectTo }) {
+export function requireAuth({ redirectTo } = {}) {
   const unsub = onAuthStateChanged(auth, (user) => {
     unsub();
-    if (!user) {
-      location.replace(redirectTo);
-    }
+    if (!user) safeRedirect(redirectTo);
   });
 }
 
 /* =========================
    USER (profil Firestore requis)
 ========================= */
-export function requireUser({ redirectTo, onOk }) {
+export function requireUser({ redirectTo, onOk } = {}) {
   const unsub = onAuthStateChanged(auth, async (user) => {
-    unsub();
     if (!user) {
-      location.replace(redirectTo);
-      return;
+      unsub();
+      return safeRedirect(redirectTo);
     }
 
-    const snap = await getDoc(doc(db, "users", user.uid));
-    if (!snap.exists()) {
-      location.replace(redirectTo);
-      return;
-    }
+    try {
+      const snap = await getDoc(doc(db, "users", user.uid));
+      unsub();
 
-    onOk?.(user, snap.data());
+      if (!snap.exists()) {
+        return safeRedirect(redirectTo);
+      }
+
+      onOk?.(user, snap.data());
+    } catch (e) {
+      console.error("requireUser error", e);
+      unsub();
+      safeRedirect(redirectTo);
+    }
   });
 }
 
 /* =========================
    ADMIN
 ========================= */
-export function requireAdmin({ redirectTo, onOk }) {
+export function requireAdmin({ redirectTo, onOk } = {}) {
   const unsub = onAuthStateChanged(auth, async (user) => {
-    unsub();
     if (!user) {
-      location.replace(redirectTo);
-      return;
+      unsub();
+      return safeRedirect(redirectTo);
     }
 
-    const snap = await getDoc(doc(db, "users", user.uid));
-    if (!snap.exists()) {
-      location.replace(redirectTo);
-      return;
-    }
+    try {
+      const snap = await getDoc(doc(db, "users", user.uid));
+      unsub();
 
-    if (snap.data().role === "admin") {
+      if (!snap.exists() || snap.data().role !== "admin") {
+        return safeRedirect(redirectTo);
+      }
+
       onOk?.(user, snap.data());
-    } else {
-      location.replace(redirectTo);
+    } catch (e) {
+      console.error("requireAdmin error", e);
+      unsub();
+      safeRedirect(redirectTo);
     }
   });
 }
@@ -66,25 +76,27 @@ export function requireAdmin({ redirectTo, onOk }) {
 /* =========================
    MODERATOR (admin OU moderator)
 ========================= */
-export function requireModerator({ redirectTo, onOk }) {
+export function requireModerator({ redirectTo, onOk } = {}) {
   const unsub = onAuthStateChanged(auth, async (user) => {
-    unsub();
     if (!user) {
-      location.replace(redirectTo);
-      return;
+      unsub();
+      return safeRedirect(redirectTo);
     }
 
-    const snap = await getDoc(doc(db, "users", user.uid));
-    if (!snap.exists()) {
-      location.replace(redirectTo);
-      return;
-    }
+    try {
+      const snap = await getDoc(doc(db, "users", user.uid));
+      unsub();
 
-    const role = snap.data().role;
-    if (role === "admin" || role === "moderator") {
-      onOk?.(user, snap.data());
-    } else {
-      location.replace(redirectTo);
+      const role = snap.exists() && snap.data().role;
+      if (role === "admin" || role === "moderator") {
+        onOk?.(user, snap.data());
+      } else {
+        safeRedirect(redirectTo);
+      }
+    } catch (e) {
+      console.error("requireModerator error", e);
+      unsub();
+      safeRedirect(redirectTo);
     }
   });
 }
