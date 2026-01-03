@@ -1,4 +1,5 @@
 // shared/firebase.js
+
 import { initializeApp, getApps, getApp } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 
@@ -8,6 +9,9 @@ import { getAuth } from
 import { getFirestore } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
+/* =========================
+   CONFIG FIREBASE
+========================= */
 const firebaseConfig = {
   apiKey: "AIzaSy...",
   authDomain: "wauklink-9b61f.firebaseapp.com",
@@ -17,9 +21,16 @@ const firebaseConfig = {
   appId: "1:398288789090:web:82b7c1cbcd4ad47af1fb3b"
 };
 
+/* =========================
+   INIT UNIQUE (ANTI DOUBLE INIT)
+========================= */
 const app = getApps().length === 0
   ? initializeApp(firebaseConfig)
   : getApp();
 
+/* =========================
+   EXPORTS CENTRAUX
+========================= */
+export const appInstance = app;
 export const auth = getAuth(app);
 export const db = getFirestore(app);
