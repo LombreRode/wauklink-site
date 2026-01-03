@@ -4,37 +4,50 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("✅ login.js chargé");
+
   const form = document.getElementById("loginForm");
-  const email = document.getElementById("email");
-  const password = document.getElementById("password");
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
   const msg = document.getElementById("msg");
 
-  if (!form) {
-    console.error("Form login introuvable");
+  if (!form || !emailInput || !passwordInput || !msg) {
+    console.error("❌ Élément login manquant");
     return;
   }
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!email || !password) {
+      msg.textContent = "❌ Email et mot de passe requis";
+      return;
+    }
+
     msg.textContent = "⏳ Connexion…";
 
     try {
-      await signInWithEmailAndPassword(
-        auth,
-        email.value.trim(),
-        password.value
-      );
+      await signInWithEmailAndPassword(auth, email, password);
 
       msg.textContent = "✅ Connexion réussie";
+
       setTimeout(() => {
-        location.href = "/wauklink-site/index.html";
+        window.location.href = "/wauklink-site/index.html";
       }, 500);
 
     } catch (err) {
-      console.error(err);
-      msg.textContent =
-        err.code ? "❌ " + err.code : "❌ Erreur de connexion";
+      console.error("❌ Erreur login :", err);
+
+      let message = "❌ Erreur de connexion";
+      if (err.code === "auth/user-not-found") message = "❌ Compte introuvable";
+      if (err.code === "auth/wrong-password") message = "❌ Mot de passe incorrect";
+      if (err.code === "auth/invalid-email") message = "❌ Email invalide";
+
+      msg.textContent = message;
     }
   });
 });
+
