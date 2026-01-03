@@ -1,3 +1,48 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin — Utilisateurs</title>
+
+  <!-- STYLE GLOBAL -->
+  <link rel="stylesheet" href="/wauklink-site/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Admin — Utilisateurs</div>
+    </div>
+    <nav class="topbar-nav">
+      <a class="btn" href="/wauklink-site/admin/index.html">
+        ← Dashboard
+      </a>
+    </nav>
+  </div>
+</header>
+
+<main class="container main-layout">
+  <h2>Liste des utilisateurs</h2>
+
+  <!-- MESSAGE -->
+  <p id="msg" class="meta" aria-live="polite">
+    Vérification des droits…
+  </p>
+
+  <!-- LISTE -->
+  <section id="list" class="grid"></section>
+</main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <span>© WAUKLINK</span>
+  </div>
+</footer>
+
+<!-- 🔐 LOGIQUE ADMIN -->
 <script type="module">
 import { requireAdmin } from "/wauklink-site/shared/guard.js";
 import { db } from "/wauklink-site/shared/firebase.js";
@@ -7,58 +52,61 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  const list = document.getElementById("list");
   const msg  = document.getElementById("msg");
+  const list = document.getElementById("list");
 
-  if (!list || !msg) {
-    console.error("❌ Éléments admin manquants");
+  if (!msg || !list) {
+    console.error("❌ users.html : éléments manquants");
     return;
   }
 
   async function loadUsers() {
-    msg.textContent = "⏳ Chargement des utilisateurs (vue admin)…";
+    msg.textContent = "⏳ Chargement des utilisateurs…";
     list.innerHTML = "";
 
     try {
       const snap = await getDocs(collection(db, "users"));
 
       if (snap.empty) {
-        msg.textContent = "Aucun utilisateur.";
-        list.innerHTML =
-          "<p class='meta'>Aucune donnée disponible.</p>";
+        msg.textContent = "Aucun utilisateur trouvé.";
         return;
       }
 
       msg.textContent = `👤 ${snap.size} utilisateur(s)`;
 
-      snap.forEach(d => {
-        const u = d.data();
+      snap.forEach(docSnap => {
+        const u = docSnap.data();
+
         const card = document.createElement("div");
         card.className = "card";
         card.innerHTML = `
-          <strong>${u.email || "—"}</strong>
+          <strong>${u.email ?? "—"}</strong>
           <div class="meta">
-            Rôle : ${u.role || "user"}
+            ${u.firstName ?? ""} ${u.lastName ?? ""}
+          </div>
+          <div class="meta">
+            Rôle : ${u.role ?? "user"}
           </div>
         `;
+
         list.appendChild(card);
       });
 
     } catch (err) {
-      console.error("❌ Admin users error:", err);
-      msg.textContent = "❌ Accès interdit (rules Firestore)";
+      console.error("❌ Accès users admin:", err);
+      msg.textContent = "❌ Accès refusé (rules Firestore)";
       list.innerHTML =
-        "<p class='meta'>Lecture globale non autorisée.</p>";
+        "<p class='meta'>Vous n’êtes pas autorisé à voir ces données.</p>";
     }
   }
 
-  // 🔐 ADMIN UNIQUEMENT
+  // 🔐 SÉCURITÉ ADMIN UNIQUE
   requireAdmin({
     redirectTo: "/wauklink-site/auth/login.html",
-    onOk: () => {
-      msg.textContent = "✅ Accès admin confirmé";
-      loadUsers();
-    }
+    onOk: loadUsers
   });
 });
 </script>
+
+</body>
+</html>
