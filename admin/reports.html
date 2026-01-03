@@ -4,17 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Admin — Signalements</title>
-
-  <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="../style.css">
 </head>
-
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
-      <div class="subtitle">Admin — Signalements utilisateurs</div>
+      <div class="subtitle">Admin — Signalements</div>
     </div>
     <nav class="topbar-nav">
       <a class="btn" href="./index.html">← Dashboard</a>
@@ -24,69 +22,51 @@
 
 <main class="container main-layout">
   <h2>Signalements</h2>
-
   <p id="msg" class="meta" aria-live="polite">
     Vérification des droits…
   </p>
-
   <section id="list" class="grid"></section>
 </main>
 
 <footer class="footer">
   <div class="container footer-row">
     <span>© WAUKLINK</span>
-
-    <nav class="footer-nav">
-      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
-      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
-      <a class="link" href="/wauklink-site/legal/privacy.html">
-        Confidentialité
-      </a>
-      <a class="link" href="/wauklink-site/legal/mentions-legales.html">
-        Mentions légales
-      </a>
-    </nav>
-
-    <!-- 🔐 LIENS ADMIN (CACHÉS PAR DÉFAUT) -->
-    <nav class="footer-nav hidden" id="adminLinks">
-      <a class="link" href="/wauklink-site/admin/index.html">
-        Admin
-      </a>
-      <span class="sep">·</span>
-      <a class="link" href="/wauklink-site/dashboard/moderation-location.html">
-        Modération
-      </a>
-    </nav>
   </div>
 </footer>
 
-<!-- 🔐 SCRIPT ADMIN -->
-<script type="module" src="/wauklink-site/shared/admin_links.js"></script>
-
+<!-- UI admin -->
+<script type="module" src="../shared/admin_links.js"></script>
 
 <script type="module">
-  import { db } from "../shared/firebase.js";
-  import { requireModerator } from "../shared/guard.js";
-  import {
-    collection, getDocs, doc, updateDoc
-  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { requireModerator } from "../shared/guard.js";
+import { db } from "../shared/firebase.js";
+import {
+  collection,
+  getDocs,
+  doc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
+document.addEventListener("DOMContentLoaded", () => {
   const list = document.getElementById("list");
   const msg  = document.getElementById("msg");
 
-  async function load() {
+  if (!list || !msg) {
+    console.error("❌ reports.html : éléments manquants");
+    return;
+  }
+
+  async function loadReports() {
     msg.textContent = "⏳ Chargement des signalements…";
     list.innerHTML = "";
 
     try {
-      const snap = await getDocs(
-        collection(db, "reports")
-      );
+      const snap = await getDocs(collection(db, "reports"));
 
       if (snap.empty) {
-        msg.textContent = "Tout est à jour.";
+        msg.textContent = "✅ Aucun signalement.";
         list.innerHTML =
-          "<p class='meta'>✅ Aucun signalement.</p>";
+          "<p class='meta'>Tout est à jour.</p>";
         return;
       }
 
@@ -98,9 +78,9 @@
         const card = document.createElement("div");
         card.className = "card";
         card.innerHTML = `
-          <strong>${r.reason || "Signalement utilisateur"}</strong>
+          <strong>${r.reason ?? "Signalement utilisateur"}</strong>
           <div class="meta">
-            Annonce : ${r.annonceId || "—"}
+            Annonce : ${r.annonceId ?? "—"}
           </div>
           <div class="row-actions" style="margin-top:12px">
             <button class="btn btn-danger">
@@ -117,25 +97,30 @@
             { status: "closed" }
           );
 
-          load();
+          loadReports();
         };
 
         list.appendChild(card);
       });
 
     } catch (err) {
-      console.error(err);
-      msg.textContent = "❌ Accès interdit ou erreur Firestore";
+      console.error("❌ reports error:", err);
+      msg.textContent = "❌ Accès refusé ou erreur Firestore";
       list.innerHTML =
         "<p class='meta'>Impossible de charger les signalements.</p>";
     }
   }
 
-  // 🔐 MODÉRATEUR OU ADMIN
+  // 🔐 MODÉRATION (admin OU moderator)
   requireModerator({
     redirectTo: "../auth/login.html",
-    onOk: load
+    onOk: () => {
+      msg.textContent = "✅ Accès modération confirmé";
+      loadReports();
+    }
   });
+});
 </script>
+
 </body>
 </html>
