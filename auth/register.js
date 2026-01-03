@@ -48,7 +48,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const email       = document.getElementById("email").value.trim();
     const password    = document.getElementById("password").value;
     const confirmPass = document.getElementById("passwordConfirm").value;
-
     const phone       = document.getElementById("phone")?.value.trim() || "";
     const address     = document.getElementById("address")?.value.trim() || "";
     const postalCode  = document.getElementById("postalCode")?.value.trim() || "";
