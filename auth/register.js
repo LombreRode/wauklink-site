@@ -1,3 +1,4 @@
+console.log("✅ register.js chargé");
 import { auth, db } from "../shared/firebase.js";
 
 import {
