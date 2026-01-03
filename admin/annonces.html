@@ -3,34 +3,29 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WAUKLINK — Annonces en attente</title>
-
-  <!-- STYLE GLOBAL -->
-  <link rel="stylesheet" href="/wauklink-site/style.css" />
+  <title>Admin — Annonces en attente</title>
+  <link rel="stylesheet" href="../style.css" />
 </head>
-
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
       <div class="subtitle">Validation des annonces</div>
     </div>
-
-    <!-- NAV ALIGNÉE -->
     <nav class="topbar-nav">
-      <a class="btn" href="/wauklink-site/index.html">← Accueil</a>
+      <a class="btn" href="./index.html">← Dashboard</a>
     </nav>
   </div>
 </header>
 
 <main class="container main-layout">
   <h2>Annonces en attente</h2>
+  <p id="msg" class="meta" aria-live="polite">
+    Vérification des droits…
+  </p>
 
-  <!-- MESSAGE GLOBAL -->
-  <p id="msg" class="meta" aria-live="polite"></p>
-
-  <!-- TABLE -->
   <section class="card">
     <table class="table">
       <thead>
@@ -56,45 +51,34 @@
 <footer class="footer">
   <div class="container footer-row">
     <span>© WAUKLINK</span>
-
-    <nav class="footer-nav">
-      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
-      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
-      <a class="link" href="/wauklink-site/legal/privacy.html">
-        Confidentialité
-      </a>
-      <a class="link" href="/wauklink-site/legal/mentions-legales.html">
-        Mentions légales
-      </a>
-    </nav>
-
-    <!-- 🔐 LIENS ADMIN (CACHÉS PAR DÉFAUT) -->
-    <nav class="footer-nav hidden" id="adminLinks">
-      <a class="link" href="/wauklink-site/admin/index.html">
-        Admin
-      </a>
-      <span class="sep">·</span>
-      <a class="link" href="/wauklink-site/dashboard/moderation-location.html">
-        Modération
-      </a>
-    </nav>
   </div>
 </footer>
 
-<!-- 🔐 SCRIPT ADMIN -->
-<script type="module" src="/wauklink-site/shared/admin_links.js"></script>
-
+<!-- UI admin -->
+<script type="module" src="../shared/admin_links.js"></script>
 
 <script type="module">
-  import { db } from "/wauklink-site/shared/firebase.js";
-  import { requireModerator } from "/wauklink-site/shared/guard.js";
-  import {
-    collection, query, where, orderBy, getDocs,
-    doc, updateDoc
-  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { requireModerator } from "../shared/guard.js";
+import { db } from "../shared/firebase.js";
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  getDocs,
+  doc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
+document.addEventListener("DOMContentLoaded", () => {
   const rows = document.getElementById("rows");
   const msg  = document.getElementById("msg");
+
+  if (!rows || !msg) {
+    console.error("❌ annonces.html : éléments manquants");
+    return;
+  }
+
   const setMsg = t => msg.textContent = t || "";
 
   async function loadPending() {
@@ -111,8 +95,8 @@
       const snap = await getDocs(qy);
 
       if (snap.empty) {
-        rows.innerHTML =
-          `<tr>
+        rows.innerHTML = `
+          <tr>
             <td colspan="7" class="meta">
               ✅ Aucune annonce en attente.
             </td>
@@ -128,12 +112,12 @@
         const tr = document.createElement("tr");
 
         tr.innerHTML = `
-          <td><strong>${a.titre || "Annonce"}</strong></td>
-          <td>${a.ville || "-"}</td>
-          <td>${a.type || "-"}</td>
+          <td><strong>${a.titre ?? "Annonce"}</strong></td>
+          <td>${a.ville ?? "-"}</td>
+          <td>${a.type ?? "-"}</td>
           <td>${a.prix ?? "-"} €</td>
           <td class="meta">
-            ${a.ownerEmail || a.ownerUid || "-"}
+            ${a.ownerEmail ?? a.ownerUid ?? "-"}
           </td>
           <td>
             <span class="pill">${a.status}</span>
@@ -168,22 +152,26 @@
       });
 
     } catch (err) {
-      console.error(err);
-      setMsg("❌ Erreur lors du chargement des annonces");
-      rows.innerHTML =
-        `<tr>
+      console.error("❌ annonces admin error:", err);
+      setMsg("❌ Accès refusé ou erreur Firestore");
+      rows.innerHTML = `
+        <tr>
           <td colspan="7" class="meta">
-            Accès impossible ou erreur Firestore.
+            Impossible de charger les annonces.
           </td>
         </tr>`;
     }
   }
 
-  // 🔒 MODERATOR / ADMIN UNIQUEMENT
+  // 🔐 MODÉRATION (admin OU moderator)
   requireModerator({
-    redirectTo: "/wauklink-site/auth/login.html",
-    onOk: loadPending
+    redirectTo: "../auth/login.html",
+    onOk: () => {
+      setMsg("✅ Accès modération confirmé");
+      loadPending();
+    }
   });
+});
 </script>
 
 </body>
