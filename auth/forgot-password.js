@@ -24,7 +24,7 @@ form.addEventListener("submit", async (e) => {
 
   try {
     await sendPasswordResetEmail(auth, email, {
-      url: "https://lombredode.github.io/wauklink-site/auth/login.html"
+      url: "https://lombrerode.github.io/wauklink-site/auth/login.html"
     });
 
     msg.textContent =
