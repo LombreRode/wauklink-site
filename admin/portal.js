@@ -1,5 +1,5 @@
 // admin/portal.js
-import { requireAdmin } from "/wauklink-site/shared/guard.js";
+import { auth, db } from "../shared/firebase.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const msg = document.getElementById("msg");
