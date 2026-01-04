@@ -9,19 +9,48 @@ if (!container) {
 
 /* SERVICES */
 const items = [
-  { label: "Plomberie", href: "./travaux/index.html" },
-  { label: "Électricité", href: "./travaux/index.html" },
-  { label: "Peinture", href: "./travaux/index.html" },
-  { label: "Carrelage", href: "./travaux/index.html" },
-  { label: "Maçonnerie", href: "./travaux/index.html" },
-  { label: "Couverture", href: "./travaux/index.html" },
-  { label: "Serrurerie", href: "./urgences/index.html" },
-  { label: "Urgences", href: "./urgences/index.html" },
-  { label: "Ménage", href: "./services-personne/index.html" },
-  { label: "Conciergerie", href: "./services-personne/index.html" },
-  { label: "Photographe", href: "./services-personne/index.html" },
-  { label: "Annonces", href: "./annonces/index.html" }
+  {
+    label: "Urgences",
+    icon: "🚨",
+    url: "./annonces/index.html?type=urgence"
+  },
+  {
+    label: "Travaux",
+    icon: "🛠️",
+    url: "./annonces/index.html?type=travaux"
+  },
+  {
+    label: "Services & Aide",
+    icon: "🤝",
+    url: "./annonces/index.html?type=service"
+  },
+  {
+    label: "Emploi",
+    icon: "💼",
+    url: "./annonces/index.html?type=emploi"
+  },
+  {
+    label: "Location immobilière",
+    icon: "🏠",
+    url: "./annonces/index.html?type=location&subType=immobilier"
+  },
+  {
+    label: "Location loisir",
+    icon: "🌴",
+    url: "./annonces/index.html?type=location&subType=loisir"
+  },
+  {
+    label: "Locations diverses",
+    icon: "📦",
+    url: "./annonces/index.html?type=location&subType=divers"
+  },
+  {
+    label: "Déposer une annonce",
+    icon: "➕",
+    action: "deposer"
+  }
 ];
+
 
 /* CARTES */
 const cards = items.map(item => {
