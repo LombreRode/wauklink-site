@@ -3,21 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WAUKLINK — Toutes les annonces</title>
-
-  <!-- STYLE GLOBAL -->
+  <title>WAUKLINK — Annonces</title>
   <link rel="stylesheet" href="/wauklink-site/style.css" />
 </head>
-
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
-      <div class="subtitle">Toutes les annonces</div>
+      <div class="subtitle">Annonces</div>
     </div>
-
-    <!-- NAV ALIGNÉE -->
     <nav class="topbar-nav">
       <a class="btn" href="/wauklink-site/index.html">← Accueil</a>
     </nav>
@@ -25,146 +21,105 @@
 </header>
 
 <main class="container main-layout">
-  <h2>Annonces disponibles</h2>
+  <!-- TITRE DYNAMIQUE -->
+  <h2 id="pageTitle">Annonces</h2>
 
-  <!-- MESSAGE GLOBAL -->
-  <p id="statusMsg" class="meta" aria-live="polite">
-    Chargement…
-  </p>
+  <!-- MESSAGE -->
+  <p id="msg" class="meta">Chargement…</p>
 
-  <!-- BLOQUÉ -->
-  <section id="blocked" class="card hidden">
-    <p class="text-danger">
-      Accès restreint. Un abonnement est requis pour consulter les annonces.
-    </p>
-  </section>
-
-  <!-- CONTENU -->
-  <section id="content" class="hidden">
-    <div id="list" class="grid"></div>
-  </section>
+  <!-- LISTE -->
+  <section id="list" class="grid"></section>
 </main>
 
 <footer class="footer">
   <div class="container footer-row">
     <span>© WAUKLINK</span>
-
-    <nav class="footer-nav">
-      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
-      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
-      <a class="link" href="/wauklink-site/legal/privacy.html">
-        Confidentialité
-      </a>
-      <a class="link" href="/wauklink-site/legal/mentions-legales.html">
-        Mentions légales
-      </a>
-    </nav>
-
-    <!-- 🔐 LIENS ADMIN (CACHÉS PAR DÉFAUT) -->
-    <nav class="footer-nav hidden" id="adminLinks">
-      <a class="link" href="/wauklink-site/admin/index.html">
-        Admin
-      </a>
-      <span class="sep">·</span>
-      <a class="link" href="/wauklink-site/dashboard/moderation-location.html">
-        Modération
-      </a>
-    </nav>
   </div>
 </footer>
 
-<!-- 🔐 SCRIPT ADMIN -->
-<script type="module" src="/wauklink-site/shared/admin_links.js"></script>
-
-
+<!-- =========================
+     SCRIPT ANNONCES (SIMPLE)
+========================= -->
 <script type="module">
-  import { auth, db } from "/wauklink-site/shared/firebase.js";
-  import { onAuthStateChanged } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import { db } from "/wauklink-site/shared/firebase.js";
   import {
-    collection, query, where, orderBy, getDocs,
-    doc, getDoc
-  } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+    collection,
+    query,
+    where,
+    orderBy,
+    getDocs
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  const statusMsg = document.getElementById("statusMsg");
-  const blocked   = document.getElementById("blocked");
-  const content   = document.getElementById("content");
-  const list      = document.getElementById("list");
+  const pageTitle = document.getElementById("pageTitle");
+  const msg = document.getElementById("msg");
+  const list = document.getElementById("list");
 
-  function esc(s){
-    return String(s ?? "").replace(/[&<>"']/g, m =>
-      ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
-    );
-  }
+  // 🔹 Lecture URL (envoyée par le carrousel)
+  const params = new URLSearchParams(location.search);
+  const type = params.get("type");
+  const subType = params.get("subType");
 
-  async function loadAll(){
+  // 🔹 Titres clairs (sans prise de tête)
+  if (type === "urgence") pageTitle.textContent = "Urgences";
+  else if (type === "travaux") pageTitle.textContent = "Travaux";
+  else if (type === "service") pageTitle.textContent = "Services & Aide à la personne";
+  else if (type === "emploi") pageTitle.textContent = "Emploi";
+  else if (type === "location" && subType === "immobilier")
+    pageTitle.textContent = "Location immobilière";
+  else if (type === "location" && subType === "loisir")
+    pageTitle.textContent = "Location loisir";
+  else if (type === "location" && subType === "divers")
+    pageTitle.textContent = "Locations diverses";
+  else
+    pageTitle.textContent = "Toutes les annonces";
+
+  // 🔹 Chargement des annonces
+  async function loadAnnonces() {
     list.innerHTML = "";
+    msg.textContent = "Chargement des annonces…";
+
+    const constraints = [
+      where("status", "==", "active")
+    ];
+
+    if (type) constraints.push(where("type", "==", type));
+    if (subType) constraints.push(where("subType", "==", subType));
 
     const qy = query(
-      collection(db, "annonces_location"),
-      where("status", "==", "active"),
+      collection(db, "annonces"),
+      ...constraints,
       orderBy("createdAt", "desc")
     );
 
     const snap = await getDocs(qy);
 
     if (snap.empty) {
-      list.innerHTML =
-        "<p class='muted'>Aucune annonce disponible.</p>";
+      msg.textContent = "Aucune annonce trouvée.";
       return;
     }
 
-    snap.forEach(d => {
-      const a = d.data();
-      const el = document.createElement("div");
-      el.className = "card";
-      el.innerHTML = `
-        <strong>${esc(a.titre)}</strong>
+    msg.textContent = `${snap.size} annonce(s)`;
+
+    snap.forEach(doc => {
+      const a = doc.data();
+      const card = document.createElement("div");
+      card.className = "card";
+
+      card.innerHTML = `
+        <strong>${a.titre || "Annonce"}</strong>
         <div class="meta">
-          ${esc(a.ville || "")} — ${esc(a.prix || "0")} €
+          📍 ${a.ville || "—"} • 💰 ${a.prix ?? "—"} €
         </div>
-        <p>${esc(a.description || "")}</p>
+        <p class="meta">
+          ${a.description || ""}
+        </p>
       `;
-      list.appendChild(el);
+
+      list.appendChild(card);
     });
   }
 
-  onAuthStateChanged(auth, async user => {
-    if (!user) {
-      blocked.classList.remove("hidden");
-      statusMsg.textContent = "Connexion requise.";
-      return;
-    }
-
-    const snap = await getDoc(doc(db, "users", user.uid));
-    if (!snap.exists()) {
-      blocked.classList.remove("hidden");
-      statusMsg.textContent = "Profil introuvable.";
-      return;
-    }
-
-    const u = snap.data();
-    const sub = u.abonnement?.type || "free";
-    const role = u.role || "user";
-    const proValidated = u.pro?.validated === true;
-
-    if (sub === "free") {
-      blocked.classList.remove("hidden");
-      statusMsg.textContent = "Abonnement requis.";
-      return;
-    }
-
-    if (role === "pro" && !proValidated) {
-      blocked.classList.remove("hidden");
-      statusMsg.textContent = "Compte professionnel non validé.";
-      return;
-    }
-
-    statusMsg.textContent = "Annonces actives";
-    content.classList.remove("hidden");
-    loadAll();
-  });
+  loadAnnonces();
 </script>
 
 </body>
