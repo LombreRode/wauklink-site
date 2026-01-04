@@ -57,6 +57,18 @@
     <span>© WAUKLINK</span>
   </div>
 </footer>
+  
+<script type="module">
+  import { auth } from "../shared/firebase.js";
+  import { onAuthStateChanged } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+  onAuthStateChanged(auth, user => {
+    if (!user) {
+      location.href = "../auth/login.html";
+    }
+  });
+</script>
 
 </body>
 </html>
