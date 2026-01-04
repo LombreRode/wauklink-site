@@ -74,51 +74,51 @@
     pageTitle.textContent = "Toutes les annonces";
 
   // 🔹 Chargement des annonces
-  async function loadAnnonces() {
-    list.innerHTML = "";
-    msg.textContent = "Chargement des annonces…";
+async function loadAnnonces() {
+  list.innerHTML = "";
+  msg.textContent = "Chargement des annonces…";
 
-    const constraints = [
-      where("status", "==", "active")
-    ];
+  const constraints = [
+    where("status", "==", "active")
+  ];
 
-    if (type) constraints.push(where("type", "==", type));
-    if (subType) constraints.push(where("subType", "==", subType));
+  if (type) constraints.push(where("type", "==", type));
+  if (subType) constraints.push(where("subType", "==", subType));
 
-    const qy = query(
-      collection(db, "annonces"),
-      ...constraints,
-      orderBy("createdAt", "desc")
-    );
+  const qy = query(
+    collection(db, "annonces"),
+    ...constraints,
+    orderBy("createdAt", "desc")
+  );
 
-    const snap = await getDocs(qy);
+  const snap = await getDocs(qy);
 
-    if (snap.empty) {
-      msg.textContent = "Aucune annonce trouvée.";
-      return;
-    }
-
-    msg.textContent = `${snap.size} annonce(s)`;
-
-    snap.forEach(doc => {
-      const a = doc.data();
-      const card = document.createElement("div");
-      card.className = "card";
-
-      card.innerHTML = `
-        <strong>${a.titre || "Annonce"}</strong>
-        <div class="meta">
-          📍 ${a.ville || "—"} • 💰 ${a.prix ?? "—"} €
-        </div>
-        <p class="meta">
-          ${a.description || ""}
-        </p>
-      `;
-
-      list.appendChild(card);
-    });
+  if (snap.empty) {
+    msg.textContent = "Aucune annonce disponible.";
+    return;
   }
 
+  msg.textContent = `${snap.size} annonce(s)`;
+
+  snap.forEach(d => {
+    const a = d.data();
+
+    const el = document.createElement("div");
+    el.className = "card";
+
+    el.innerHTML = `
+      <strong>${a.titre || "Annonce"}</strong>
+      <div class="meta">
+        ${a.ville || "—"} • ${a.prix ?? "—"} €
+      </div>
+      <p class="meta">
+        ${a.description || ""}
+      </p>
+    `;
+
+    list.appendChild(el);
+  });
+}
   loadAnnonces();
 </script>
 
