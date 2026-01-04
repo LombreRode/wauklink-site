@@ -96,7 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
       msg.textContent = "✅ Compte créé avec succès";
 
       setTimeout(() => {
-        window.location.href = "/wauklink-site/index.html";
+        window.location.href = "../index.html";
       }, 1000);
 
     } catch (err) {
