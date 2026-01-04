@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Admin — Modération Locations • WAUKLINK</title>
+  <title>Admin — Modération Annonces • WAUKLINK</title>
 
   <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="../style.css">
@@ -14,16 +14,11 @@
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
-      <div class="subtitle">Admin • Modération • Locations</div>
+      <div class="subtitle">Admin • Modération • Annonces</div>
     </div>
 
     <nav class="topbar-nav">
-      <a class="btn" href="../admin/index.html">
-        ← Dashboard
-      </a>
-      <a class="btn" href="../annonces/location.html">
-        Voir annonces
-      </a>
+      <a class="btn" href="../admin/index.html">← Dashboard</a>
     </nav>
   </div>
 </header>
@@ -32,10 +27,18 @@
   <h2>Annonces en attente</h2>
 
   <p class="meta">
-    Valider → visible publiquement • Refuser → retirée
+    Filtrer par catégorie :
   </p>
 
-  <!-- MESSAGE GLOBAL -->
+  <!-- FILTRE CATÉGORIE -->
+  <select id="filterCategorie">
+    <option value="">Toutes</option>
+    <option value="location">Location</option>
+    <option value="service">Service</option>
+    <option value="vente">Vente</option>
+    <option value="autre">Autre</option>
+  </select>
+
   <p id="msg" class="meta" aria-live="polite"></p>
 
   <!-- GRID -->
@@ -49,22 +52,9 @@
     <nav class="footer-nav">
       <a class="link" href="../pricing.html">Tarifs</a>
       <a class="link" href="../legal/index.html">CGU</a>
-      <a class="link" href="../legal/privacy.html">
-        Confidentialité
-      </a>
+      <a class="link" href="../legal/privacy.html">Confidentialité</a>
       <a class="link" href="../legal/mentions-legales.html">
         Mentions légales
-      </a>
-    </nav>
-
-    <!-- 🔐 LIENS ADMIN -->
-    <nav class="footer-nav hidden" id="adminLinks">
-      <a class="link" href="../admin/index.html">
-        Admin
-      </a>
-      <span class="sep">·</span>
-      <a class="link" href="./moderation-location.html">
-        Modération
       </a>
     </nav>
   </div>
@@ -86,21 +76,32 @@
 
   const grid = document.getElementById("grid");
   const msg  = document.getElementById("msg");
+  const filter = document.getElementById("filterCategorie");
 
   const esc = s =>
     String(s ?? "").replace(/[&<>"']/g, m =>
       ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
     );
 
-  async function loadPending(){
+  async function loadPending() {
     grid.innerHTML = "";
-    msg.textContent = "⏳ Chargement des annonces en attente…";
+    msg.textContent = "⏳ Chargement des annonces…";
 
-    const qy = query(
-      collection(db, "annonces_location"),
+    const constraints = [
       where("status", "==", "pending"),
       orderBy("createdAt", "desc"),
       limit(50)
+    ];
+
+    if (filter.value) {
+      constraints.unshift(
+        where("categorie", "==", filter.value)
+      );
+    }
+
+    const qy = query(
+      collection(db, "annonces"),
+      ...constraints
     );
 
     const snap = await getDocs(qy);
@@ -121,7 +122,7 @@
       card.innerHTML = `
         <strong>${esc(a.titre || "Annonce")}</strong>
         <div class="meta">
-          ${esc(a.ville || "—")} • ${esc(a.type || "—")}
+          ${esc(a.ville || "—")} • ${esc(a.categorie || "—")}
         </div>
         <div class="meta">${esc(a.prix ?? "—")} €</div>
         <p class="meta" style="margin-top:10px;white-space:pre-wrap">
@@ -137,7 +138,7 @@
 
       okBtn.onclick = async () => {
         await updateDoc(
-          doc(db, "annonces_location", d.id),
+          doc(db, "annonces", d.id),
           { status: "active" }
         );
         loadPending();
@@ -145,7 +146,7 @@
 
       noBtn.onclick = async () => {
         await updateDoc(
-          doc(db, "annonces_location", d.id),
+          doc(db, "annonces", d.id),
           { status: "removed" }
         );
         loadPending();
@@ -154,6 +155,8 @@
       grid.appendChild(card);
     });
   }
+
+  filter.addEventListener("change", loadPending);
 
   // 🔐 ADMIN UNIQUEMENT
   requireAdmin({
