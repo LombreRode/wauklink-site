@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tableau de bord — WAUKLINK</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Espace PRO — WAUKLINK</title>
 
   <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="../style.css">
@@ -14,114 +14,62 @@
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
-      <div class="subtitle">Tableau de bord</div>
+      <div class="subtitle">Espace Professionnel ⭐⭐⭐</div>
     </div>
+    <nav class="topbar-nav">
+      <a class="btn" href="../index.html">← Accueil</a>
+      <a class="btn" href="../deposer/annonce-location.html">
+        ➕ Nouvelle annonce PRO
+      </a>
+    </nav>
   </div>
 </header>
 
 <main class="container main-layout">
-  <h2>Mon espace</h2>
+  <h2>Mes annonces PRO</h2>
 
-  <!-- STATUT GLOBAL -->
-  <p id="globalStatus" class="meta" aria-live="polite">
-    Chargement du statut…
-  </p>
+  <p id="msg" class="meta" aria-live="polite"></p>
 
-  <section class="card">
-    <h3>Fonctionnement</h3>
-    <p>
-      Les fonctionnalités sont débloquées selon votre abonnement
-      et votre statut. Aucun accès professionnel n’est possible
-      sans validation préalable.
-    </p>
-  </section>
-
-  <section class="card">
-    <h3>Abonnement</h3>
-    <p id="subStatus" class="meta">—</p>
-    <ul>
-      <li><b>Free</b> : navigation uniquement</li>
-      <li><b>Partiel</b> : non‑pro / CESU / location occasionnelle</li>
-      <li><b>Complet</b> : accès PRO (sous conditions)</li>
-    </ul>
-    <a class="link" href="../pricing.html">
-      Voir les abonnements
-    </a>
-  </section>
-
-  <section class="card hidden" id="proSection">
-    <h3>Espace Prestataire PRO</h3>
-    <p id="proMessage" class="meta"></p>
-    <a
-      id="proAction"
-      class="btn btn-ok hidden"
-      href="./pro.html"
-    >
-      Accéder à l’espace PRO
-    </a>
-  </section>
-
-  <section class="card hidden" id="blockedSection">
-    <p class="text-danger">
-      Accès bloqué selon votre statut actuel.
-    </p>
-  </section>
-
-  <div class="meta" style="margin-top:20px">
-    <a class="link" href="../index.html">← Accueil</a> ·
-    <a class="link" href="../legal/index.html">
-      CGU & documents
-    </a>
-  </div>
+  <section id="grid" class="grid"></section>
 </main>
 
 <footer class="footer">
   <div class="container footer-row">
     <span>© WAUKLINK</span>
-
     <nav class="footer-nav">
       <a class="link" href="../pricing.html">Tarifs</a>
       <a class="link" href="../legal/index.html">CGU</a>
-      <a class="link" href="../legal/privacy.html">
-        Confidentialité
-      </a>
+      <a class="link" href="../legal/privacy.html">Confidentialité</a>
       <a class="link" href="../legal/mentions-legales.html">
         Mentions légales
-      </a>
-    </nav>
-
-    <!-- 🔐 LIENS ADMIN -->
-    <nav class="footer-nav hidden" id="adminLinks">
-      <a class="link" href="../admin/index.html">
-        Admin
-      </a>
-      <span class="sep">·</span>
-      <a class="link" href="./moderation-location.html">
-        Modération
       </a>
     </nav>
   </div>
 </footer>
 
-<!-- 🔐 SCRIPT ADMIN -->
-<script type="module" src="../shared/admin_links.js"></script>
+<!-- 🔐 AUTH -->
+<script type="module" src="../auth/status.js"></script>
 
 <!-- =========================
-     AUTH STATUS (INLINE)
+     LOGIQUE PRO
 ========================= -->
 <script type="module">
   import { auth, db } from "../shared/firebase.js";
   import { onAuthStateChanged } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-  import { doc, getDoc } from
+  import {
+    collection, query, where, orderBy,
+    getDocs
+  } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  const globalStatus = document.getElementById("globalStatus");
-  const subStatus    = document.getElementById("subStatus");
-  const proSection   = document.getElementById("proSection");
-  const proMessage   = document.getElementById("proMessage");
-  const proAction    = document.getElementById("proAction");
-  const blocked      = document.getElementById("blockedSection");
+  const grid = document.getElementById("grid");
+  const msg  = document.getElementById("msg");
+
+  const esc = s =>
+    String(s ?? "").replace(/[&<>"']/g, m =>
+      ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
+    );
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
@@ -129,50 +77,74 @@
       return;
     }
 
-    const snap = await getDoc(doc(db, "users", user.uid));
+    // 🔐 Vérification rôle PRO
+    const userSnap = await getDocs(
+      query(
+        collection(db, "users"),
+        where("__name__", "==", user.uid)
+      )
+    );
 
-    if (!snap.exists()) {
-      globalStatus.textContent =
-        "⛔ Profil utilisateur introuvable.";
-      blocked.classList.remove("hidden");
+    let isPro = false;
+    userSnap.forEach(d => {
+      isPro = d.data().role === "pro";
+    });
+
+    if (!isPro) {
+      msg.textContent =
+        "⛔ Accès réservé aux comptes PRO.";
       return;
     }
 
-    const u = snap.data();
-    const role = u.role || "user";
-    const sub  = u.abonnement?.type || "free";
-    const proValidated = u.pro?.validated === true;
-
-    globalStatus.innerHTML =
-      `Statut : <b>${role}</b> — Abonnement : <b>${sub}</b>`;
-    subStatus.textContent = `Abonnement actuel : ${sub}`;
-
-    if (sub === "free") {
-      blocked.classList.remove("hidden");
-      return;
-    }
-
-    if (sub === "partial") {
-      return;
-    }
-
-    if (sub === "full" && !proValidated) {
-      proSection.classList.remove("hidden");
-      proMessage.textContent =
-        "Compte PRO en attente : documents requis et validation obligatoire.";
-      return;
-    }
-
-    if (sub === "full" && proValidated) {
-      proSection.classList.remove("hidden");
-      proMessage.innerHTML =
-        "<b>Compte PRO validé.</b> Accès autorisé.";
-      proAction.classList.remove("hidden");
-      return;
-    }
-
-    blocked.classList.remove("hidden");
+    loadProAnnonces(user.uid);
   });
+
+  async function loadProAnnonces(uid) {
+    grid.innerHTML = "";
+    msg.textContent = "⏳ Chargement de vos annonces PRO…";
+
+    const qy = query(
+      collection(db, "annonces"),
+      where("ownerUid", "==", uid),
+      where("proOnly", "==", true),
+      orderBy("createdAt", "desc")
+    );
+
+    const snap = await getDocs(qy);
+
+    if (snap.empty) {
+      msg.textContent =
+        "Aucune annonce PRO pour le moment.";
+      return;
+    }
+
+    msg.textContent = `${snap.size} annonce(s) PRO`;
+
+    snap.forEach(d => {
+      const a = d.data();
+
+      const card = document.createElement("div");
+      card.className = "card";
+
+      card.innerHTML = `
+        <strong>${esc(a.titre || "Annonce")}</strong>
+        <div class="meta">
+          ${esc(a.ville || "—")} • ${esc(a.categorie || "—")}
+        </div>
+        <div class="meta">
+          ${esc(a.prix ?? "—")} €
+        </div>
+        <div class="meta">
+          Statut : <b>${esc(a.status || "—")}</b>
+        </div>
+        <p class="meta" style="margin-top:10px">
+          ${esc(a.description || "")}
+        </p>
+      `;
+
+      grid.appendChild(card);
+    });
+  }
 </script>
 
 </body>
