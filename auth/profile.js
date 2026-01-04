@@ -15,8 +15,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // 🔐 SÉCURITÉ CENTRALISÉE
-  requireUser({
-    redirectTo: "/wauklink-site/auth/login.html",
+  import { requireUser } from "../shared/guard.js";
+    redirectTo: "./login.html";
     onOk: (user, profile) => {
 
       // (optionnel) pré-remplir le formulaire
