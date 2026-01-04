@@ -1,4 +1,4 @@
-import { db } from "/wauklink-site/shared/firebase.js";
+import { auth, db } from "../shared/firebase.js";
 import { requireUser } from "/wauklink-site/shared/guard.js";
 import {
   doc,
