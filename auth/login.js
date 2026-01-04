@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
       msg.textContent = "✅ Connexion réussie";
 
       setTimeout(() => {
-        window.location.href = "/wauklink-site/index.html";
+        window.location.href = "../index.html";
       }, 500);
 
     } catch (err) {
