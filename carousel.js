@@ -13,31 +13,48 @@ window.USER_ROLE = window.USER_ROLE || "free";
 
 // 🎯 CARTES VALIDÉES (8)
 const items = [
-  { label: "Urgences", icon: "🚨", url: "./annonces/index.html?type=urgence" },
-  { label: "Travaux", icon: "🛠️", url: "./annonces/index.html?type=travaux" },
-  { label: "Services & Aide", icon: "🤝", url: "./annonces/index.html?type=service" },
-  { label: "Emploi", icon: "💼", url: "./annonces/index.html?type=emploi" },
+  {
+    label: "Urgences",
+    icon: "🚨",
+    url: "/wauklink-site/urgences/index.html"
+  },
+  {
+    label: "Travaux",
+    icon: "🛠️",
+    url: "/wauklink-site/travaux/index.html"
+  },
+  {
+    label: "Services & Aide",
+    icon: "🤝",
+    url: "/wauklink-site/services-personne/index.html"
+  },
+  {
+    label: "Emploi",
+    icon: "💼",
+    url: "/wauklink-site/emploi/index.html"
+  },
   {
     label: "Location immobilière",
     icon: "🏠",
-    url: "./annonces/index.html?type=location&subType=immobilier"
+    url: "/wauklink-site/locations/immobilier.html"
   },
   {
     label: "Location loisir",
     icon: "🌴",
-    url: "./annonces/index.html?type=location&subType=loisir"
+    url: "/wauklink-site/locations/loisir.html"
   },
   {
-    label: "Locations diverses",
+    label: "Autres locations",
     icon: "📦",
-    url: "./annonces/index.html?type=location&subType=divers"
+    url: "/wauklink-site/locations/autres.html"
   },
   {
     label: "Déposer une annonce",
     icon: "➕",
-    action: "deposer"
+    url: "/wauklink-site/deposer/annonce-location.html"
   }
 ];
+
 
 // 🧱 CRÉATION DES CARTES
 const cards = items.map(item => {
