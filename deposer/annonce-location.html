@@ -1,178 +1,130 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WAUKLINK — Déposer une annonce location</title>
-  <link rel="stylesheet" href="../style.css" />
-</head>
-<body>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Déposer une annonce — WAUKLINK</title>
 
+  <!-- STYLE GLOBAL -->
+  <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
 <header class="topbar">
-  <div class="container">
-    <h1>WAUKLINK</h1>
-    <div class="subtitle">Déposer une annonce</div>
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Déposer une annonce</div>
+    </div>
+    <nav class="topbar-nav">
+      <a class="btn" href="../dashboard/index.html">← Tableau de bord</a>
+    </nav>
   </div>
 </header>
 
-<main class="container" style="padding:22px 0;">
-  <h2>Nouvelle annonce de location</h2>
+<main class="container main-layout">
+  <section class="card" style="max-width:700px;margin:0 auto">
+    <h2>Nouvelle annonce</h2>
 
-  <!-- MESSAGE GLOBAL -->
-  <p id="statusMsg" style="opacity:.85;margin-bottom:18px;">
-    Chargement…
-  </p>
-
-  <!-- ACCÈS BLOQUÉ -->
-  <section id="blocked" style="display:none" class="card">
-    <p style="color:#ff6666">
-      Accès bloqué selon votre abonnement ou votre statut.
-    </p>
-  </section>
-
-  <!-- FORMULAIRE -->
-  <section id="formSection" style="display:none" class="card">
-    <form id="form">
+    <form id="form" class="form-column">
       <label>
-        Titre<br />
-        <input type="text" id="titre" required />
-      </label><br /><br />
+        Titre
+        <input type="text" id="titre" required>
+      </label>
 
       <label>
-        Ville<br />
-        <input type="text" id="ville" required />
-      </label><br /><br />
+        Ville
+        <input type="text" id="ville" required>
+      </label>
 
       <label>
-        Prix (€)<br />
-        <input type="number" id="prix" min="0" required />
-      </label><br /><br />
+        Type
+        <select id="type" required>
+          <option value="">Choisir</option>
+          <option value="location">Location</option>
+          <option value="service">Service</option>
+        </select>
+      </label>
 
       <label>
-        Description<br />
-        <textarea id="description" rows="4"></textarea>
-      </label><br /><br />
+        Prix (€)
+        <input type="number" id="prix" min="0">
+      </label>
 
-      <button type="submit">
+      <label>
+        Description
+        <textarea id="description" rows="5" required></textarea>
+      </label>
+
+      <button type="submit" class="btn btn-ok">
         Publier l’annonce
       </button>
     </form>
-  </section>
 
-  <div style="margin-top:20px">
-    <a href="../index.html">← Accueil</a>
-  </div>
+    <p id="msg" class="meta" aria-live="polite"></p>
+  </section>
 </main>
 
-<!-- SCRIPT -->
+<footer class="footer">
+  <div class="container footer-row">
+    <span>© WAUKLINK</span>
+    <nav class="footer-nav">
+      <a class="link" href="../pricing.html">Tarifs</a>
+      <a class="link" href="../legal/index.html">CGU</a>
+      <a class="link" href="../legal/privacy.html">Confidentialité</a>
+      <a class="link" href="../legal/mentions-legales.html">Mentions légales</a>
+    </nav>
+  </div>
+</footer>
+
+<!-- 🔐 AUTH -->
 <script type="module">
   import { auth, db } from "../shared/firebase.js";
   import { onAuthStateChanged } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
   import {
-    collection, addDoc, serverTimestamp,
-    doc, getDoc
+    collection, addDoc, serverTimestamp
   } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  const statusMsg   = document.getElementById("statusMsg");
-  const blocked     = document.getElementById("blocked");
-  const formSection = document.getElementById("formSection");
-  const form        = document.getElementById("form");
+  const form = document.getElementById("form");
+  const msg  = document.getElementById("msg");
 
-  /* =========================
-     CONTRÔLE ACCÈS UTILISATEUR
-  ========================= */
-  onAuthStateChanged(auth, async (user) => {
+  onAuthStateChanged(auth, (user) => {
     if (!user) {
-      location.href = "../auth/login.html";
-      return;
+      location.replace("../auth/login.html");
     }
-
-    const snap = await getDoc(doc(db, "users", user.uid));
-
-    if (!snap.exists()) {
-      blocked.style.display = "block";
-      statusMsg.textContent = "Profil introuvable.";
-      return;
-    }
-
-    const u = snap.data();
-    const role = u.role || "user";
-    const sub  = u.abonnement?.type || "free";
-    const proValidated = u.pro?.validated === true;
-
-    // FREE → BLOQUÉ
-    if (sub === "free") {
-      blocked.style.display = "block";
-      statusMsg.textContent =
-        "Abonnement requis pour déposer une annonce.";
-      return;
-    }
-
-    // PARTIEL NON‑PRO → OK
-    if (sub === "partial" && role !== "pro") {
-      statusMsg.textContent =
-        "Dépôt autorisé (non‑professionnel).";
-      formSection.style.display = "block";
-      return;
-    }
-
-    // PRO NON VALIDÉ → BLOQUÉ
-    if (role === "pro" && !proValidated) {
-      blocked.style.display = "block";
-      statusMsg.textContent =
-        "Compte professionnel non validé.";
-      return;
-    }
-
-    // PRO VALIDÉ → OK
-    if (role === "pro" && proValidated) {
-      statusMsg.textContent =
-        "Dépôt autorisé (prestataire professionnel).";
-      formSection.style.display = "block";
-      return;
-    }
-
-    // CAS PAR DÉFAUT
-    blocked.style.display = "block";
-    statusMsg.textContent = "Accès non autorisé.";
   });
 
-  /* =========================
-     CRÉATION ANNONCE
-  ========================= */
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    await addDoc(collection(db, "annonces_location"), {
-      // Contenu
-      titre: form.titre.value.trim(),
-      ville: form.ville.value.trim(),
-      prix: Number(form.prix.value),
-      description: form.description.value.trim(),
-
-      // Type & statut
-      type: "location",
+    const data = {
+      titre: document.getElementById("titre").value.trim(),
+      ville: document.getElementById("ville").value.trim(),
+      type: document.getElementById("type").value,
+      prix: Number(document.getElementById("prix").value || 0),
+      description: document.getElementById("description").value.trim(),
       status: "pending",
+      createdAt: serverTimestamp(),
+      ownerUid: auth.currentUser.uid
+    };
 
-      // Propriétaire
-      ownerUid: auth.currentUser.uid,
+    if (!data.titre || !data.ville || !data.type || !data.description) {
+      msg.textContent = "❌ Tous les champs obligatoires doivent être remplis";
+      return;
+    }
 
-      // Médias (initialisation propre)
-      photos: [],
-      photoPaths: [],
+    msg.textContent = "⏳ Publication en cours…";
 
-      // Notes
-      ratingAvg: 0,
-      ratingCount: 0,
-
-      // Métadonnées
-      createdAt: serverTimestamp()
-    });
-
-    alert("✅ Annonce envoyée en modération.");
-    location.href = "../annonces/location.html";
+    try {
+      await addDoc(collection(db, "annonces_location"), data);
+      msg.textContent = "✅ Annonce envoyée pour validation";
+      form.reset();
+    } catch (err) {
+      console.error(err);
+      msg.textContent = "❌ Erreur lors de la publication";
+    }
   });
 </script>
 
