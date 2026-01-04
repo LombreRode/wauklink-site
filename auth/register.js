@@ -8,102 +8,68 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("✅ register.js chargé");
+const form = document.getElementById("form");
+const msg = document.getElementById("msg");
 
-  const form = document.getElementById("form");
-  const msg  = document.getElementById("msg");
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  msg.textContent = "";
 
-  if (!form) {
-    console.error("❌ Formulaire #form introuvable");
+  const firstName = document.getElementById("firstName").value.trim();
+  const lastName = document.getElementById("lastName").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const address = document.getElementById("address").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  const passwordConfirm = document.getElementById("passwordConfirm").value;
+
+  const acceptPrivacy = document.getElementById("acceptPrivacy").checked;
+  const acceptCgu = document.getElementById("acceptCgu").checked;
+  const acceptLegal = document.getElementById("acceptLegal").checked;
+  const isAdult = document.getElementById("isAdult").checked;
+
+  if (!acceptPrivacy || !acceptCgu || !acceptLegal || !isAdult) {
+    msg.textContent = "Vous devez accepter toutes les conditions.";
     return;
   }
-  if (!msg) {
-    console.error("❌ Élément #msg introuvable");
+
+  if (password !== passwordConfirm) {
+    msg.textContent = "Les mots de passe ne correspondent pas.";
     return;
   }
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    console.log("🟢 Submit déclenché");
+  try {
+    // 🔐 Création du compte Firebase Auth
+    const cred = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
 
-    // 🔐 CHECKBOX LÉGALES
-    const privacy = document.getElementById("acceptPrivacy");
-    const cgu     = document.getElementById("acceptCgu");
-    const legal   = document.getElementById("acceptLegal");
-    const adult   = document.getElementById("isAdult");
+    const uid = cred.user.uid;
 
-    if (!privacy || !cgu || !legal || !adult) {
-      msg.textContent = "❌ Case obligatoire manquante";
-      return;
-    }
-    if (!privacy.checked || !cgu.checked || !legal.checked || !adult.checked) {
-      msg.textContent =
-        "❌ Vous devez accepter la confidentialité, les CGU, les mentions légales et être majeur";
-      return;
-    }
+    // 🧾 Création du profil Firestore
+    await setDoc(doc(db, "users", uid), {
+      firstName,
+      lastName,
+      phone,
+      address,
+      email,
+      role: "user",
+      abonnement: {
+        type: "free"
+      },
+      createdAt: serverTimestamp()
+    });
 
-    // 🧾 DONNÉES FORMULAIRE
-    const firstName   = document.getElementById("firstName").value.trim();
-    const lastName    = document.getElementById("lastName").value.trim();
-    const email       = document.getElementById("email").value.trim();
-    const password    = document.getElementById("password").value;
-    const confirmPass = document.getElementById("passwordConfirm").value;
+    // ✅ Succès
+    msg.textContent = "Compte créé avec succès 🎉";
+    setTimeout(() => {
+      location.href = "../dashboard/index.html";
+    }, 800);
 
-    const phone       = document.getElementById("phone")?.value.trim() || "";
-    const address     = document.getElementById("address")?.value.trim() || "";
-    const postalCode  = document.getElementById("postalCode")?.value.trim() || "";
-    const city        = document.getElementById("city")?.value.trim() || "";
-
-    if (!firstName || !lastName || !email || !password || !confirmPass) {
-      msg.textContent = "❌ Tous les champs obligatoires doivent être remplis";
-      return;
-    }
-
-    if (password !== confirmPass) {
-      msg.textContent = "❌ Les mots de passe ne correspondent pas";
-      return;
-    }
-
-    msg.textContent = "⏳ Création du compte…";
-
-    try {
-      // 🔐 AUTH
-      const cred = await createUserWithEmailAndPassword(auth, email, password);
-      console.log("🆔 UID créé :", cred.user.uid);
-
-      // 🗄️ FIRESTORE
-      await setDoc(doc(db, "users", cred.user.uid), {
-        firstName,
-        lastName,
-        email,
-        phone,
-        address,
-        postalCode,
-        city,
-        role: "user",
-        abonnement: { type: "free" },
-        legal: {
-          privacyAccepted: true,
-          cguAccepted: true,
-          mentionsAccepted: true,
-          isAdult: true,
-          acceptedAt: serverTimestamp()
-        },
-        createdAt: serverTimestamp()
-      });
-
-      msg.textContent = "✅ Compte créé avec succès";
-
-      setTimeout(() => {
-        window.location.href = "../index.html";
-      }, 1000);
-
-    } catch (err) {
-      console.error("❌ Erreur inscription :", err);
-      msg.textContent = err.code
-        ? "❌ " + err.code
-        : "❌ Erreur technique";
-    }
-  });
+  } catch (err) {
+    console.error(err);
+    msg.textContent = err.message || "Erreur lors de la création du compte.";
+  }
 });
