@@ -6,6 +6,7 @@
   <title>WAUKLINK — Annonces</title>
   <link rel="stylesheet" href="/wauklink-site/style.css" />
 </head>
+
 <body>
 
 <header class="topbar">
@@ -21,14 +22,12 @@
 </header>
 
 <main class="container main-layout">
-  <!-- TITRE DYNAMIQUE -->
-  <h2 id="pageTitle">Annonces</h2>
 
-  <!-- MESSAGE -->
+  <h2 id="pageTitle">Annonces</h2>
   <p id="msg" class="meta">Chargement…</p>
 
-  <!-- LISTE -->
   <section id="list" class="grid"></section>
+
 </main>
 
 <footer class="footer">
@@ -38,7 +37,7 @@
 </footer>
 
 <!-- =========================
-     SCRIPT ANNONCES (SIMPLE)
+     SCRIPT ANNONCES
 ========================= -->
 <script type="module">
   import { db } from "/wauklink-site/shared/firebase.js";
@@ -46,79 +45,78 @@
     collection,
     query,
     where,
-    orderBy,
     getDocs
   } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  const pageTitle = document.getElementById("pageTitle");
-  const msg = document.getElementById("msg");
-  const list = document.getElementById("list");
+  const titleEl = document.getElementById("pageTitle");
+  const msgEl   = document.getElementById("msg");
+  const listEl  = document.getElementById("list");
 
-  // 🔹 Lecture URL (envoyée par le carrousel)
-  const params = new URLSearchParams(location.search);
-  const type = params.get("type");
+  // 🔹 Paramètres envoyés par le carrousel
+  const params  = new URLSearchParams(location.search);
+  const type    = params.get("type");
   const subType = params.get("subType");
 
-  // 🔹 Titres clairs (sans prise de tête)
-  if (type === "urgence") pageTitle.textContent = "Urgences";
-  else if (type === "travaux") pageTitle.textContent = "Travaux";
-  else if (type === "service") pageTitle.textContent = "Services & Aide à la personne";
-  else if (type === "emploi") pageTitle.textContent = "Emploi";
+  // 🔹 TITRES SIMPLES
+  if (type === "urgence") titleEl.textContent = "Urgences";
+  else if (type === "travaux") titleEl.textContent = "Travaux";
+  else if (type === "service") titleEl.textContent = "Services & Aide à la personne";
+  else if (type === "emploi") titleEl.textContent = "Emploi";
   else if (type === "location" && subType === "immobilier")
-    pageTitle.textContent = "Location immobilière";
+    titleEl.textContent = "Location immobilière";
   else if (type === "location" && subType === "loisir")
-    pageTitle.textContent = "Location loisir";
+    titleEl.textContent = "Location loisir";
   else if (type === "location" && subType === "divers")
-    pageTitle.textContent = "Locations diverses";
+    titleEl.textContent = "Locations diverses";
   else
-    pageTitle.textContent = "Toutes les annonces";
+    titleEl.textContent = "Toutes les annonces";
 
-  // 🔹 Chargement des annonces
-async function loadAnnonces() {
-  list.innerHTML = "";
-  msg.textContent = "Chargement des annonces…";
+  // 🔹 Chargement annonces (SIMPLE)
+  async function loadAnnonces() {
+    listEl.innerHTML = "";
+    msgEl.textContent = "Chargement des annonces…";
 
-  const constraints = [
-    where("status", "==", "active")
-  ];
+    const constraints = [
+      where("status", "==", "active")
+    ];
 
-  if (type) constraints.push(where("type", "==", type));
-  if (subType) constraints.push(where("subType", "==", subType));
+    if (type) constraints.push(where("type", "==", type));
+    if (subType) constraints.push(where("subType", "==", subType));
 
-  const qy = query(
-    collection(db, "annonces"),
-    ...constraints,
-    orderBy("createdAt", "desc")
-  );
+    const qy = query(
+      collection(db, "annonces"),
+      ...constraints
+    );
 
-  const snap = await getDocs(qy);
+    const snap = await getDocs(qy);
 
-  if (snap.empty) {
-    msg.textContent = "Aucune annonce disponible.";
-    return;
+    if (snap.empty) {
+      msgEl.textContent = "Aucune annonce disponible.";
+      return;
+    }
+
+    msgEl.textContent = `${snap.size} annonce(s)`;
+
+    snap.forEach(doc => {
+      const a = doc.data();
+
+      const card = document.createElement("div");
+      card.className = "card";
+
+      card.innerHTML = `
+        <strong>${a.titre || "Annonce"}</strong>
+        <div class="meta">
+          ${a.ville || "—"} • ${a.prix ?? "—"} €
+        </div>
+        <p class="meta">
+          ${a.description || ""}
+        </p>
+      `;
+
+      listEl.appendChild(card);
+    });
   }
 
-  msg.textContent = `${snap.size} annonce(s)`;
-
-  snap.forEach(d => {
-    const a = d.data();
-
-    const el = document.createElement("div");
-    el.className = "card";
-
-    el.innerHTML = `
-      <strong>${a.titre || "Annonce"}</strong>
-      <div class="meta">
-        ${a.ville || "—"} • ${a.prix ?? "—"} €
-      </div>
-      <p class="meta">
-        ${a.description || ""}
-      </p>
-    `;
-
-    list.appendChild(el);
-  });
-}
   loadAnnonces();
 </script>
 
