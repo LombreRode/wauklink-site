@@ -22,53 +22,54 @@
     <h2>Inscription</h2>
 
     <form id="form">
+
       <label>Prénom
         <input type="text" id="firstName" required>
-      </label><br>
+      </label>
 
       <label>Nom
         <input type="text" id="lastName" required>
-      </label><br>
+      </label>
 
       <label>Téléphone
         <input type="tel" id="phone" required>
-      </label><br>
+      </label>
 
       <label>Adresse
         <input type="text" id="address" required>
-      </label><br>
+      </label>
 
       <label>Email
         <input type="email" id="email" required>
-      </label><br>
+      </label>
 
       <label>Mot de passe
         <input type="password" id="password" required>
-      </label><br>
+      </label>
 
       <label>Confirmer le mot de passe
         <input type="password" id="passwordConfirm" required>
-      </label><br><br>
+      </label>
 
       <!-- BLOC LÉGAL -->
       <div class="legal-block">
         <label class="checkbox">
-          <input type="checkbox" id="acceptPrivacy">
+          <input type="checkbox" id="acceptPrivacy" required>
           J’accepte la politique de confidentialité
         </label>
 
         <label class="checkbox">
-          <input type="checkbox" id="acceptCgu">
+          <input type="checkbox" id="acceptCgu" required>
           J’accepte les CGU
         </label>
 
         <label class="checkbox">
-          <input type="checkbox" id="acceptLegal">
+          <input type="checkbox" id="acceptLegal" required>
           J’ai pris connaissance des mentions légales
         </label>
 
         <label class="checkbox">
-          <input type="checkbox" id="isAdult">
+          <input type="checkbox" id="isAdult" required>
           Je certifie être majeur
         </label>
       </div>
@@ -78,11 +79,17 @@
       </button>
     </form>
 
-    <p id="msg" class="meta"></p>
+    <p id="msg" class="meta center"></p>
+
+    <p class="center small mt-xl">
+      Déjà un compte ?
+      <a class="link" href="./login.html">Se connecter</a>
+    </p>
   </section>
 </main>
 
-<script type="module" src="./wauklink-site/auth/register.js"></script>
+<!-- SCRIPT REGISTER -->
+<script type="module" src="./register.js"></script>
 
 </body>
 </html>
