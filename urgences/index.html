@@ -3,21 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WAUKLINK — Urgences</title>
-
-  <!-- STYLE GLOBAL -->
+  <title>WAUKLINK</title>
   <link rel="stylesheet" href="../style.css" />
 </head>
-
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
-      <div class="subtitle">Urgences & interventions rapides</div>
+      <div class="subtitle">Section</div>
     </div>
-
-    <!-- NAV ALIGNÉE -->
     <nav class="topbar-nav">
       <a class="btn" href="../index.html">← Accueil</a>
     </nav>
@@ -25,162 +21,19 @@
 </header>
 
 <main class="container main-layout">
-  <h2>Urgences disponibles</h2>
+  <h2>Titre de la page</h2>
 
-  <!-- MESSAGE GLOBAL -->
-  <p id="statusMsg" class="muted" aria-live="polite">
-    Chargement…
-  </p>
-
-  <!-- BLOQUÉ -->
-  <section id="blocked" class="card hidden">
-    <p class="text-danger">
-      Accès restreint. Cette section est réservée aux utilisateurs disposant
-      d’un abonnement compatible.
-    </p>
-  </section>
-
-  <!-- CONTENU -->
-  <section id="content" class="hidden">
-    <div id="list" class="grid"></div>
-  </section>
+  <div class="card">
+    <p>Cette section est en cours de mise en place.</p>
+    <p>Elle sera bientôt disponible 👍</p>
+  </div>
 </main>
 
 <footer class="footer">
   <div class="container footer-row">
     <span>© WAUKLINK</span>
-
-    <nav class="footer-nav">
-      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
-      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
-      <a class="link" href="/wauklink-site/legal/privacy.html">
-        Confidentialité
-      </a>
-      <a class="link" href="/wauklink-site/legal/mentions-legales.html">
-        Mentions légales
-      </a>
-    </nav>
-
-    <!-- 🔐 LIENS ADMIN (CACHÉS PAR DÉFAUT) -->
-    <nav class="footer-nav hidden" id="adminLinks">
-      <a class="link" href="/wauklink-site/admin/index.html">
-        Admin
-      </a>
-      <span class="sep">·</span>
-      <a class="link" href="/wauklink-site/dashboard/moderation-location.html">
-        Modération
-      </a>
-    </nav>
   </div>
 </footer>
-
-<!-- 🔐 SCRIPT ADMIN -->
-<script type="module" src="/wauklink-site/shared/admin_links.js"></script>
-
-
-<script type="module">
-  import { auth, db } from "../shared/firebase.js";
-  import { onAuthStateChanged } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-  import {
-    collection, query, where, orderBy, getDocs,
-    doc, getDoc
-  } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
-  const statusMsg = document.getElementById("statusMsg");
-  const blocked   = document.getElementById("blocked");
-  const content   = document.getElementById("content");
-  const list      = document.getElementById("list");
-
-  function esc(s){
-    return String(s ?? "").replace(/[&<>"']/g, m =>
-      ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
-    );
-  }
-
-  async function loadUrgences(){
-    list.innerHTML = "";
-
-    const qy = query(
-      collection(db, "urgences"),
-      where("status", "==", "active"),
-      orderBy("createdAt", "desc")
-    );
-
-    const snap = await getDocs(qy);
-
-    if (snap.empty) {
-      list.innerHTML =
-        "<p class='muted'>Aucune urgence disponible.</p>";
-      return;
-    }
-
-    snap.forEach(d => {
-      const u = d.data();
-      const el = document.createElement("div");
-      el.className = "card";
-      el.innerHTML = `
-        <strong>${esc(u.titre)}</strong>
-        <div class="muted">${esc(u.ville || "")}</div>
-        <p>${esc(u.description || "")}</p>
-      `;
-      list.appendChild(el);
-    });
-  }
-
-  onAuthStateChanged(auth, async user => {
-    if (!user) {
-      location.href = "../auth/login.html";
-      return;
-    }
-
-    const snap = await getDoc(doc(db, "users", user.uid));
-    if (!snap.exists()) {
-      blocked.classList.remove("hidden");
-      statusMsg.textContent = "Profil introuvable.";
-      return;
-    }
-
-    const u = snap.data();
-    const role = u.role || "user";
-    const sub  = u.abonnement?.type || "free";
-    const proValidated = u.pro?.validated === true;
-
-    if (sub === "free") {
-      blocked.classList.remove("hidden");
-      statusMsg.textContent =
-        "Abonnement requis pour accéder aux urgences.";
-      return;
-    }
-
-    if (sub === "partial" && role !== "pro") {
-      statusMsg.textContent =
-        "Accès autorisé (non‑professionnel).";
-      content.classList.remove("hidden");
-      loadUrgences();
-      return;
-    }
-
-    if (role === "pro" && !proValidated) {
-      blocked.classList.remove("hidden");
-      statusMsg.textContent =
-        "Compte professionnel non validé.";
-      return;
-    }
-
-    if (role === "pro" && proValidated) {
-      statusMsg.textContent =
-        "Accès autorisé (prestataire professionnel).";
-      content.classList.remove("hidden");
-      loadUrgences();
-      return;
-    }
-
-    blocked.classList.remove("hidden");
-    statusMsg.textContent = "Accès non autorisé.";
-  });
-</script>
 
 </body>
 </html>
