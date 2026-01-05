@@ -12,10 +12,21 @@ function safeRedirect(to) {
 /* =========================
    AUTH SIMPLE (connecté)
 ========================= */
-export function requireAuth({ redirectTo } = {}) {
-  const unsub = onAuthStateChanged(auth, (user) => {
-    unsub();
-    if (!user) safeRedirect(redirectTo);
+export function requireUser({ redirectTo, onOk } = {}) {
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      return location.replace(redirectTo);
+    }
+
+    try {
+      const snap = await getDoc(doc(db, "users", user.uid));
+      if (!snap.exists()) {
+        return location.replace(redirectTo);
+      }
+      onOk?.(user, snap.data());
+    } catch {
+      location.replace(redirectTo);
+    }
   });
 }
 
