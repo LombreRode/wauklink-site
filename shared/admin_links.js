@@ -14,12 +14,14 @@ document.addEventListener("DOMContentLoaded", () => {
       adminLinks.classList.add("hidden");
       return;
     }
+
     try {
       const snap = await getDoc(doc(db, "users", user.uid));
       if (!snap.exists()) {
         adminLinks.classList.add("hidden");
         return;
       }
+
       const role = snap.data().role;
       if (role === "admin" || role === "moderator") {
         adminLinks.classList.remove("hidden");
@@ -31,3 +33,4 @@ document.addEventListener("DOMContentLoaded", () => {
       adminLinks.classList.add("hidden");
     }
   });
+});
