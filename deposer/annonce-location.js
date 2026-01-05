@@ -8,50 +8,45 @@ import {
 } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-const form = document.getElementById("form");
+const form = document.getElementById("annonceForm");
 const msg  = document.getElementById("msg");
 
 onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    location.replace("../auth/login.html");
-    return;
-  }
+  if (!user) return;
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    msg.textContent = "";
 
-    const data = {
-      categorie: document.getElementById("categorie").value,
-      titre: document.getElementById("titre").value.trim(),
-      ville: document.getElementById("ville").value.trim(),
-      prix: Number(document.getElementById("prix").value || 0),
-      description: document.getElementById("description").value.trim(),
+    const title = document.getElementById("title").value.trim();
+    const city = document.getElementById("city").value.trim();
+    const type = document.getElementById("type").value;
+    const price = Number(document.getElementById("price").value);
+    const description = document.getElementById("description").value.trim();
 
-      ownerUid: user.uid,
-      status: "pending",
-      createdAt: serverTimestamp()
-    };
-
-    if (
-      !data.categorie ||
-      !data.titre ||
-      !data.ville ||
-      !data.description
-    ) {
-      msg.textContent = "❌ Tous les champs obligatoires doivent être remplis";
+    if (!title || !city || !type || !description) {
+      msg.textContent = "Tous les champs sont obligatoires.";
       return;
     }
 
-    msg.textContent = "⏳ Publication en cours…";
-
     try {
-      await addDoc(collection(db, "annonces"), data);
-      msg.textContent =
-        "✅ Annonce envoyée. Elle sera visible après validation.";
+      await addDoc(collection(db, "annonces"), {
+        title,
+        city,
+        type,
+        price,
+        description,
+        userId: user.uid,
+        status: "active",
+        createdAt: serverTimestamp()
+      });
+
+      msg.textContent = "Annonce publiée avec succès 🎉";
       form.reset();
+
     } catch (err) {
       console.error(err);
-      msg.textContent = "❌ Erreur lors de la publication";
+      msg.textContent = "Erreur lors de la publication.";
     }
   });
 });
