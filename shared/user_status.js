@@ -25,12 +25,9 @@ onAuthStateChanged(auth, async (user) => {
 
   try {
     const snap = await getDoc(doc(db, "users", user.uid));
-    if (snap.exists()) {
-      const data = snap.data();
-      userNameEl.textContent = `${data.firstName} ${data.lastName}`;
-    } else {
-      userNameEl.textContent = user.email;
-    }
+    userNameEl.textContent = snap.exists()
+      ? `${snap.data().firstName} ${snap.data().lastName}`
+      : user.email;
   } catch {
     userNameEl.textContent = user.email;
   }
@@ -38,5 +35,6 @@ onAuthStateChanged(auth, async (user) => {
 
 logoutBtn?.addEventListener("click", async () => {
   await signOut(auth);
-  location.href = "../auth/login.html";
+  // 🔴 CHEMIN ABSOLU (GITHUB PAGES)
+  location.href = "/wauklink-site/auth/login.html";
 });
