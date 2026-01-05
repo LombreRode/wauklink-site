@@ -132,10 +132,10 @@
      GUARD — ADMIN / MODERATOR
 ========================= -->
 <script type="module">
-  import { requireModerator } from "/wauklink-site/shared/guard.js";
+  import { requireAdmin } from "../shared/guard.js";
 
-  requireModerator({
-    redirectTo: "/wauklink-site/auth/login.html"
+  requireAdmin({
+    redirectTo: "../dashboard/index.html"
   });
 </script>
 
