@@ -2,131 +2,56 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Déposer une annonce — WAUKLINK</title>
-
-  <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="../style.css">
 </head>
-
 <body>
-<header class="topbar">
-  <div class="container topbar-row">
-    <div>
-      <h1>WAUKLINK</h1>
-      <div class="subtitle">Déposer une annonce</div>
-    </div>
-    <nav class="topbar-nav">
-      <a class="btn" href="../dashboard/index.html">← Tableau de bord</a>
-    </nav>
-  </div>
-</header>
 
-<main class="container main-layout">
-  <section class="card" style="max-width:700px;margin:0 auto">
-    <h2>Nouvelle annonce</h2>
+<h1>Nouvelle annonce</h1>
 
-    <form id="form" class="form-column">
-      <label>
-        Titre
-        <input type="text" id="titre" required>
-      </label>
+<form id="annonceForm">
 
-      <label>
-        Ville
-        <input type="text" id="ville" required>
-      </label>
+  <label>Titre
+    <input type="text" id="title" required>
+  </label>
 
-      <label>
-        Type
-        <select id="type" required>
-          <option value="">Choisir</option>
-          <option value="location">Location</option>
-          <option value="service">Service</option>
-        </select>
-      </label>
+  <label>Ville
+    <input type="text" id="city" required>
+  </label>
 
-      <label>
-        Prix (€)
-        <input type="number" id="prix" min="0">
-      </label>
+  <label>Type
+    <select id="type" required>
+      <option value="">Choisir</option>
+      <option value="location">Location</option>
+      <option value="travaux">Travaux</option>
+      <option value="urgence">Urgence</option>
+    </select>
+  </label>
 
-      <label>
-        Description
-        <textarea id="description" rows="5" required></textarea>
-      </label>
+  <label>Prix (€)
+    <input type="number" id="price" min="0" required>
+  </label>
 
-      <button type="submit" class="btn btn-ok">
-        Publier l’annonce
-      </button>
-    </form>
+  <label>Description
+    <textarea id="description" required></textarea>
+  </label>
 
-    <p id="msg" class="meta" aria-live="polite"></p>
-  </section>
-</main>
+  <button type="submit">Publier l’annonce</button>
+</form>
 
-<footer class="footer">
-  <div class="container footer-row">
-    <span>© WAUKLINK</span>
-    <nav class="footer-nav">
-      <a class="link" href="../pricing.html">Tarifs</a>
-      <a class="link" href="../legal/index.html">CGU</a>
-      <a class="link" href="../legal/privacy.html">Confidentialité</a>
-      <a class="link" href="../legal/mentions-legales.html">Mentions légales</a>
-    </nav>
-  </div>
-</footer>
+<p id="msg"></p>
 
-<!-- 🔐 AUTH -->
+<!-- 🔐 Protection utilisateur -->
 <script type="module">
-  import { auth, db } from "../shared/firebase.js";
-  import { onAuthStateChanged } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-  import {
-    collection, addDoc, serverTimestamp
-  } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  import { requireUser } from "../shared/guard.js";
 
-  const form = document.getElementById("form");
-  const msg  = document.getElementById("msg");
-
-  onAuthStateChanged(auth, (user) => {
-    if (!user) {
-      location.replace("../auth/login.html");
-    }
-  });
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const data = {
-      titre: document.getElementById("titre").value.trim(),
-      ville: document.getElementById("ville").value.trim(),
-      type: document.getElementById("type").value,
-      prix: Number(document.getElementById("prix").value || 0),
-      description: document.getElementById("description").value.trim(),
-      status: "pending",
-      createdAt: serverTimestamp(),
-      ownerUid: auth.currentUser.uid
-    };
-
-    if (!data.titre || !data.ville || !data.type || !data.description) {
-      msg.textContent = "❌ Tous les champs obligatoires doivent être remplis";
-      return;
-    }
-
-    msg.textContent = "⏳ Publication en cours…";
-
-    try {
-      await addDoc(collection(db, "annonces_location"), data);
-      msg.textContent = "✅ Annonce envoyée pour validation";
-      form.reset();
-    } catch (err) {
-      console.error(err);
-      msg.textContent = "❌ Erreur lors de la publication";
-    }
+  requireUser({
+    redirectTo: "../auth/login.html"
   });
 </script>
+
+<!-- 📦 Script annonce -->
+<script type="module" src="./annonce.js"></script>
 
 </body>
 </html>
