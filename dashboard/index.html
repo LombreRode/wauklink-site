@@ -69,19 +69,14 @@
   </div>
 </footer>
   
+<!-- 🔐 Protection -->
 <script type="module">
-  import { auth } from "../shared/firebase.js";
-  import { onAuthStateChanged } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-
-  onAuthStateChanged(auth, user => {
-    if (!user) {
-      location.href = "../auth/login.html";
-    }
-  });
+  import { requireUser } from "../shared/guard.js";
+  requireUser({ redirectTo: "../auth/login.html" });
 </script>
-  
-<script type="module" src="../shared/user_status.js"></script>
 
+<!-- 👤 Connexion / Déconnexion -->
+<script type="module" src="../shared/user_status.js"></script>
 </body>
 </html>
+
