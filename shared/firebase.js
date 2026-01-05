@@ -17,7 +17,7 @@ import { getFirestore } from
 // CONFIG FIREBASE
 // =========================
 const firebaseConfig = {
-  apiKey: "AIzaSy...",
+  apiKey: "AIzaSyA6GuK8h2YGgbWaRC8ybBLQa5L06ZcdePM",
   authDomain: "wauklink-9b61f.firebaseapp.com",
   projectId: "wauklink-9b61f",
   storageBucket: "wauklink-9b61f.appspot.com",
