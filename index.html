@@ -20,13 +20,25 @@
       </div>
     </div>
     <nav class="topbar-nav">
-      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
-      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
-      <a class="link" href="/wauklink-site/auth/login.html">Connexion</a>
-      <a class="btn btn-outline" href="/wauklink-site/auth/register.html">
-        Inscription
-      </a>
-    </nav>
+
+  <!-- 👤 CONNECTÉ -->
+  <div id="userStatus" class="user-status hidden">
+    👤 <span id="userName"></span>
+    <button id="logoutBtn">Déconnexion</button>
+  </div>
+
+  <!-- 👥 INVITÉ -->
+  <div id="guestStatus" class="guest-status hidden">
+    <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
+    <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
+    <a class="link" href="/wauklink-site/auth/login.html">Connexion</a>
+    <a class="btn btn-outline" href="/wauklink-site/auth/register.html">
+      Inscription
+    </a>
+  </div>
+
+</nav>
+    
   </div>
 </header>
 
