@@ -1,6 +1,7 @@
 // =================================================
-// WAUKLINK — Firebase central (OFFICIEL)
+// WAUKLINK — Firebase central
 // Compatible GitHub Pages
+// Version stable
 // =================================================
 
 import { initializeApp, getApps, getApp } from
@@ -13,10 +14,10 @@ import { getFirestore } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 // =========================
-// CONFIG FIREBASE (VRAIE)
+// CONFIG FIREBASE
 // =========================
 const firebaseConfig = {
-  apiKey: "AIzaSyA6GuK8h2YGgbWaRC8ybBLQa5L06ZcdePM",
+  apiKey: "AIzaSyA6GuK8h2YGgbWaRC8ybBlQa5LO67cdePM",
   authDomain: "wauklink-9b61f.firebaseapp.com",
   projectId: "wauklink-9b61f",
   storageBucket: "wauklink-9b61f.appspot.com",
@@ -25,7 +26,7 @@ const firebaseConfig = {
 };
 
 // =========================
-// INIT UNIQUE
+// INIT UNIQUE (ANTI DOUBLE INIT)
 // =========================
 const app = getApps().length === 0
   ? initializeApp(firebaseConfig)
@@ -35,3 +36,4 @@ const app = getApps().length === 0
 // EXPORTS
 // =========================
 export const auth = getAuth(app);
+export const db   = getFirestore(app);
