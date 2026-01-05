@@ -1,7 +1,6 @@
 // =================================================
-// WAUKLINK — Firebase central
+// WAUKLINK — Firebase central (OFFICIEL)
 // Compatible GitHub Pages
-// Version stable
 // =================================================
 
 import { initializeApp, getApps, getApp } from
@@ -14,7 +13,7 @@ import { getFirestore } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 // =========================
-// CONFIG FIREBASE
+// CONFIG FIREBASE (VRAIE)
 // =========================
 const firebaseConfig = {
   apiKey: "AIzaSyA6GuK8h2YGgbWaRC8ybBLQa5L06ZcdePM",
@@ -26,7 +25,7 @@ const firebaseConfig = {
 };
 
 // =========================
-// INIT UNIQUE (ANTI DOUBLE INIT)
+// INIT UNIQUE
 // =========================
 const app = getApps().length === 0
   ? initializeApp(firebaseConfig)
