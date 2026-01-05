@@ -52,6 +52,21 @@
 
 <!-- 📦 Script annonce -->
 <script type="module" src="./annonce.js"></script>
+  <!-- FORMULAIRE ANNONCE -->
+
+  <!-- 🔐 Protection -->
+  <script type="module">
+    import { requireUser } from "../shared/guard.js";
+    requireUser({ redirectTo: "../auth/login.html" });
+  </script>
+
+  <!-- 📦 Script annonce -->
+  <script type="module" src="./annonce.js"></script>
+
+  <!-- 👤 Statut utilisateur -->
+  <script type="module" src="../shared/user_status.js"></script>
+</body>
+</html>
 
 </body>
 </html>
