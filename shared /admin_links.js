@@ -38,4 +38,3 @@ document.addEventListener("DOMContentLoaded", () => {
       adminLinks.classList.add("hidden");
     }
   });
-});
