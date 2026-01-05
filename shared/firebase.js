@@ -16,7 +16,6 @@ import { getFirestore } from
 // CONFIG FIREBASE (VRAIE)
 // =========================
 const firebaseConfig = {
- const firebaseConfig = {
   apiKey: "AIzaSyA6GuK8h2YGgbWaRC8ybBLQa5L06ZcdePM",
   authDomain: "wauklink-9b61f.firebaseapp.com",
   projectId: "wauklink-9b61f",
