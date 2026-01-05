@@ -274,6 +274,34 @@ textarea:focus {
 }
 
 /* =========================
+   USER STATUS (HEADER)
+========================= */
+.user-status,
+.guest-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  margin-top: 6px;
+}
+.user-status span {
+  font-weight: 600;
+  color: #d1fae5;
+}
+.user-status button {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid #ef4444;
+  background: rgba(239, 68, 68, 0.15);
+  color: #fecaca;
+  cursor: pointer;
+  font-size: 14px;
+}
+.user-status button:hover {
+  background: rgba(239, 68, 68, 0.25);
+}
+
+/* =========================
    RESPONSIVE
 ========================= */
 @media (max-width: 640px) {
@@ -286,36 +314,5 @@ textarea:focus {
     flex-direction: column;
     align-items: flex-start;
   }
-   
- /* =========================
-   USER STATUS (HEADER)
-========================= */
-.user-status,
-.guest-status {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 14px;
-  margin-top: 6px;
-}
-
-.user-status span {
-  font-weight: 600;
-  color: #d1fae5;
-}
-
-.user-status button {
-  padding: 6px 14px;
-  border-radius: 999px;
-  border: 1px solid #ef4444;
-  background: rgba(239, 68, 68, 0.15);
-  color: #fecaca;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.user-status button:hover {
-  background: rgba(239, 68, 68, 0.25);
-}
   
 }
