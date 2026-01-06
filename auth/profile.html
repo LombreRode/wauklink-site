@@ -6,6 +6,7 @@
   <title>Devenir prestataire — WAUKLINK</title>
   <link rel="stylesheet" href="../style.css">
 </head>
+
 <body>
 
 <header class="topbar">
@@ -24,41 +25,43 @@
 
 <main class="container main-layout">
   <section class="card" style="max-width:700px;margin:0 auto">
+
     <h2>Compléter mon activité</h2>
 
     <form id="profileForm" class="form-column">
-     <label>
-  Activité
-  <select id="activity" required>
-    <option value="">Choisir une activité</option>
 
-    <!-- NON PRO -->
-    <option value="non-pro">
-      Prestataire non professionnel (CESU)
-    </option>
+      <label>
+        Activité
+        <select id="activity" required>
+          <option value="">Choisir une activité</option>
 
-    <!-- PRO -->
-    <option value="pro-travaux">
-      Prestataire PRO — Travaux
-    </option>
-    <option value="pro-services">
-      Prestataire PRO — Services à la personne
-    </option>
-    <option value="pro-urgence">
-      Prestataire PRO — Urgences
-    </option>
-    <option value="pro-location">
-      Prestataire PRO — Location
-    </option>
-    <option value="pro-emploi">
-      Prestataire PRO — Emploi
-    </option>
+          <!-- NON PRO -->
+          <option value="non-pro">
+            Prestataire non professionnel (CESU)
+          </option>
 
-    <!-- AUTRES -->
-    <option value="vendeur">Vendeur</option>
-    <option value="loueur">Loueur</option>
-  </select>
-</label>
+          <!-- PRO -->
+          <option value="pro-travaux">
+            Prestataire PRO — Travaux
+          </option>
+          <option value="pro-services">
+            Prestataire PRO — Services à la personne
+          </option>
+          <option value="pro-urgence">
+            Prestataire PRO — Urgences
+          </option>
+          <option value="pro-location">
+            Prestataire PRO — Location
+          </option>
+          <option value="pro-emploi">
+            Prestataire PRO — Emploi
+          </option>
+
+          <!-- AUTRES -->
+          <option value="vendeur">Vendeur</option>
+          <option value="loueur">Loueur</option>
+        </select>
+      </label>
 
       <label>
         Description de l’activité
@@ -72,11 +75,12 @@
       <button type="submit" class="btn btn-ok">
         Enregistrer
       </button>
+
     </form>
 
     <p id="msg" class="meta" aria-live="polite"></p>
 
-    <!-- ✅ BOUTON ESPACE PRESTATAIRE (CACHÉ PAR DÉFAUT) -->
+    <!-- 🔹 ESPACE PRESTATAIRE (PRO UNIQUEMENT) -->
     <div id="proAccess" style="margin-top:20px; display:none;">
       <a href="../dashboard/pro.html" class="btn btn-outline">
         Espace prestataire
@@ -89,11 +93,14 @@
 <footer class="footer">
   <div class="container footer-row">
     <span>© WAUKLINK</span>
+
     <nav class="footer-nav">
       <a class="link" href="../pricing.html">Tarifs</a>
       <a class="link" href="../legal/index.html">CGU</a>
       <a class="link" href="../legal/privacy.html">Confidentialité</a>
-      <a class="link" href="../legal/mentions-legales.html">Mentions légales</a>
+      <a class="link" href="../legal/mentions-legales.html">
+        Mentions légales
+      </a>
     </nav>
 
     <nav class="footer-nav hidden" id="adminLinks">
