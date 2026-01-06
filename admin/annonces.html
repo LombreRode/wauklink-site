@@ -22,9 +22,7 @@
 
 <main class="container main-layout">
   <h2>Annonces en attente</h2>
-  <p id="msg" class="meta" aria-live="polite">
-    Vérification des droits…
-  </p>
+  <p id="msg" class="meta">Chargement…</p>
 
   <section class="card">
     <table class="table">
@@ -54,12 +52,10 @@
   </div>
 </footer>
 
-<!-- UI admin -->
-<script type="module" src="../shared/admin_links.js"></script>
-
 <script type="module">
-import { requireModerator } from "../shared/guard.js";
-import { db } from "../shared/firebase.js";
+import { auth, db } from "../shared/firebase.js";
+import { onAuthStateChanged } from
+  "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import {
   collection,
   query,
@@ -68,116 +64,78 @@ import {
   getDocs,
   doc,
   updateDoc
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+} from
+  "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-document.addEventListener("DOMContentLoaded", () => {
-  const rows = document.getElementById("rows");
-  const msg  = document.getElementById("msg");
+const rows = document.getElementById("rows");
+const msg  = document.getElementById("msg");
+const setMsg = t => msg.textContent = t || "";
 
-  if (!rows || !msg) {
-    console.error("❌ annonces.html : éléments manquants");
+async function loadPending() {
+  setMsg("⏳ Chargement des annonces…");
+  rows.innerHTML = "";
+
+  const qy = query(
+    collection(db, "annonces"),   // ✅ BONNE COLLECTION
+    where("status", "==", "pending"),
+    orderBy("createdAt", "desc")
+  );
+
+  const snap = await getDocs(qy);
+
+  if (snap.empty) {
+    rows.innerHTML = `
+      <tr>
+        <td colspan="7" class="meta">Aucune annonce en attente.</td>
+      </tr>`;
+    setMsg("Tout est à jour.");
     return;
   }
 
-  const setMsg = t => msg.textContent = t || "";
+  setMsg(`${snap.size} annonce(s) en attente`);
 
-  async function loadPending() {
-    setMsg("⏳ Chargement des annonces en attente…");
-    rows.innerHTML = "";
+  snap.forEach(d => {
+    const a = d.data();
+    const tr = document.createElement("tr");
 
-    try {
-      const qy = query(
-        collection(db, "annonces_location"),
-        where("status", "==", "pending"),
-        orderBy("createdAt", "desc")
-      );
+    tr.innerHTML = `
+      <td><strong>${a.title}</strong></td>
+      <td>${a.city}</td>
+      <td>${a.type}</td>
+      <td>${a.price ?? "-"} €</td>
+      <td>${a.userId}</td>
+      <td><span class="pill">${a.status}</span></td>
+      <td>
+        <button class="btn btn-ok">Valider</button>
+        <button class="btn btn-danger">Refuser</button>
+      </td>
+    `;
 
-      const snap = await getDocs(qy);
+    const [ok, no] = tr.querySelectorAll("button");
 
-      if (snap.empty) {
-        rows.innerHTML = `
-          <tr>
-            <td colspan="7" class="meta">
-              ✅ Aucune annonce en attente.
-            </td>
-          </tr>`;
-        setMsg("Tout est à jour.");
-        return;
-      }
-
-      setMsg(`📋 ${snap.size} annonce(s) en attente`);
-
-      snap.forEach(d => {
-        const a = d.data();
-        const tr = document.createElement("tr");
-
-        tr.innerHTML = `
-          <td><strong>${a.titre ?? "Annonce"}</strong></td>
-          <td>${a.ville ?? "-"}</td>
-          <td>${a.type ?? "-"}</td>
-          <td>${a.prix ?? "-"} €</td>
-          <td class="meta">
-            ${a.ownerEmail ?? a.ownerUid ?? "-"}
-          </td>
-          <td>
-            <span class="pill">${a.status}</span>
-          </td>
-          <td>
-            <div class="row-actions">
-              <button class="btn btn-ok">Valider</button>
-              <button class="btn btn-danger">Refuser</button>
-            </div>
-          </td>
-        `;
-
-        const [ok, no] = tr.querySelectorAll("button");
-
-        ok.onclick = async () => {
-          await updateDoc(
-            doc(db, "annonces_location", d.id),
-            { status: "active" }
-          );
-          loadPending();
-        };
-
-        no.onclick = async () => {
-          await updateDoc(
-            doc(db, "annonces_location", d.id),
-            { status: "removed" }
-          );
-          loadPending();
-        };
-
-        rows.appendChild(tr);
-      });
-
-    } catch (err) {
-      console.error("❌ annonces admin error:", err);
-      setMsg("❌ Accès refusé ou erreur Firestore");
-      rows.innerHTML = `
-        <tr>
-          <td colspan="7" class="meta">
-            Impossible de charger les annonces.
-          </td>
-        </tr>`;
-    }
-  }
-
-  // 🔐 MODÉRATION (admin OU moderator)
-  requireModerator({
-    redirectTo: "../auth/login.html",
-    onOk: () => {
-      setMsg("✅ Accès modération confirmé");
+    ok.onclick = async () => {
+      await updateDoc(doc(db, "annonces", d.id), { status: "active" });
       loadPending();
-    }
+    };
+
+    no.onclick = async () => {
+      await updateDoc(doc(db, "annonces", d.id), { status: "removed" });
+      loadPending();
+    };
+
+    rows.appendChild(tr);
   });
+}
+
+onAuthStateChanged(auth, user => {
+  if (!user) {
+    location.href = "../auth/login.html";
+    return;
+  }
+  loadPending();
 });
-<!-- contenu HTML -->
-
-<script type="module" src="./annonces.js"></script>
-</body>
-</html>
-
+</script>
 
 </body>
 </html>
+
