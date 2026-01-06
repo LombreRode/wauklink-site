@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="../style.css" />
 </head>
 <body>
+
 <header class="topbar">
   <div class="container">
     <h1>WAUKLINK</h1>
@@ -19,15 +20,13 @@
 
   <p id="statusMsg" class="meta">Chargement…</p>
 
-  <section id="blocked" class="card" style="display:none">
-    <p style="color:#ff6666">
-      Abonnement requis pour accéder aux annonces.
-    </p>
-  </section>
-
-  <section id="content" style="display:none">
+  <section id="content">
     <div id="list" class="grid"></div>
   </section>
+
+  <p id="empty" class="muted hidden">
+    Aucune annonce disponible.
+  </p>
 
   <div style="margin-top:20px">
     <a href="../index.html">← Accueil</a>
@@ -35,19 +34,19 @@
 </main>
 
 <script type="module">
-  import { auth, db } from "../shared/firebase.js";
-  import { onAuthStateChanged } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import { db } from "../shared/firebase.js";
   import {
-    collection, query, where, orderBy, getDocs,
-    doc, getDoc
+    collection,
+    query,
+    where,
+    orderBy,
+    getDocs
   } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
   const statusMsg = document.getElementById("statusMsg");
-  const blocked = document.getElementById("blocked");
-  const content = document.getElementById("content");
   const list = document.getElementById("list");
+  const emptyMsg = document.getElementById("empty");
 
   const esc = s =>
     String(s ?? "").replace(/[&<>"']/g, m =>
@@ -56,77 +55,45 @@
 
   async function loadAnnonces() {
     list.innerHTML = "";
-    const qy = query(
-      collection(db, "annonces_location"),
+    statusMsg.textContent = "Chargement…";
+
+    const q = query(
+      collection(db, "annonces"),
       where("status", "==", "active"),
       orderBy("createdAt", "desc")
     );
-    const snap = await getDocs(qy);
+
+    const snap = await getDocs(q);
+
+    statusMsg.textContent = "";
+
     if (snap.empty) {
-      list.innerHTML = "<p>Aucune annonce disponible.</p>";
+      emptyMsg.classList.remove("hidden");
       return;
     }
+
+    emptyMsg.classList.add("hidden");
+
     snap.forEach(d => {
       const a = d.data();
-      const el = document.createElement("div");
+
+      const el = document.createElement("a");
       el.className = "card";
+      el.href = `./location-detail.html?id=${d.id}`;
+
       el.innerHTML = `
-        <b>${esc(a.titre)}</b>
-        <div class="meta">${esc(a.ville)} — ${esc(a.prix)} €</div>
-        <p>${esc(a.description || "")}</p>
+        <h3>${esc(a.title)}</h3>
+        <p class="meta">${esc(a.city)} — ${esc(a.type)}</p>
+        <p><strong>Prix :</strong> ${a.price ?? "—"} €</p>
       `;
+
       list.appendChild(el);
     });
   }
 
-  // 🔐 LOGIQUE D’ACCÈS
-  onAuthStateChanged(auth, async user => {
-    blocked.style.display = "none";
-    content.style.display = "none";
-
-    // 👀 Visiteur
-    if (!user) {
-      statusMsg.textContent = "Consultation publique.";
-      content.style.display = "block";
-      loadAnnonces();
-      return;
-    }
-
-    const snap = await getDoc(doc(db, "users", user.uid));
-    if (!snap.exists()) {
-      statusMsg.textContent = "Profil introuvable.";
-      blocked.style.display = "block";
-      return;
-    }
-
-    const u = snap.data();
-    const role = u.role || "user";
-    const sub = u.abonnement?.type || "free";
-    const proValidated = u.pro?.validated === true;
-
-    // FREE → bloqué
-    if (sub === "free") {
-      blocked.style.display = "block";
-      return;
-    }
-
-    // PARTIAL → OK pour user
-    if (sub === "partial" && role !== "pro") {
-      content.style.display = "block";
-      loadAnnonces();
-      return;
-    }
-
-    // PRO non validé → bloqué
-    if (role === "pro" && !proValidated) {
-      blocked.style.display = "block";
-      return;
-    }
-
-    // ✅ ACCÈS OK
-    content.style.display = "block";
-    loadAnnonces();
-  });
+  // 🔓 Accès public pour B
+  loadAnnonces();
 </script>
+
 </body>
 </html>
