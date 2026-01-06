@@ -27,19 +27,22 @@ document.addEventListener("DOMContentLoaded", () => {
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        const activity =
-          document.getElementById("activity")?.value.trim();
+       const activity =
+  document.getElementById("activity")?.value.trim();
+const description =
+  document.getElementById("description")?.value.trim();
 
-        if (!activity) {
-          msg.textContent = "❌ Activité obligatoire";
-          return;
-        }
+if (!activity) {
+  msg.textContent = "❌ Activité obligatoire";
+  return;
+}
 
-        try {
-          await updateDoc(doc(db, "users", user.uid), {
-            activity,
-            updatedAt: serverTimestamp()
-          });
+await updateDoc(doc(db, "users", user.uid), {
+  activity,
+  description,
+  updatedAt: serverTimestamp()
+});
+
           msg.textContent = "✅ Activité enregistrée";
         } catch (err) {
           console.error(err);
