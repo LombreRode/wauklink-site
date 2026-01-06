@@ -141,6 +141,16 @@
 
 <!-- AUTH STATUS -->
 <script type="module" src="./shared/pricing-auth.js"></script>
+  
+import { signOut } from
+  "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", async () => {
+    await signOut(auth);
+    window.location.href = "./index.html";
+  });
+}
 
 </body>
 </html>
