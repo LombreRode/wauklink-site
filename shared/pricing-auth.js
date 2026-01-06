@@ -8,7 +8,11 @@ const dashboardBtn = document.querySelector(".btn-dashboard");
 const logoutBtn = document.querySelector(".btn-logout");
 
 onAuthStateChanged(auth, (user) => {
-  if (user) {
+  if (user) {// 🔁 Rediriger la carte "Gratuit" si connecté
+const freeCard = document.querySelector(".free-card");
+if (user && freeCard) {
+  freeCard.href = "./dashboard/index.html";
+}
     // 🔒 Utilisateur connecté
     loginBtn?.classList.add("hidden");
     signupLinks.forEach(el => el.classList.add("hidden"));
