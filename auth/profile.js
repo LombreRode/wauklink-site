@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
     onOk: (user, profile) => {
 
       // 🔹 Afficher espace prestataire si PRO
-      if (profile.role === "pro" && proAccess) {
+      if ((profile.role === "admin" || profile.isPro === true) && proAccess) {
         proAccess.style.display = "block";
       }
 
