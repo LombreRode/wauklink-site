@@ -11,7 +11,6 @@ import {
 const form = document.getElementById("annonceForm");
 const msg  = document.getElementById("msg");
 
-// Sécurité : formulaire absent
 if (!form) {
   console.error("Formulaire annonce introuvable");
 }
@@ -24,32 +23,32 @@ onAuthStateChanged(auth, (user) => {
     msg.textContent = "";
 
     const title = document.getElementById("title")?.value.trim();
+    const city = document.getElementById("city")?.value.trim();
     const phone = document.getElementById("phone")?.value.trim();
     const postalCode = document.getElementById("postalCode")?.value.trim();
-    const city = document.getElementById("city")?.value.trim();
     const type = document.getElementById("type")?.value;
     const price = Number(document.getElementById("price")?.value);
     const description = document.getElementById("description")?.value.trim();
 
     if (!title || !city || !type || !description || !phone || !postalCode) {
-      msg.textContent = "Tous les champs sont obligatoires (téléphone et code postal inclus).";
+      msg.textContent =
+        "Tous les champs sont obligatoires (téléphone et code postal inclus).";
       return;
-  }
+    }
 
     try {
       await addDoc(collection(db, "annonces"), {
-  title,
-  city,
-  postalCode,   // 📮 AJOUTÉ
-  phone,        // 📞 AJOUTÉ
-  type,
-  price,
-  description,
-  userId: user.uid,
-  status: "pending",
-  createdAt: serverTimestamp()
-});
-
+        title,
+        city,
+        postalCode,
+        phone,
+        type,
+        price,
+        description,
+        userId: user.uid,
+        status: "pending",
+        createdAt: serverTimestamp()
+      });
 
       msg.textContent = "Annonce publiée avec succès 🎉";
       form.reset();
@@ -60,7 +59,3 @@ onAuthStateChanged(auth, (user) => {
     }
   });
 });
-
-<script type="module" src="./annonce-location.js"></script>
-</body>
-</html>
