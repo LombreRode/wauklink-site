@@ -55,3 +55,7 @@ onAuthStateChanged(auth, (user) => {
     }
   });
 });
+
+<script type="module" src="./annonce-location.js"></script>
+</body>
+</html>
