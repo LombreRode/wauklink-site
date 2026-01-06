@@ -37,7 +37,7 @@ onAuthStateChanged(auth, (user) => {
         price,
         description,
         userId: user.uid,
-        status: "active",
+        status: "pending"
         createdAt: serverTimestamp()
       });
 
