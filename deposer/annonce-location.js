@@ -31,10 +31,10 @@ onAuthStateChanged(auth, (user) => {
     const price = Number(document.getElementById("price")?.value);
     const description = document.getElementById("description")?.value.trim();
 
-    if (!title || !city || !type || !description) {
-      msg.textContent = "Tous les champs sont obligatoires.";
+    if (!title || !city || !type || !description || !phone || !postalCode) {
+      msg.textContent = "Tous les champs sont obligatoires (téléphone et code postal inclus).";
       return;
-    }
+  }
 
     try {
       await addDoc(collection(db, "annonces"), {
