@@ -4,45 +4,45 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Tarifs – WAUKLINK</title>
-
-  <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="./style.css">
 </head>
-
 <body>
 
 <!-- =========================
      HEADER
 ========================= -->
-<nav class="topbar-nav">
+<header class="topbar">
+  <div class="container topbar-row">
+    <h1>WAUKLINK</h1>
 
-  <!-- 👤 VISITEUR -->
-  <a href="./auth/login.html" class="btn btn-login">
-    Connexion
-  </a>
+    <nav class="topbar-nav">
+      <!-- 👤 VISITEUR -->
+      <a href="./auth/login.html" class="btn btn-login">
+        Connexion
+      </a>
 
-  <a href="./auth/register.html" class="signup-link">
-    Cliquer pour s’inscrire →
-  </a>
+      <a href="./auth/register.html" class="signup-link">
+        Cliquer pour s’inscrire →
+      </a>
 
-  <!-- 🔒 UTILISATEUR CONNECTÉ -->
-  <a href="./dashboard/index.html"
-     class="btn btn-dashboard hidden">
-    Tableau de bord
-  </a>
+      <!-- 🔒 UTILISATEUR CONNECTÉ -->
+      <a href="./dashboard/index.html"
+         class="btn btn-dashboard hidden">
+        Tableau de bord
+      </a>
 
-  <button class="btn btn-logout hidden" id="logoutBtn">
-    Déconnexion
-  </button>
-
-</nav>
+      <button class="btn btn-logout hidden" id="logoutBtn">
+        Déconnexion
+      </button>
+    </nav>
+  </div>
+</header>
 
 <!-- =========================
      MAIN
 ========================= -->
 <main class="container main-layout">
 
-  <!-- INTRO -->
   <section class="center mb-xl">
     <h2>Des tarifs simples et transparents</h2>
     <p class="muted">
@@ -50,7 +50,6 @@
     </p>
   </section>
 
-  <!-- TARIFS -->
   <section class="pricing-grid">
 
     <!-- GRATUIT -->
@@ -98,7 +97,6 @@
 
   </section>
 
-  <!-- NOTE -->
   <section class="center mt-xl">
     <p class="small muted">
       Les abonnements payants seront activés prochainement.
@@ -117,15 +115,10 @@
     <nav class="footer-nav">
       <a class="link" href="./pricing.html">Tarifs</a>
       <a class="link" href="./legal/index.html">CGU</a>
-      <a class="link" href="./legal/privacy.html">
-        Confidentialité
-      </a>
-      <a class="link" href="./legal/mentions-legales.html">
-        Mentions légales
-      </a>
+      <a class="link" href="./legal/privacy.html">Confidentialité</a>
+      <a class="link" href="./legal/mentions-legales.html">Mentions légales</a>
     </nav>
 
-    <!-- 🔐 LIENS ADMIN -->
     <nav class="footer-nav hidden" id="adminLinks">
       <a class="link" href="./admin/index.html">Admin</a>
       <span class="sep">·</span>
@@ -136,21 +129,9 @@
   </div>
 </footer>
 
-<!-- 🔐 SCRIPT ADMIN -->
+<!-- SCRIPTS -->
 <script type="module" src="./shared/admin_links.js"></script>
-
-<!-- AUTH STATUS -->
 <script type="module" src="./shared/pricing-auth.js"></script>
-  
-import { signOut } from
-  "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", async () => {
-    await signOut(auth);
-    window.location.href = "./index.html";
-  });
-}
 
 </body>
 </html>
