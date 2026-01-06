@@ -11,18 +11,23 @@ import {
 const form = document.getElementById("annonceForm");
 const msg  = document.getElementById("msg");
 
+// Sécurité : formulaire absent
+if (!form) {
+  console.error("Formulaire annonce introuvable");
+}
+
 onAuthStateChanged(auth, (user) => {
-  if (!user) return;
+  if (!user || !form) return;
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     msg.textContent = "";
 
-    const title = document.getElementById("title").value.trim();
-    const city = document.getElementById("city").value.trim();
-    const type = document.getElementById("type").value;
-    const price = Number(document.getElementById("price").value);
-    const description = document.getElementById("description").value.trim();
+    const title = document.getElementById("title")?.value.trim();
+    const city = document.getElementById("city")?.value.trim();
+    const type = document.getElementById("type")?.value;
+    const price = Number(document.getElementById("price")?.value);
+    const description = document.getElementById("description")?.value.trim();
 
     if (!title || !city || !type || !description) {
       msg.textContent = "Tous les champs sont obligatoires.";
@@ -36,8 +41,8 @@ onAuthStateChanged(auth, (user) => {
         type,
         price,
         description,
-        userId: user.uid,
-        status: "pending"
+        userId: user.uid,        // 🔒 obligatoire (rules)
+        status: "pending",       // 🔒 obligatoire (modération)
         createdAt: serverTimestamp()
       });
 
