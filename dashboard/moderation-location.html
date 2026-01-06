@@ -1,169 +1,28 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Admin — Modération Annonces • WAUKLINK</title>
-
-  <!-- STYLE GLOBAL -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Modération annonces — Admin</title>
   <link rel="stylesheet" href="../style.css">
 </head>
-
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
-    <div>
-      <h1>WAUKLINK</h1>
-      <div class="subtitle">Admin • Modération • Annonces</div>
-    </div>
-
-    <nav class="topbar-nav">
-      <a class="btn" href="../admin/index.html">← Dashboard</a>
+    <h1>Modération annonces</h1>
+    <nav>
+      <a href="./index.html" class="btn">← Dashboard</a>
     </nav>
   </div>
 </header>
 
-<main class="container main-layout">
+<main class="container">
   <h2>Annonces en attente</h2>
-
-  <p class="meta">
-    Filtrer par catégorie :
-  </p>
-
-  <!-- FILTRE CATÉGORIE -->
-  <select id="filterCategorie">
-    <option value="">Toutes</option>
-    <option value="location">Location</option>
-    <option value="service">Service</option>
-    <option value="vente">Vente</option>
-    <option value="autre">Autre</option>
-  </select>
-
-  <p id="msg" class="meta" aria-live="polite"></p>
-
-  <!-- GRID -->
-  <section id="grid" class="grid"></section>
+  <section id="list" class="grid"></section>
+  <p id="empty" class="muted hidden">Aucune annonce à modérer.</p>
 </main>
 
-<footer class="footer">
-  <div class="container footer-row">
-    <span>© WAUKLINK</span>
-
-    <nav class="footer-nav">
-      <a class="link" href="../pricing.html">Tarifs</a>
-      <a class="link" href="../legal/index.html">CGU</a>
-      <a class="link" href="../legal/privacy.html">Confidentialité</a>
-      <a class="link" href="../legal/mentions-legales.html">
-        Mentions légales
-      </a>
-    </nav>
-  </div>
-</footer>
-
-<!-- 🔐 SCRIPT ADMIN -->
-<script type="module" src="../shared/admin_links.js"></script>
-
-<!-- =========================
-     LOGIQUE MODÉRATION
-========================= -->
-<script type="module">
-  import { db } from "../shared/firebase.js";
-  import { requireAdmin } from "../shared/guard.js";
-  import {
-    collection, query, where, orderBy, limit,
-    getDocs, doc, updateDoc
-  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
-  const grid = document.getElementById("grid");
-  const msg  = document.getElementById("msg");
-  const filter = document.getElementById("filterCategorie");
-
-  const esc = s =>
-    String(s ?? "").replace(/[&<>"']/g, m =>
-      ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
-    );
-
-  async function loadPending() {
-    grid.innerHTML = "";
-    msg.textContent = "⏳ Chargement des annonces…";
-
-    const constraints = [
-      where("status", "==", "pending"),
-      orderBy("createdAt", "desc"),
-      limit(50)
-    ];
-
-    if (filter.value) {
-      constraints.unshift(
-        where("categorie", "==", filter.value)
-      );
-    }
-
-    const qy = query(
-      collection(db, "annonces"),
-      ...constraints
-    );
-
-    const snap = await getDocs(qy);
-
-    if (snap.empty) {
-      msg.textContent = "Aucune annonce en attente.";
-      grid.innerHTML = "<p class='meta'>Tout est à jour.</p>";
-      return;
-    }
-
-    msg.textContent = `📋 ${snap.size} annonce(s) en attente`;
-
-    snap.forEach(d => {
-      const a = d.data();
-      const card = document.createElement("div");
-      card.className = "card";
-
-      card.innerHTML = `
-        <strong>${esc(a.titre || "Annonce")}</strong>
-        <div class="meta">
-          ${esc(a.ville || "—")} • ${esc(a.categorie || "—")}
-        </div>
-        <div class="meta">${esc(a.prix ?? "—")} €</div>
-        <p class="meta" style="margin-top:10px;white-space:pre-wrap">
-          ${esc(a.description || "")}
-        </p>
-        <div class="row-actions">
-          <button class="btn btn-ok">Valider</button>
-          <button class="btn btn-danger">Refuser</button>
-        </div>
-      `;
-
-      const [okBtn, noBtn] = card.querySelectorAll("button");
-
-      okBtn.onclick = async () => {
-        await updateDoc(
-          doc(db, "annonces", d.id),
-          { status: "active" }
-        );
-        loadPending();
-      };
-
-      noBtn.onclick = async () => {
-        await updateDoc(
-          doc(db, "annonces", d.id),
-          { status: "removed" }
-        );
-        loadPending();
-      };
-
-      grid.appendChild(card);
-    });
-  }
-
-  filter.addEventListener("change", loadPending);
-
-  // 🔐 ADMIN UNIQUEMENT
-  requireAdmin({
-    redirectTo: "../auth/login.html",
-    onOk: loadPending
-  });
-</script>
-
+<script type="module" src="./moderation-location.js"></script>
 </body>
 </html>
