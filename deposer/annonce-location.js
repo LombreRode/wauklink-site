@@ -24,6 +24,8 @@ onAuthStateChanged(auth, (user) => {
     msg.textContent = "";
 
     const title = document.getElementById("title")?.value.trim();
+    const phone = document.getElementById("phone")?.value.trim();
+    const postalCode = document.getElementById("postalCode")?.value.trim();
     const city = document.getElementById("city")?.value.trim();
     const type = document.getElementById("type")?.value;
     const price = Number(document.getElementById("price")?.value);
