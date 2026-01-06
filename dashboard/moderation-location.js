@@ -1,62 +1,64 @@
 import { db } from "../shared/firebase.js";
-import { requireAdmin } from "../shared/guard.js";
 import {
   collection,
   query,
   where,
-  getDocs,
+  onSnapshot,
   updateDoc,
-  doc
+  doc,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-const list = document.getElementById("list");
-const empty = document.getElementById("empty");
+const list = document.getElementById("pendingList");
 
-requireAdmin({
-  redirectTo: "../auth/login.html",
-  onOk: loadPending
-});
+if (!list) {
+  console.error("Liste admin introuvable");
+}
 
-async function loadPending() {
+const q = query(
+  collection(db, "annonces"),
+  where("status", "==", "pending")
+);
+
+onSnapshot(q, (snapshot) => {
   list.innerHTML = "";
 
-  const q = query(
-    collection(db, "annonces"),
-    where("status", "==", "pending")
-  );
-
-  const snap = await getDocs(q);
-
-  if (snap.empty) {
-    empty.classList.remove("hidden");
+  if (snapshot.empty) {
+    list.innerHTML = "<p>Aucune annonce à modérer</p>";
     return;
   }
 
-  snap.forEach(d => {
-    const a = d.data();
+  snapshot.forEach((docSnap) => {
+    const a = docSnap.data();
 
-    const card = document.createElement("div");
-    card.className = "card";
+    const div = document.createElement("div");
+    div.className = "admin-card";
 
-    card.innerHTML = `
-      <h3>${a.title || "Sans titre"}</h3>
-      <p>${a.description || ""}</p>
-      <div class="actions">
-        <button class="btn btn-ok">Valider</button>
-        <button class="btn btn-danger">Refuser</button>
-      </div>
+    div.innerHTML = `
+      <h3>${a.title}</h3>
+      <p><strong>Ville :</strong> ${a.city}</p>
+      <p><strong>Type :</strong> ${a.type}</p>
+
+      <button class="btn-validate">Valider</button>
+      <button class="btn-refuse">Refuser</button>
     `;
 
-    const [btnOk, btnNo] = card.querySelectorAll("button");
+    // ✅ VALIDER
+    div.querySelector(".btn-validate").onclick = async () => {
+      await updateDoc(doc(db, "annonces", docSnap.id), {
+        status: "active",
+        validatedAt: serverTimestamp()
+      });
+    };
 
-    btnOk.onclick = () => updateStatus(d.id, "active");
-    btnNo.onclick = () => updateStatus(d.id, "refused");
+    // ❌ REFUSER
+    div.querySelector(".btn-refuse").onclick = async () => {
+      await updateDoc(doc(db, "annonces", docSnap.id), {
+        status: "refused",
+        refusedAt: serverTimestamp()
+      });
+    };
 
-    list.appendChild(card);
+    list.appendChild(div);
   });
-}
-
-async function updateStatus(id, status) {
-  await updateDoc(doc(db, "annonces", id), { status });
-  loadPending();
-}
+});
