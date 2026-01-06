@@ -63,7 +63,8 @@ import {
   orderBy,
   getDocs,
   doc,
-  updateDoc
+  updateDoc,
+  getDoc
 } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
@@ -76,7 +77,7 @@ async function loadPending() {
   rows.innerHTML = "";
 
   const qy = query(
-    collection(db, "annonces"),   // ✅ BONNE COLLECTION
+    collection(db, "annonces"),
     where("status", "==", "pending"),
     orderBy("createdAt", "desc")
   );
@@ -127,15 +128,26 @@ async function loadPending() {
   });
 }
 
-onAuthStateChanged(auth, user => {
+// 🔐 AUTH + VÉRIFICATION ADMIN
+onAuthStateChanged(auth, async user => {
   if (!user) {
     location.href = "../auth/login.html";
     return;
   }
+
+  const snap = await getDoc(doc(db, "users", user.uid));
+  if (!snap.exists() || snap.data().role !== "admin") {
+    setMsg("❌ Accès réservé à l’administration");
+    rows.innerHTML = `
+      <tr>
+        <td colspan="7" class="meta">Accès refusé</td>
+      </tr>`;
+    return;
+  }
+
   loadPending();
 });
 </script>
 
 </body>
 </html>
-
