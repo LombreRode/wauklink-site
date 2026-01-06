@@ -38,15 +38,18 @@ onAuthStateChanged(auth, (user) => {
 
     try {
       await addDoc(collection(db, "annonces"), {
-        title,
-        city,
-        type,
-        price,
-        description,
-        userId: user.uid,        // 🔒 obligatoire (rules)
-        status: "pending",       // 🔒 obligatoire (modération)
-        createdAt: serverTimestamp()
-      });
+  title,
+  city,
+  postalCode,   // 📮 AJOUTÉ
+  phone,        // 📞 AJOUTÉ
+  type,
+  price,
+  description,
+  userId: user.uid,
+  status: "pending",
+  createdAt: serverTimestamp()
+});
+
 
       msg.textContent = "Annonce publiée avec succès 🎉";
       form.reset();
