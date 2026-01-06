@@ -7,10 +7,19 @@ import {
 import { requireUser } from "../shared/guard.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-
   const form = document.getElementById("profileForm");
   const msg = document.getElementById("msg");
   const proAccess = document.getElementById("proAccess");
+
+  // 🔒 Sécurité : éviter crash si le HTML change
+  if (!form) {
+    console.error("Formulaire introuvable");
+    return;
+  }
+
+  requireUser({
+    redirectTo: "./login.html",
+    onOk: (user, profile) => {
 
   requireUser({
     redirectTo: "./login.html",
