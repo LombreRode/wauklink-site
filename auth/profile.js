@@ -1,32 +1,28 @@
 import { db } from "../shared/firebase.js";
-import { doc, updateDoc, serverTimestamp } from
-  "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import {
+  doc,
+  updateDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 import { requireUser } from "../shared/guard.js";
 
 document.addEventListener("DOMContentLoaded", () => {
+
   const form = document.getElementById("profileForm");
   const msg = document.getElementById("msg");
   const proAccess = document.getElementById("proAccess");
 
-  if (!form || !msg) {
-    console.error("Formulaire ou message introuvable");
-    return;
-  }
-
   requireUser({
     redirectTo: "./login.html",
+
     onOk: (user, profile) => {
 
-      /* ===============================
-         AFFICHAGE ESPACE PRESTATAIRE
-      =============================== */
+      // 🔹 Afficher espace prestataire si PRO
       if (profile.role === "pro" && proAccess) {
         proAccess.style.display = "block";
       }
 
-      /* ===============================
-         PRÉ-REMPLISSAGE ACTIVITÉ
-      =============================== */
+      // 🔹 Pré-remplissage
       if (profile.activity) {
         const activityInput = document.getElementById("activity");
         if (activityInput) {
@@ -34,9 +30,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      /* ===============================
-         ENREGISTREMENT FORMULAIRE
-      =============================== */
+      if (profile.description) {
+        const descInput = document.getElementById("description");
+        if (descInput) {
+          descInput.value = profile.description;
+        }
+      }
+
+      // 🔹 Enregistrement
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
@@ -50,8 +51,6 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        msg.textContent = "⏳ Enregistrement…";
-
         try {
           await updateDoc(doc(db, "users", user.uid), {
             activity,
@@ -61,7 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           msg.textContent = "✅ Activité enregistrée";
         } catch (err) {
-          console.error("Erreur profil :", err);
+          console.error(err);
           msg.textContent = "❌ Erreur lors de l’enregistrement";
         }
       });
