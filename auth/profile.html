@@ -4,58 +4,68 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Devenir prestataire — WAUKLINK</title>
-
-  <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="../style.css">
 </head>
-
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
       <div class="subtitle">Devenir prestataire</div>
     </div>
-
     <nav class="topbar-nav">
-      <!-- ✅ CORRIGÉ -->
       <a class="btn" href="../dashboard/index.html">
         ← Tableau de bord
       </a>
     </nav>
   </div>
 </header>
-  
-<div style="margin-bottom:15px">
-  <a href="../dashboard/index.html" class="btn">
-    ← Retour tableau de bord
-  </a>
-</div>
 
 <main class="container main-layout">
   <section class="card" style="max-width:700px;margin:0 auto">
     <h2>Compléter mon activité</h2>
 
     <form id="profileForm" class="form-column">
-      <label>
-        Activité
-        <select id="activity" required>
-          <option value="">Choisir une activité</option>
-          <option value="non-pro">
-            Prestataire non professionnel (CESU)
-          </option>
-          <option value="vendeur">Vendeur</option>
-          <option value="loueur">Loueur</option>
-        </select>
-      </label>
+     <label>
+  Activité
+  <select id="activity" required>
+    <option value="">Choisir une activité</option>
+
+    <!-- NON PRO -->
+    <option value="non-pro">
+      Prestataire non professionnel (CESU)
+    </option>
+
+    <!-- PRO -->
+    <option value="pro-travaux">
+      Prestataire PRO — Travaux
+    </option>
+    <option value="pro-services">
+      Prestataire PRO — Services à la personne
+    </option>
+    <option value="pro-urgence">
+      Prestataire PRO — Urgences
+    </option>
+    <option value="pro-location">
+      Prestataire PRO — Location
+    </option>
+    <option value="pro-emploi">
+      Prestataire PRO — Emploi
+    </option>
+
+    <!-- AUTRES -->
+    <option value="vendeur">Vendeur</option>
+    <option value="loueur">Loueur</option>
+  </select>
+</label>
 
       <label>
         Description de l’activité
         <textarea
           id="description"
-          placeholder="Décrivez votre activité"
-          required
           rows="4"
+          placeholder="Décrivez votre activité"
         ></textarea>
       </label>
 
@@ -65,36 +75,29 @@
     </form>
 
     <p id="msg" class="meta" aria-live="polite"></p>
-    <!-- 🔹 BOUTON ESPACE PRESTATAIRE (CACHÉ PAR DÉFAUT) -->
-<div id="proAccess" style="margin-top:20px; display:none;">
-  <a href="../dashboard/pro.html" class="btn btn-outline">
-    Espace prestataire
-  </a>
-</div>
+
+    <!-- ✅ BOUTON ESPACE PRESTATAIRE (CACHÉ PAR DÉFAUT) -->
+    <div id="proAccess" style="margin-top:20px; display:none;">
+      <a href="../dashboard/pro.html" class="btn btn-outline">
+        Espace prestataire
+      </a>
+    </div>
+
   </section>
 </main>
 
 <footer class="footer">
   <div class="container footer-row">
     <span>© WAUKLINK</span>
-
-    <!-- ✅ FOOTER CORRIGÉ -->
     <nav class="footer-nav">
       <a class="link" href="../pricing.html">Tarifs</a>
       <a class="link" href="../legal/index.html">CGU</a>
-      <a class="link" href="../legal/privacy.html">
-        Confidentialité
-      </a>
-      <a class="link" href="../legal/mentions-legales.html">
-        Mentions légales
-      </a>
+      <a class="link" href="../legal/privacy.html">Confidentialité</a>
+      <a class="link" href="../legal/mentions-legales.html">Mentions légales</a>
     </nav>
 
-    <!-- 🔐 LIENS ADMIN -->
     <nav class="footer-nav hidden" id="adminLinks">
-      <a class="link" href="../admin/index.html">
-        Admin
-      </a>
+      <a class="link" href="../admin/index.html">Admin</a>
       <span class="sep">·</span>
       <a class="link" href="../dashboard/moderation-location.html">
         Modération
@@ -103,10 +106,8 @@
   </div>
 </footer>
 
-<!-- 🔐 SCRIPT ADMIN -->
 <script type="module" src="../shared/admin_links.js"></script>
-
-<!-- LOGIQUE PROFIL -->
 <script type="module" src="./profile.js"></script>
+
 </body>
 </html>
