@@ -8,7 +8,7 @@
 <body>
 
 <h1>Nouvelle annonce</h1>
-  
+
 <div style="margin-bottom:15px">
   <a href="../dashboard/index.html" class="btn">
     ← Retour tableau de bord
@@ -16,7 +16,6 @@
 </div>
 
 <form id="annonceForm">
-
   <label>Titre
     <input type="text" id="title" required>
   </label>
@@ -26,15 +25,15 @@
   </label>
 
   <label>Type
-    <select id="type">
-  <option value="">Choisir</option>
-  <option value="location">Location</option>
-  <option value="travaux">Travaux</option>
-  <option value="urgences">Urgences</option>
-  <option value="services-personne">Services à la personne</option>
-  <option value="emploi">Emploi</option>
-  <option value="prestataire">Prestataire / Pro</option>
-</select>
+    <select id="type" required>
+      <option value="">Choisir</option>
+      <option value="location">Location</option>
+      <option value="travaux">Travaux</option>
+      <option value="urgences">Urgences</option>
+      <option value="services-personne">Services à la personne</option>
+      <option value="emploi">Emploi</option>
+      <option value="prestataire">Prestataire / Pro</option>
+    </select>
   </label>
 
   <label>Prix (€)
@@ -53,29 +52,14 @@
 <!-- 🔐 Protection utilisateur -->
 <script type="module">
   import { requireUser } from "../shared/guard.js";
-
-  requireUser({
-    redirectTo: "../auth/login.html"
-  });
+  requireUser({ redirectTo: "../auth/login.html" });
 </script>
 
-<!-- 📦 Script annonce -->
-<script type="module" src="./annonce.js"></script>
-  <!-- FORMULAIRE ANNONCE -->
+<!-- 📦 Script annonce (LE BON) -->
+<script type="module" src="./annonce-location.js"></script>
 
-  <!-- 🔐 Protection -->
-  <script type="module">
-    import { requireUser } from "../shared/guard.js";
-    requireUser({ redirectTo: "../auth/login.html" });
-  </script>
-
-  <!-- 📦 Script annonce -->
-  <script type="module" src="./annonce.js"></script>
-
-  <!-- 👤 Statut utilisateur -->
-  <script type="module" src="../shared/user_status.js"></script>
-</body>
-</html>
+<!-- 👤 Statut utilisateur -->
+<script type="module" src="../shared/user_status.js"></script>
 
 </body>
 </html>
