@@ -39,23 +39,73 @@
 <!-- =========================
      SCRIPT ANNONCES
 ========================= -->
-<script type="module">
-  import { db } from "/wauklink-site/shared/firebase.js";
-  import {
-    collection,
-    query,
-    where,
-    getDocs
-  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { db } from "../shared/firebase.js";
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  const titleEl = document.getElementById("pageTitle");
-  const msgEl   = document.getElementById("msg");
-  const listEl  = document.getElementById("list");
+const listEl = document.getElementById("list");
+const msgEl  = document.getElementById("msg");
+const titleEl = document.getElementById("pageTitle");
 
-  // 🔹 Paramètres envoyés par le carrousel
-  const params  = new URLSearchParams(location.search);
-  const type    = params.get("type");
-  const subType = params.get("subType");
+// 🔹 Paramètres URL
+const params = new URLSearchParams(location.search);
+const type = params.get("type"); // travaux, location, emploi, etc.
+
+// 🔹 Titre dynamique
+if (!type) {
+  titleEl.textContent = "Toutes les annonces";
+} else {
+  titleEl.textContent = type.charAt(0).toUpperCase() + type.slice(1);
+}
+
+// 🔹 Chargement annonces
+async function loadAnnonces() {
+  listEl.innerHTML = "";
+  msgEl.textContent = "Chargement…";
+
+  const constraints = [
+    where("status", "==", "active")
+  ];
+
+  if (type) {
+    constraints.push(where("type", "==", type));
+  }
+
+  const q = query(
+    collection(db, "annonces"),
+    ...constraints,
+    orderBy("createdAt", "desc")
+  );
+
+  const snap = await getDocs(q);
+
+  if (snap.empty) {
+    msgEl.textContent = "Aucune annonce disponible.";
+    return;
+  }
+
+  msgEl.textContent = `${snap.size} annonce(s)`;
+
+  snap.forEach(d => {
+    const a = d.data();
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <strong>${a.title}</strong>
+      <div class="meta">${a.city} • ${a.price ?? "—"} €</div>
+      <p class="meta">${a.description ?? ""}</p>
+    `;
+    listEl.appendChild(card);
+  });
+}
+
+loadAnnonces();
+
 
   // 🔹 TITRES SIMPLES
   if (type === "urgence") titleEl.textContent = "Urgences";
