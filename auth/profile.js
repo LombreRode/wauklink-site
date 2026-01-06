@@ -8,44 +8,60 @@ document.addEventListener("DOMContentLoaded", () => {
   const msg = document.getElementById("msg");
   const proAccess = document.getElementById("proAccess");
 
+  if (!form || !msg) {
+    console.error("Formulaire ou message introuvable");
+    return;
+  }
+
   requireUser({
     redirectTo: "./login.html",
     onOk: (user, profile) => {
 
-      // ✅ AFFICHER ESPACE PRESTATAIRE SI ROLE PRO
+      /* ===============================
+         AFFICHAGE ESPACE PRESTATAIRE
+      =============================== */
       if (profile.role === "pro" && proAccess) {
         proAccess.style.display = "block";
       }
 
-      // Pré-remplissage activité
+      /* ===============================
+         PRÉ-REMPLISSAGE ACTIVITÉ
+      =============================== */
       if (profile.activity) {
         const activityInput = document.getElementById("activity");
-        if (activityInput) activityInput.value = profile.activity;
+        if (activityInput) {
+          activityInput.value = profile.activity;
+        }
       }
 
-      // Enregistrement
+      /* ===============================
+         ENREGISTREMENT FORMULAIRE
+      =============================== */
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-       const activity =
-  document.getElementById("activity")?.value.trim();
-const description =
-  document.getElementById("description")?.value.trim();
+        const activity =
+          document.getElementById("activity")?.value.trim();
+        const description =
+          document.getElementById("description")?.value.trim();
 
-if (!activity) {
-  msg.textContent = "❌ Activité obligatoire";
-  return;
-}
+        if (!activity) {
+          msg.textContent = "❌ Activité obligatoire";
+          return;
+        }
 
-await updateDoc(doc(db, "users", user.uid), {
-  activity,
-  description,
-  updatedAt: serverTimestamp()
-});
+        msg.textContent = "⏳ Enregistrement…";
+
+        try {
+          await updateDoc(doc(db, "users", user.uid), {
+            activity,
+            description,
+            updatedAt: serverTimestamp()
+          });
 
           msg.textContent = "✅ Activité enregistrée";
         } catch (err) {
-          console.error(err);
+          console.error("Erreur profil :", err);
           msg.textContent = "❌ Erreur lors de l’enregistrement";
         }
       });
