@@ -85,16 +85,17 @@
       )
     );
 
-    let isPro = false;
-    userSnap.forEach(d => {
-      isPro = d.data().role === "pro";
-    });
+   let isAllowed = false;
 
-    if (!isPro) {
-      msg.textContent =
-        "⛔ Accès réservé aux comptes PRO.";
-      return;
-    }
+   userSnap.forEach(d => {
+     const data = d.data();
+     isAllowed = data.isPro === true || data.role === "admin";
+   });
+
+   if (!isAllowed) {
+     msg.textContent = "⛔ Accès réservé aux comptes PRO.";
+     return;
+   }
 
     loadProAnnonces(user.uid);
   });
