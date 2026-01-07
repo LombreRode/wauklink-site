@@ -23,13 +23,13 @@
   <h2>Mon profil</h2>
 
   <div class="card">
-    <p><strong>Nom :</strong> —</p>
-    <p><strong>Email :</strong> —</p>
-    <p><strong>Type de compte :</strong> Utilisateur</p>
-    <p class="meta">
-      Cette page sera reliée au compte utilisateur prochainement.
-    </p>
-  </div>
+  <p id="name"><strong>Nom :</strong> —</p>
+  <p id="email"><strong>Email :</strong> —</p>
+  <p id="type"><strong>Type de compte :</strong> Utilisateur</p>
+  <p class="meta">
+    Cette page sera reliée au compte utilisateur prochainement.
+  </p>
+</div>
 
   <div class="grid">
     <a class="card" href="../dashboard/index.html">
@@ -54,9 +54,9 @@
   import { doc, getDoc } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  const nameEl = document.querySelector("p strong")?.parentElement;
-  const emailEl = document.querySelectorAll("p")[1];
-  const typeEl = document.querySelectorAll("p")[2];
+  const nameEl  = document.getElementById("name");
+  const emailEl = document.getElementById("email");
+  const typeEl  = document.getElementById("type");
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
@@ -64,10 +64,9 @@
       return;
     }
 
-    // Email depuis Auth
-    emailEl.innerHTML = `<strong>Email :</strong> ${user.email}`;
+    emailEl.innerHTML =
+      `<strong>Email :</strong> ${user.email || "—"}`;
 
-    // Données Firestore
     const snap = await getDoc(doc(db, "users", user.uid));
     if (!snap.exists()) return;
 
@@ -76,7 +75,6 @@
     nameEl.innerHTML =
       `<strong>Nom :</strong> ${data.firstName || "—"}`;
 
-    // Statut du compte
     if (data.isPro === true) {
       typeEl.innerHTML =
         `<strong>Type de compte :</strong> 🟢 Compte PRO`;
@@ -86,6 +84,7 @@
     }
   });
 </script>
+
 
 
 </body>
