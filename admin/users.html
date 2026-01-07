@@ -2,11 +2,8 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Admin — Utilisateurs</title>
-
-  <!-- STYLE GLOBAL -->
-  <link rel="stylesheet" href="/wauklink-site/style.css">
+  <link rel="stylesheet" href="../style.css">
 </head>
 <body>
 
@@ -17,22 +14,14 @@
       <div class="subtitle">Admin — Utilisateurs</div>
     </div>
     <nav class="topbar-nav">
-      <a class="btn" href="/wauklink-site/admin/index.html">
-        ← Dashboard
-      </a>
+      <a class="btn" href="./index.html">← Dashboard</a>
     </nav>
   </div>
 </header>
 
 <main class="container main-layout">
-  <h2>Liste des utilisateurs</h2>
-
-  <!-- MESSAGE -->
-  <p id="msg" class="meta" aria-live="polite">
-    Vérification des droits…
-  </p>
-
-  <!-- LISTE -->
+  <h2>👥 Tous les utilisateurs</h2>
+  <p id="msg" class="meta">Chargement…</p>
   <section id="list" class="grid"></section>
 </main>
 
@@ -42,70 +31,50 @@
   </div>
 </footer>
 
-<!-- 🔐 LOGIQUE ADMIN -->
 <script type="module">
-import { requireAdmin } from "/wauklink-site/shared/guard.js";
-import { db } from "/wauklink-site/shared/firebase.js";
-import {
-  collection,
-  getDocs
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  import { db } from "../shared/firebase.js";
+  import { requireAdmin } from "../shared/guard.js";
+  import { collection, getDocs } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-document.addEventListener("DOMContentLoaded", () => {
-  const msg  = document.getElementById("msg");
   const list = document.getElementById("list");
-
-  if (!msg || !list) {
-    console.error("❌ users.html : éléments manquants");
-    return;
-  }
+  const msg  = document.getElementById("msg");
 
   async function loadUsers() {
-    msg.textContent = "⏳ Chargement des utilisateurs…";
     list.innerHTML = "";
+    const snap = await getDocs(collection(db, "users"));
 
-    try {
-      const snap = await getDocs(collection(db, "users"));
-
-      if (snap.empty) {
-        msg.textContent = "Aucun utilisateur trouvé.";
-        return;
-      }
-
-      msg.textContent = `👤 ${snap.size} utilisateur(s)`;
-
-      snap.forEach(docSnap => {
-        const u = docSnap.data();
-
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-          <strong>${u.email ?? "—"}</strong>
-          <div class="meta">
-            ${u.firstName ?? ""} ${u.lastName ?? ""}
-          </div>
-          <div class="meta">
-            Rôle : ${u.role ?? "user"}
-          </div>
-        `;
-
-        list.appendChild(card);
-      });
-
-    } catch (err) {
-      console.error("❌ Accès users admin:", err);
-      msg.textContent = "❌ Accès refusé (rules Firestore)";
-      list.innerHTML =
-        "<p class='meta'>Vous n’êtes pas autorisé à voir ces données.</p>";
+    if (snap.empty) {
+      msg.textContent = "Aucun utilisateur";
+      return;
     }
+
+    msg.textContent = `${snap.size} utilisateur(s)`;
+
+    snap.forEach(d => {
+      const u = d.data();
+
+      let badge = "⚪ User";
+      if (u.role === "admin") badge = "👑 Admin";
+      else if (u.isPro === true) badge = "🟢 PRO";
+
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <strong>${u.firstName || "—"}</strong>
+        <div class="meta">${u.email || ""}</div>
+        <div class="meta">${badge}</div>
+      `;
+      list.appendChild(card);
+    });
   }
 
-  // 🔐 SÉCURITÉ ADMIN UNIQUE
   requireAdmin({
-    redirectTo: "/wauklink-site/auth/login.html",
-    onOk: loadUsers
+    onOk: loadUsers,
+    onDenied: () => {
+      msg.textContent = "Accès réservé aux administrateurs";
+    }
   });
-});
 </script>
 
 </body>
