@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Admin — Annonces en attente</title>
-  <link rel="stylesheet" href="../style.css" />
+  <meta charset="utf-8">
+  <title>Admin — Annonces</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
 <body>
 
@@ -15,7 +15,7 @@
       <div class="subtitle">Validation des annonces</div>
     </div>
     <nav class="topbar-nav">
-      <a class="btn" href="./index.html">← Dashboard</a>
+      <a class="btn" href="/wauklink-site/admin/index.html">← Admin</a>
     </nav>
   </div>
 </header>
@@ -32,7 +32,7 @@
           <th>Ville</th>
           <th>Type</th>
           <th>Prix</th>
-          <th>Propriétaire</th>
+          <th>Utilisateur</th>
           <th>Statut</th>
           <th>Actions</th>
         </tr>
@@ -54,98 +54,59 @@
 
 <script type="module">
 import { auth, db } from "../shared/firebase.js";
-import { onAuthStateChanged } from
-  "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import {
-  collection,
-  query,
-  where,
-  orderBy,
-  getDocs,
-  doc,
-  updateDoc,
-  getDoc
-} from
-  "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { collection, query, where, orderBy, getDocs, doc, updateDoc, getDoc }
+  from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const rows = document.getElementById("rows");
 const msg  = document.getElementById("msg");
-const setMsg = t => msg.textContent = t || "";
 
-async function loadPending() {
-  setMsg("⏳ Chargement des annonces…");
-  rows.innerHTML = "";
-
-  const qy = query(
-    collection(db, "annonces"),
-    where("status", "==", "pending"),
-    orderBy("createdAt", "desc")
-  );
-
-  const snap = await getDocs(qy);
-
-  if (snap.empty) {
-    rows.innerHTML = `
-      <tr>
-        <td colspan="7" class="meta">Aucune annonce en attente.</td>
-      </tr>`;
-    setMsg("Tout est à jour.");
-    return;
-  }
-
-  setMsg(`${snap.size} annonce(s) en attente`);
-
-  snap.forEach(d => {
-    const a = d.data();
-    const tr = document.createElement("tr");
-
-    tr.innerHTML = `
-      <td><strong>${a.title}</strong></td>
-      <td>${a.city}</td>
-      <td>${a.type}</td>
-      <td>${a.price ?? "-"} €</td>
-      <td>${a.userId}</td>
-      <td><span class="pill">${a.status}</span></td>
-      <td>
-        <button class="btn btn-ok">Valider</button>
-        <button class="btn btn-danger">Refuser</button>
-      </td>
-    `;
-
-    const [ok, no] = tr.querySelectorAll("button");
-
-    ok.onclick = async () => {
-      await updateDoc(doc(db, "annonces", d.id), { status: "active" });
-      loadPending();
-    };
-
-    no.onclick = async () => {
-      await updateDoc(doc(db, "annonces", d.id), { status: "removed" });
-      loadPending();
-    };
-
-    rows.appendChild(tr);
-  });
-}
-
-// 🔐 AUTH + VÉRIFICATION ADMIN
 onAuthStateChanged(auth, async user => {
   if (!user) {
-    location.href = "../auth/login.html";
+    location.href = "/wauklink-site/auth/login.html";
     return;
   }
 
   const snap = await getDoc(doc(db, "users", user.uid));
   if (!snap.exists() || snap.data().role !== "admin") {
-    setMsg("❌ Accès réservé à l’administration");
-    rows.innerHTML = `
-      <tr>
-        <td colspan="7" class="meta">Accès refusé</td>
-      </tr>`;
+    msg.textContent = "Accès refusé";
     return;
   }
 
-  loadPending();
+  const q = query(
+    collection(db, "annonces"),
+    where("status", "==", "pending"),
+    orderBy("createdAt", "desc")
+  );
+
+  const res = await getDocs(q);
+  rows.innerHTML = "";
+
+  if (res.empty) {
+    rows.innerHTML = `<tr><td colspan="7">Aucune annonce</td></tr>`;
+    return;
+  }
+
+  res.forEach(d => {
+    const a = d.data();
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${a.title}</td>
+      <td>${a.city}</td>
+      <td>${a.type}</td>
+      <td>${a.price ?? "-"}</td>
+      <td>${a.userId}</td>
+      <td>${a.status}</td>
+      <td>
+        <button class="btn btn-ok">Valider</button>
+        <button class="btn btn-danger">Refuser</button>
+      </td>
+    `;
+    const [ok, no] = tr.querySelectorAll("button");
+    ok.onclick = () => updateDoc(doc(db,"annonces",d.id),{status:"active"}).then(()=>location.reload());
+    no.onclick = () => updateDoc(doc(db,"annonces",d.id),{status:"removed"}).then(()=>location.reload());
+    rows.appendChild(tr);
+  });
 });
 </script>
 
