@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>WAUKLINK — Modération</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/wauklink-site/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Espace Modération</div>
+    </div>
+    <nav class="topbar-nav">
+      <a class="link" href="/wauklink-site/dashboard/index.html">Dashboard</a>
+      <a class="btn btn-outline" href="/wauklink-site/admin/index.html">Admin</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container main-layout">
+
+  <section class="center mb-xl">
+    <h2>Modération</h2>
+    <p class="muted">Validation et contrôle des contenus</p>
+  </section>
+
+  <section class="grid">
+
+    <a class="card" href="/wauklink-site/admin/annonces.html">
+      <h3>📢 Annonces en attente</h3>
+      <p class="meta">Valider / refuser les annonces</p>
+    </a>
+
+    <a class="card" href="/wauklink-site/admin/reports.html">
+      <h3>🚨 Signalements</h3>
+      <p class="meta">Contenus signalés</p>
+    </a>
+
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <span>© WAUKLINK</span>
+  </div>
+</footer>
+
+<script type="module">
+  import { requireModerator } from "../shared/guard.js";
+  requireModerator({
+    redirectTo: "/wauklink-site/dashboard/index.html"
+  });
+</script>
+
+</body>
+</html>
