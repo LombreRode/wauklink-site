@@ -25,69 +25,82 @@
 
 <main class="container main-layout">
   <section class="card" style="max-width:700px;margin:0 auto">
+  <h2>Compléter mon activité</h2>
 
-    <h2>Compléter mon activité</h2>
+  <form id="profileForm" class="form-column">
+    <label>
+      Activité
+      <select id="activity" required>
+        <option value="">Choisir une activité</option>
 
-    <form id="profileForm" class="form-column">
+        <option value="non-pro">
+          Prestataire non professionnel (CESU)
+        </option>
 
-      <label>
-        Activité
-        <select id="activity" required>
-          <option value="">Choisir une activité</option>
+        <option value="pro-travaux">
+          Prestataire PRO — Travaux
+        </option>
+        <option value="pro-services">
+          Prestataire PRO — Services à la personne
+        </option>
+        <option value="pro-urgence">
+          Prestataire PRO — Urgences
+        </option>
+        <option value="pro-location">
+          Prestataire PRO — Location
+        </option>
+        <option value="pro-emploi">
+          Prestataire PRO — Emploi
+        </option>
 
-          <!-- NON PRO -->
-          <option value="non-pro">
-            Prestataire non professionnel (CESU)
-          </option>
+        <option value="vendeur">Vendeur</option>
+        <option value="loueur">Loueur</option>
+      </select>
+    </label>
 
-          <!-- PRO -->
-          <option value="pro-travaux">
-            Prestataire PRO — Travaux
-          </option>
-          <option value="pro-services">
-            Prestataire PRO — Services à la personne
-          </option>
-          <option value="pro-urgence">
-            Prestataire PRO — Urgences
-          </option>
-          <option value="pro-location">
-            Prestataire PRO — Location
-          </option>
-          <option value="pro-emploi">
-            Prestataire PRO — Emploi
-          </option>
+    <label>
+      Description de l’activité
+      <textarea
+        id="description"
+        rows="4"
+        placeholder="Décrivez votre activité"
+      ></textarea>
+    </label>
 
-          <!-- AUTRES -->
-          <option value="vendeur">Vendeur</option>
-          <option value="loueur">Loueur</option>
-        </select>
-      </label>
+    <button type="submit" class="btn btn-ok">
+      Enregistrer
+    </button>
+  </form>
 
-      <label>
-        Description de l’activité
-        <textarea
-          id="description"
-          rows="4"
-          placeholder="Décrivez votre activité"
-        ></textarea>
-      </label>
+  <p id="msg" class="meta" aria-live="polite"></p>
 
-      <button type="submit" class="btn btn-ok">
-        Enregistrer
-      </button>
+  <!-- =========================
+       COMPTE PROFESSIONNEL
+  ========================= -->
+  <div id="proBox" class="card mt-xl">
+    <h3>Compte Professionnel</h3>
 
-    </form>
+    <p id="proStatus" class="meta">
+      Vous pouvez faire une demande pour passer en compte professionnel.
+    </p>
 
-    <p id="msg" class="meta" aria-live="polite"></p>
+    <a
+      id="btnPro"
+      href="/wauklink-site/dashboard/pro.html"
+      class="btn btn-ok"
+    >
+      🛠️ Passer en compte PRO
+    </a>
+  </div>
 
-    <!-- 🔹 ESPACE PRESTATAIRE (PRO UNIQUEMENT) -->
-    <div id="proAccess" style="margin-top:20px; display:none;">
-      <a href="../dashboard/pro.html" class="btn btn-outline">
-        Espace prestataire
-      </a>
-    </div>
+  <!-- 🔹 ESPACE PRESTATAIRE (PRO UNIQUEMENT) -->
+  <div id="proAccess" style="margin-top:20px; display:none;">
+    <a href="../dashboard/pro.html" class="btn btn-outline">
+      Espace prestataire
+    </a>
+  </div>
+</section>
 
-  </section>
 </main>
 
 <footer class="footer">
