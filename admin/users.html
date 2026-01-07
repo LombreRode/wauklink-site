@@ -3,10 +3,11 @@
 <head>
   <meta charset="utf-8">
   <title>Admin — Utilisateurs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="../style.css">
 </head>
-<body>
 
+<body>
 <header class="topbar">
   <div class="container topbar-row">
     <div>
@@ -14,7 +15,7 @@
       <div class="subtitle">Admin — Utilisateurs</div>
     </div>
     <nav class="topbar-nav">
-      <a class="btn" href="./index.html">← Dashboard</a>
+      <a class="btn" href="./index.html">← Admin</a>
     </nav>
   </div>
 </header>
@@ -53,10 +54,10 @@
 
     snap.forEach(d => {
       const u = d.data();
+      let badge = "⚪ Utilisateur";
 
-      let badge = "⚪ User";
-      if (u.role === "admin") badge = "👑 Admin";
-      else if (u.isPro === true) badge = "🟢 PRO";
+      if (u.role === "admin") badge = "👑 Administrateur";
+      else if (u.isPro === true) badge = "🟢 Compte PRO";
 
       const card = document.createElement("div");
       card.className = "card";
@@ -72,10 +73,9 @@
   requireAdmin({
     onOk: loadUsers,
     onDenied: () => {
-      msg.textContent = "Accès réservé aux administrateurs";
+      msg.textContent = "⛔ Accès réservé aux administrateurs";
     }
   });
 </script>
-
 </body>
 </html>
