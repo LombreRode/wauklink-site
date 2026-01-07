@@ -48,16 +48,45 @@
 </footer>
   
 <script type="module">
-  import { auth } from "../shared/firebase.js";
+  import { auth, db } from "../shared/firebase.js";
   import { onAuthStateChanged } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import { doc, getDoc } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  onAuthStateChanged(auth, user => {
+  const nameEl = document.querySelector("p strong")?.parentElement;
+  const emailEl = document.querySelectorAll("p")[1];
+  const typeEl = document.querySelectorAll("p")[2];
+
+  onAuthStateChanged(auth, async (user) => {
     if (!user) {
       location.href = "../auth/login.html";
+      return;
+    }
+
+    // Email depuis Auth
+    emailEl.innerHTML = `<strong>Email :</strong> ${user.email}`;
+
+    // Données Firestore
+    const snap = await getDoc(doc(db, "users", user.uid));
+    if (!snap.exists()) return;
+
+    const data = snap.data();
+
+    nameEl.innerHTML =
+      `<strong>Nom :</strong> ${data.firstName || "—"}`;
+
+    // Statut du compte
+    if (data.isPro === true) {
+      typeEl.innerHTML =
+        `<strong>Type de compte :</strong> 🟢 Compte PRO`;
+    } else {
+      typeEl.innerHTML =
+        `<strong>Type de compte :</strong> ⚪ Compte standard`;
     }
   });
 </script>
+
 
 </body>
 </html>
