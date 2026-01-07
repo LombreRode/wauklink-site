@@ -75,13 +75,20 @@
     nameEl.innerHTML =
       `<strong>Nom :</strong> ${data.firstName || "—"}`;
 
-    if (data.isPro === true) {
+    // Statut du compte (ADMIN / PRO / USER)
+    if (data.role === "admin") {
+      typeEl.innerHTML =
+        `<strong>Type de compte :</strong> 👑 Administrateur (PRO)`;
+    }
+    else if (data.isPro === true) {
       typeEl.innerHTML =
         `<strong>Type de compte :</strong> 🟢 Compte PRO`;
-    } else {
+    }
+    else {
       typeEl.innerHTML =
         `<strong>Type de compte :</strong> ⚪ Compte standard`;
     }
+
   });
 </script>
 
