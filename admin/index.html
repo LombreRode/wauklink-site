@@ -4,140 +4,83 @@
   <meta charset="utf-8">
   <title>WAUKLINK — Admin & Modération</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- STYLE GLOBAL EXISTANT -->
-  <link rel="stylesheet" href="/wauklink-site/style.css">
+  <link rel="stylesheet" href="/style.css">
 </head>
 
 <body>
-
-<!-- =========================
-     HEADER — ADMIN
-========================= -->
 <header class="topbar">
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
       <div class="subtitle">Espace Admin · Modération</div>
     </div>
-
     <nav class="topbar-nav">
-      <a class="link" href="/wauklink-site/index.html">Accueil</a>
-      <a class="link" href="/wauklink-site/dashboard/index.html">Dashboard</a>
-      <a class="btn btn-outline" href="/wauklink-site/auth/profile.html">Profil</a>
+      <a class="link" href="/index.html">Accueil</a>
+      <a class="link" href="/dashboard/index.html">Dashboard</a>
+      <a class="btn btn-outline" href="/auth/profile.html">Profil</a>
     </nav>
   </div>
 </header>
 
-<!-- =========================
-     MAIN
-========================= -->
 <main class="container main-layout">
-
-  <!-- TITRE CENTRAL -->
   <section class="center mb-xl">
     <h2>Administration & Modération</h2>
-    <p class="muted">
-      Gestion des utilisateurs, annonces et signalements
-    </p>
+    <p class="muted">Gestion des utilisateurs, annonces et signalements</p>
   </section>
 
-  <!-- CARTES ADMIN -->
-  <section class="grid" style="
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-    gap:16px;
-  ">
-
-    <!-- USERS -->
-    <a class="card" href="./users.html">
+  <section class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;">
+    
+    <a class="card" href="/admin/users.html">
       <h3>👤 Utilisateurs</h3>
-      <p class="meta">
-        Comptes, rôles, statuts
-      </p>
+      <p class="meta">Comptes, rôles, statuts</p>
     </a>
 
-    <!-- ANNONCES -->
-    <a class="card" href="./annonces.html">
+    <a class="card" href="/admin/annonces.html">
       <h3>📢 Annonces</h3>
-      <p class="meta">
-        Validation & gestion
-      </p>
+      <p class="meta">Validation & gestion</p>
     </a>
 
-    <!-- MODERATION LOCATION -->
-    <a class="card" href="/wauklink-site/dashboard/moderation-location.html">
+    <!-- ✅ MODÉRATION UNIQUE (PLUS DE 404) -->
+    <a class="card" href="/admin/annonces.html">
       <h3>🏠 Locations</h3>
-      <p class="meta">
-        Modération logement
-      </p>
+      <p class="meta">Modération logement</p>
     </a>
 
-    <!-- SIGNALMENTS -->
-    <a class="card" href="./reports.html">
+    <a class="card" href="/admin/reports.html">
       <h3>🚨 Signalements</h3>
-      <p class="meta">
-        Contenus signalés
-      </p>
+      <p class="meta">Contenus signalés</p>
     </a>
 
-    <!-- AVIS -->
-    <a class="card" href="./ratings.html">
+    <a class="card" href="/admin/ratings.html">
       <h3>⭐ Avis</h3>
-      <p class="meta">
-        Notes & retours
-      </p>
+      <p class="meta">Notes & retours</p>
     </a>
 
-    <!-- DEMANDES PRO -->
-    <a class="card" href="./pro-requests.html">
+    <a class="card" href="/admin/pro-requests.html">
       <h3>🛠️ Comptes PRO</h3>
-      <p class="meta">
-        Validation prestataires
-      </p>
+      <p class="meta">Validation prestataires</p>
     </a>
 
   </section>
-
 </main>
 
-<!-- =========================
-     FOOTER — CENTRÉ
-========================= -->
 <footer class="site-footer">
   <div class="footer-container">
-
-    <!-- CENTRE -->
-    <div class="footer-left">
-      © WAUKLINK — Administration
-    </div>
-
-    <!-- CENTRE -->
+    <div class="footer-left">© WAUKLINK — Administration</div>
     <div class="footer-center">
-      <a href="/wauklink-site/legal/index.html">CGU</a>
-      <a href="/wauklink-site/legal/privacy.html">Confidentialité</a>
-      <a href="/wauklink-site/legal/mentions-legales.html">Mentions légales</a>
+      <a href="/legal/index.html">CGU</a>
+      <a href="/legal/privacy.html">Confidentialité</a>
+      <a href="/legal/mentions-legales.html">Mentions légales</a>
     </div>
-
-    <!-- DROITE -->
     <div class="footer-right">
-      <span class="sep">|</span>
-      <a href="/wauklink-site/auth/logout.html">Déconnexion</a>
+      <a href="/auth/logout.html">Déconnexion</a>
     </div>
-
   </div>
 </footer>
 
-<!-- =========================
-     GUARD — ADMIN / MODERATOR
-========================= -->
 <script type="module">
   import { requireAdmin } from "../shared/guard.js";
-
-  requireAdmin({
-    redirectTo: "../dashboard/index.html"
-  });
+  requireAdmin({ redirectTo: "/dashboard/index.html" });
 </script>
-
 </body>
 </html>
