@@ -106,7 +106,7 @@
 
     const qy = query(
       collection(db, "annonces"),
-      where("ownerUid", "==", uid),
+      where("userId", "==", uid),
       where("proOnly", "==", true),
       orderBy("createdAt", "desc")
     );
