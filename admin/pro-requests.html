@@ -80,7 +80,7 @@
 
     try {
       const snap = await getDocs(
-        collection(db, "admin_pro_requests")
+        collection(db, "pro_requests")
       );
 
       if (snap.empty) {
@@ -114,10 +114,11 @@
           await updateDoc(
             doc(db, "users", u.userId),
             {
-              role: "pro",
-              "pro.validated": true,
-              "pro.validatedAt": serverTimestamp()
-            }
+             isPro: true,
+            "pro.validated": true,
+            "pro.validatedAt": serverTimestamp()
+         }
+
           );
 
           loadRequests();
