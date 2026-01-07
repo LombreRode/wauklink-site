@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const msg = document.getElementById("msg");
   const proAccess = document.getElementById("proAccess");
 
-  // 🔒 Sécurité : éviter crash si le HTML change
+  // 🔒 Sécurité
   if (!form) {
     console.error("Formulaire introuvable");
     return;
@@ -21,39 +21,35 @@ document.addEventListener("DOMContentLoaded", () => {
     redirectTo: "./login.html",
     onOk: (user, profile) => {
 
-  requireUser({
-    redirectTo: "./login.html",
-
-    onOk: (user, profile) => {
-
-      // 🔹 Afficher espace prestataire si PRO
+      // =========================
+      // ESPACE PRO / PRESTATAIRE
+      // =========================
       if ((profile.role === "admin" || profile.isPro === true) && proAccess) {
         proAccess.style.display = "block";
       }
 
-      // 🔹 Pré-remplissage
-      if (profile.activity) {
-        const activityInput = document.getElementById("activity");
-        if (activityInput) {
-          activityInput.value = profile.activity;
-        }
+      // =========================
+      // PRÉ-REMPLISSAGE
+      // =========================
+      const activityInput = document.getElementById("activity");
+      const descInput = document.getElementById("description");
+
+      if (activityInput && profile.activity) {
+        activityInput.value = profile.activity;
       }
 
-      if (profile.description) {
-        const descInput = document.getElementById("description");
-        if (descInput) {
-          descInput.value = profile.description;
-        }
+      if (descInput && profile.description) {
+        descInput.value = profile.description;
       }
 
-      // 🔹 Enregistrement
+      // =========================
+      // ENREGISTREMENT PROFIL
+      // =========================
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        const activity =
-          document.getElementById("activity")?.value.trim();
-        const description =
-          document.getElementById("description")?.value.trim();
+        const activity = activityInput?.value.trim();
+        const description = descInput?.value.trim();
 
         if (!activity) {
           msg.textContent = "❌ Activité obligatoire";
