@@ -5,28 +5,28 @@ import { onAuthStateChanged } from
 import { doc, getDoc } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-function safeRedirect(to) {
-  location.replace(to || "../auth/login.html");
+// 🔐 Redirection UNIQUEMENT pour non connecté
+function redirectLogin() {
+  location.replace("../auth/login.html");
 }
 
 /* =========================
-   USER (profil Firestore requis)
+   USER
 ========================= */
-export function requireUser({ redirectTo, onOk } = {}) {
+export function requireUser({ onOk, onDenied } = {}) {
   onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      return safeRedirect(redirectTo);
-    }
+    if (!user) return redirectLogin();
 
     try {
       const snap = await getDoc(doc(db, "users", user.uid));
       if (!snap.exists()) {
-        return safeRedirect(redirectTo);
+        onDenied?.("Profil utilisateur introuvable");
+        return;
       }
       onOk?.(user, snap.data());
     } catch (e) {
       console.error("requireUser error", e);
-      safeRedirect(redirectTo);
+      onDenied?.("Erreur de chargement du profil");
     }
   });
 }
@@ -34,21 +34,20 @@ export function requireUser({ redirectTo, onOk } = {}) {
 /* =========================
    ADMIN
 ========================= */
-export function requireAdmin({ redirectTo, onOk } = {}) {
+export function requireAdmin({ onOk, onDenied } = {}) {
   onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      return safeRedirect(redirectTo);
-    }
+    if (!user) return redirectLogin();
 
     try {
       const snap = await getDoc(doc(db, "users", user.uid));
       if (!snap.exists() || snap.data().role !== "admin") {
-        return safeRedirect(redirectTo);
+        onDenied?.("Accès réservé aux administrateurs");
+        return;
       }
       onOk?.(user, snap.data());
     } catch (e) {
       console.error("requireAdmin error", e);
-      safeRedirect(redirectTo);
+      onDenied?.("Erreur d’accès administrateur");
     }
   });
 }
@@ -56,24 +55,22 @@ export function requireAdmin({ redirectTo, onOk } = {}) {
 /* =========================
    MODERATOR
 ========================= */
-export function requireModerator({ redirectTo, onOk } = {}) {
+export function requireModerator({ onOk, onDenied } = {}) {
   onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      return safeRedirect(redirectTo);
-    }
+    if (!user) return redirectLogin();
 
     try {
       const snap = await getDoc(doc(db, "users", user.uid));
       const role = snap.exists() && snap.data().role;
+
       if (role === "admin" || role === "moderator") {
         onOk?.(user, snap.data());
       } else {
-        safeRedirect(redirectTo);
+        onDenied?.("Accès réservé à la modération");
       }
     } catch (e) {
       console.error("requireModerator error", e);
-      safeRedirect(redirectTo);
+      onDenied?.("Erreur d’accès modération");
     }
   });
 }
-
