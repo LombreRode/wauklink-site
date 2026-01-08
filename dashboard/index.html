@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="../style.css">
 </head>
+
 <body>
 
 <header class="topbar">
@@ -14,42 +15,41 @@
       <h1>WAUKLINK</h1>
       <div class="subtitle">Tableau de bord</div>
     </div>
+
     <nav class="topbar-nav">
       <a class="btn" href="../index.html">← Accueil</a>
     </nav>
   </div>
 
-  <!-- 👤 CONNECTÉ -->
-   <div id="userNav" class="user-nav hidden">
-
+  <!-- 👤 UTILISATEUR CONNECTÉ -->
+  <div id="userNav" class="user-nav hidden">
     <img
-     id="navAvatar"
-     src="/wauklink-site/assets/avatar-default.png"
-     alt="Avatar"
-     style="
-     width:36px;   
-     height:36px;
-     border-radius:50%;
-     object-fit:cover;
-     border:1px solid #2ecc71;
-    "     
-  >
+      id="navAvatar"
+      src="/wauklink-site/assets/avatar-default.png"
+      alt="Avatar"
+      style="
+        width:36px;
+        height:36px;
+        border-radius:50%;
+        object-fit:cover;
+        border:1px solid #2ecc71;
+      "
+    >
 
-  <a href="../dashboard/index.html" class="btn btn-outline">
-    📊 Dashboard
-  </a>
+    <a href="../dashboard/index.html" class="btn btn-outline">
+      📊 Dashboard
+    </a>
 
-  <a href="../profil/index.html" class="btn btn-outline">
-    👤 Profil
-  </a>
+    <a href="../profil/index.html" class="btn btn-outline">
+      👤 Profil
+    </a>
 
-  <button id="logoutBtn" class="btn btn-danger">
-    Déconnexion
-  </button>
+    <button id="logoutBtn" class="btn btn-danger">
+      Déconnexion
+    </button>
+  </div>
 
-</div>
-
-
+  <!-- 👥 INVITÉ -->
   <div id="guestStatus" class="guest-status hidden">
     <a href="../auth/login.html">Connexion</a>
     <a href="../auth/register.html">Inscription</a>
@@ -96,16 +96,16 @@
   </div>
 </footer>
 
-<!-- 🔐 Protection utilisateur connecté -->
+<!-- 🔐 PROTECTION UTILISATEUR CONNECTÉ -->
 <script type="module">
   import { requireUser } from "../shared/guard.js";
   requireUser({ redirectTo: "../auth/login.html" });
 </script>
 
-<!-- 👤 Connexion / Déconnexion -->
+<!-- 👤 NAVBAR (avatar + logout) -->
 <script type="module" src="../shared/user_status.js"></script>
 
-<!-- 🟢 LOGIQUE PRO -->
+<!-- 🟢 STATUT PRO -->
 <script type="module">
   import { auth, db } from "../shared/firebase.js";
   import { onAuthStateChanged } from
@@ -138,14 +138,14 @@
       return;
     }
 
-    // ⏳ DEMANDE EN COURS ?
+    // ⏳ DEMANDE PRO EN COURS
     const q = query(
       collection(db, "pro_requests"),
       where("userId", "==", user.uid),
       where("status", "==", "pending")
     );
-    const reqSnap = await getDocs(q);
 
+    const reqSnap = await getDocs(q);
     if (!reqSnap.empty) {
       proStatus.textContent = "⏳ Demande PRO en attente";
       return;
