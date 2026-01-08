@@ -36,10 +36,11 @@ if (!userNav && !guestNav) {
       try {
         const snap = await getDoc(doc(db, "users", user.uid));
         if (snap.exists() && snap.data().avatarUrl) {
-          navAvatar.src = snap.data().avatarUrl;
+         navAvatar.src = snap.data().avatarUrl + "?t=" + Date.now();
         } else {
           navAvatar.src = "/wauklink-site/assets/avatar-default.png";
         }
+
       } catch (e) {
         navAvatar.src = "/wauklink-site/assets/avatar-default.png";
       }
