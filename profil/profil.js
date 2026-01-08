@@ -18,7 +18,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 import {
   ref,
-  uploadBytes,
+  uploadBytesResumable,
   getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
@@ -147,7 +147,7 @@ onAuthStateChanged(auth, async (user) => {
   // =========================
   // 🔥 AVATAR — UPLOAD FINAL
   // =========================
- let uploadingAvatar = false;
+let uploadingAvatar = false;
 
 avatarInput.addEventListener("change", async (e) => {
   if (uploadingAvatar) return;
@@ -163,22 +163,28 @@ avatarInput.addEventListener("change", async (e) => {
 
   try {
     const ext = file.name.split(".").pop();
-
     const avatarRef = ref(
       storage,
       `avatars/${user.uid}_${Date.now()}.${ext}`
     );
 
-    await uploadBytes(avatarRef, file, {
+    const uploadTask = uploadBytesResumable(avatarRef, file, {
       contentType: file.type
+    });
+
+    await new Promise((resolve, reject) => {
+      uploadTask.on(
+        "state_changed",
+        null,
+        reject,
+        resolve
+      );
     });
 
     const url = await getDownloadURL(avatarRef);
     console.log("🔗 URL AVATAR :", url);
 
-    await updateDoc(userRef, {
-      avatarUrl: url
-    });
+    await updateDoc(userRef, { avatarUrl: url });
 
     avatarImg.src = url + "?t=" + Date.now();
     avatarImg.style.display = "block";
@@ -195,6 +201,7 @@ avatarInput.addEventListener("change", async (e) => {
     avatarInput.value = "";
   }
 });
+
 
 
   // =========================
