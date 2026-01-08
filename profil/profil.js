@@ -18,6 +18,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 import {
   ref,
+  refFromURL,
   uploadBytesResumable,
   getDownloadURL,
   deleteObject
@@ -36,13 +37,16 @@ const avatarLoader = document.getElementById("avatarLoader");
 const emailEl = document.getElementById("email");
 const typeEl = document.getElementById("type");
 const proAction = document.getElementById("proAction");
+
 const firstNameInput = document.getElementById("firstNameInput");
 const phoneInput = document.getElementById("phoneInput");
 const saveBtn = document.getElementById("saveProfileBtn");
 const profileMsg = document.getElementById("profileMsg");
+
 const newPassword = document.getElementById("newPassword");
 const passwordMsg = document.getElementById("passwordMsg");
 const changePasswordBtn = document.getElementById("changePasswordBtn");
+
 const newEmail = document.getElementById("newEmail");
 const changeEmailBtn = document.getElementById("changeEmailBtn");
 const emailMsg = document.getElementById("emailMsg");
@@ -74,6 +78,7 @@ function resizeImage(file, maxSize = 256) {
       };
       img.src = reader.result;
     };
+
     reader.readAsDataURL(file);
   });
 }
@@ -118,26 +123,33 @@ onAuthStateChanged(auth, async (user) => {
   // AVATAR AU CHARGEMENT (SANS CACHE‑BUST)
   // =========================
   if (data.avatarUrl) {
+    avatarImg.onload = () => {
+      avatarLoader.classList.add("hidden");
+      avatarImg.classList.remove("hidden");
+    };
     avatarImg.src = data.avatarUrl;
-    avatarImg.classList.remove("hidden");
   }
 
   // =========================
   // TYPE DE COMPTE
   // =========================
   proAction.innerHTML = "";
+
   if (data.role === "admin") {
     typeEl.innerHTML = `<strong>Type de compte :</strong> 👑 Administrateur`;
   } else if (data.isPro === true) {
     typeEl.innerHTML = `<strong>Type de compte :</strong> 🟢 Compte PRO`;
   } else {
     typeEl.innerHTML = `<strong>Type de compte :</strong> ⚪ Compte standard`;
+
     const q = query(
       collection(db, "pro_requests"),
       where("userId", "==", user.uid),
       where("status", "==", "pending")
     );
+
     const reqSnap = await getDocs(q);
+
     if (!reqSnap.empty) {
       proAction.textContent = "⏳ Demande PRO en attente";
     } else {
@@ -172,34 +184,33 @@ onAuthStateChanged(auth, async (user) => {
   };
 
   // =========================
-  // AVATAR — UPLOAD FINAL (PRO)
+  // AVATAR — UPLOAD FINAL PRO
   // =========================
   let uploadingAvatar = false;
 
   avatarInput.addEventListener("change", async (e) => {
     if (uploadingAvatar) return;
 
-    const originalFile = e.target.files?.[0];
-    if (!originalFile) return;
+    const file = e.target.files?.[0];
+    if (!file) return;
 
     uploadingAvatar = true;
     avatarInput.disabled = true;
-    avatarMsg.textContent = "⏳ Upload en cours...";
 
+    avatarMsg.textContent = "⏳ Upload en cours...";
     avatarImg.classList.add("hidden");
     avatarLoader.classList.remove("hidden");
 
     const oldAvatarUrl = data.avatarUrl || null;
 
     try {
-      const resizedFile = await resizeImage(originalFile);
-
+      const resized = await resizeImage(file);
       const avatarRef = ref(
         storage,
         `avatars/${user.uid}_${Date.now()}.jpg`
       );
 
-      const uploadTask = uploadBytesResumable(avatarRef, resizedFile, {
+      const uploadTask = uploadBytesResumable(avatarRef, resized, {
         contentType: "image/jpeg"
       });
 
@@ -208,28 +219,36 @@ onAuthStateChanged(auth, async (user) => {
       });
 
       const url = await getDownloadURL(avatarRef);
-
       await updateDoc(userRef, { avatarUrl: url });
       data.avatarUrl = url;
 
       // 🗑️ suppression ancien avatar
       if (oldAvatarUrl) {
         try {
-          await deleteObject(ref(storage, oldAvatarUrl));
-        } catch {}
+          const oldRef = refFromURL(oldAvatarUrl);
+          await deleteObject(oldRef);
+        } catch (err) {
+          console.warn("Ancien avatar non supprimé", err);
+        }
       }
+
+      avatarImg.onload = () => {
+        avatarLoader.classList.add("hidden");
+        avatarImg.classList.remove("hidden");
+      };
 
       avatarImg.src = url + "?t=" + Date.now();
       avatarMsg.textContent = "✅ Avatar mis à jour";
+
     } catch (err) {
       console.error(err);
       avatarMsg.textContent = "❌ Erreur upload";
+      avatarLoader.classList.add("hidden");
+      avatarImg.classList.remove("hidden");
     } finally {
       uploadingAvatar = false;
       avatarInput.disabled = false;
       avatarInput.value = "";
-      avatarLoader.classList.add("hidden");
-      avatarImg.classList.remove("hidden");
     }
   });
 
