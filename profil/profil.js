@@ -197,9 +197,6 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-
-
-
   // =========================
   // PASSWORD
   // =========================
