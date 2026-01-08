@@ -1,5 +1,4 @@
 import { auth, db, storage } from "/wauklink-site/shared/firebase.js";
-
 import {
   onAuthStateChanged,
   updatePassword,
@@ -47,7 +46,6 @@ onAuthStateChanged(auth, async (user) => {
   const userRef = doc(db, "users", user.uid);
   let snap = await getDoc(userRef);
 
-  // CRÉATION USER SI ABSENT
   if (!snap.exists()) {
     await setDoc(userRef, {
       role: "user",
@@ -60,7 +58,6 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   const data = snap.data();
-
   firstNameInput.value = data.firstName || "";
   phoneInput.value = data.phone || "";
 
@@ -70,6 +67,7 @@ onAuthStateChanged(auth, async (user) => {
 
   // TYPE DE COMPTE
   proAction.innerHTML = "";
+
   if (data.role === "admin") {
     typeEl.innerHTML = `<strong>Type de compte :</strong> 👑 Administrateur`;
   } else if (data.isPro === true) {
@@ -119,10 +117,9 @@ onAuthStateChanged(auth, async (user) => {
 
     const avatarRef = ref(storage, `avatars/${user.uid}.jpg`);
     await uploadBytes(avatarRef, file);
-
     const url = await getDownloadURL(avatarRef);
-    await updateDoc(userRef, { avatarUrl: url });
 
+    await updateDoc(userRef, { avatarUrl: url });
     avatarImg.src = url + "?t=" + Date.now();
     avatarMsg.textContent = "✅ Avatar mis à jour";
   };
