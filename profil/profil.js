@@ -1,17 +1,14 @@
-import { auth, db } from "/wauklink-site/shared/firebase.js";
-import { onAuthStateChanged } from
-  "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { auth, db, storage } from "/wauklink-site/shared/firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import {
-  doc, getDoc, updateDoc,
-  collection, query, where, getDocs, addDoc, serverTimestamp
-} from
-  "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  doc, getDoc, setDoc, updateDoc,
+  collection, addDoc, query, where, getDocs, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 import {
-  getStorage, ref, uploadBytes, getDownloadURL
-} from
-  "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
+  ref, uploadBytes, getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
-const storage = getStorage();
+console.log("✅ profil.js chargé");
 
 // HTML
 const avatarImg = document.getElementById("avatarImg");
@@ -22,7 +19,7 @@ const typeEl = document.getElementById("type");
 const proAction = document.getElementById("proAction");
 const firstNameInput = document.getElementById("firstNameInput");
 const phoneInput = document.getElementById("phoneInput");
-const saveBtn = document.getElementById("saveProfileBtn");
+const saveBtn = document.getElementById("saveBtn");
 const profileMsg = document.getElementById("profileMsg");
 
 onAuthStateChanged(auth, async (user) => {
@@ -31,71 +28,78 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  emailEl.innerHTML = `<strong>Email :</strong> ${user.email}`;
+  emailEl.textContent = "Email : " + user.email;
 
   const userRef = doc(db, "users", user.uid);
-  const snap = await getDoc(userRef);
-  if (!snap.exists()) return;
+  let snap = await getDoc(userRef);
+
+  // 🔥 CRÉATION AUTO DU PROFIL
+  if (!snap.exists()) {
+    await setDoc(userRef, {
+      role: "user",
+      isPro: false,
+      firstName: "",
+      phone: "",
+      createdAt: serverTimestamp()
+    });
+    snap = await getDoc(userRef);
+  }
 
   const data = snap.data();
 
   firstNameInput.value = data.firstName || "";
   phoneInput.value = data.phone || "";
 
-  // AVATAR
   if (data.avatarUrl) {
     avatarImg.src = data.avatarUrl + "?t=" + Date.now();
   }
 
-  // TYPE DE COMPTE
+  // 🟢 TYPE DE COMPTE + PRO
+  proAction.innerHTML = "";
+
   if (data.role === "admin") {
-    typeEl.innerHTML = "👑 Administrateur";
-    return;
-  }
-
-  if (data.isPro === true) {
-    typeEl.innerHTML = "🟢 Compte PRO";
-    return;
-  }
-
-  typeEl.innerHTML = "⚪ Compte standard";
-
-  // BOUTON PASSER PRO
-  const q = query(
-    collection(db, "pro_requests"),
-    where("userId", "==", user.uid),
-    where("status", "==", "pending")
-  );
-
-  const reqSnap = await getDocs(q);
-
-  if (!reqSnap.empty) {
-    proAction.textContent = "⏳ Demande PRO en attente";
+    typeEl.textContent = "👑 Administrateur";
+  } else if (data.isPro === true) {
+    typeEl.textContent = "🟢 Compte PRO";
   } else {
-    const btn = document.createElement("button");
-    btn.className = "btn btn-ok";
-    btn.textContent = "🚀 Passer PRO";
-    btn.onclick = async () => {
-      await addDoc(collection(db, "pro_requests"), {
-        userId: user.uid,
-        status: "pending",
-        createdAt: serverTimestamp()
-      });
-      proAction.textContent = "⏳ Demande PRO envoyée";
-    };
-    proAction.appendChild(btn);
+    typeEl.textContent = "⚪ Compte standard";
+
+    const q = query(
+      collection(db, "pro_requests"),
+      where("userId", "==", user.uid),
+      where("status", "==", "pending")
+    );
+
+    const reqSnap = await getDocs(q);
+
+    if (!reqSnap.empty) {
+      proAction.textContent = "⏳ Demande PRO en attente";
+    } else {
+      const btn = document.createElement("button");
+      btn.className = "btn btn-ok";
+      btn.textContent = "🚀 Passer PRO";
+      btn.onclick = async () => {
+        await addDoc(collection(db, "pro_requests"), {
+          userId: user.uid,
+          status: "pending",
+          createdAt: serverTimestamp()
+        });
+        proAction.textContent = "⏳ Demande PRO envoyée";
+      };
+      proAction.appendChild(btn);
+    }
   }
 
-  // SAUVEGARDE PROFIL
+  // 💾 ENREGISTREMENT PROFIL
   saveBtn.onclick = async () => {
     await updateDoc(userRef, {
-      firstName: firstNameInput.value.trim(),
-      phone: phoneInput.value.trim()
+      firstName: firstNameInput.value || "",
+      phone: phoneInput.value || ""
     });
     profileMsg.textContent = "✅ Profil enregistré";
   };
 
-  // UPLOAD AVATAR
+  // 🖼️ AVATAR
   avatarInput.onchange = async () => {
     const file = avatarInput.files[0];
     if (!file) return;
@@ -109,3 +113,4 @@ onAuthStateChanged(auth, async (user) => {
     avatarMsg.textContent = "✅ Avatar mis à jour";
   };
 });
+
