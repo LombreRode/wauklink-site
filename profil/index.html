@@ -28,34 +28,80 @@
 
   <!-- 📌 INFOS COMPTE -->
   <div class="card">
-    <p id="email"><strong>Email :</strong> —</p>
-    <p id="type"><strong>Type de compte :</strong></p>
+    <div style="display:flex;gap:16px;align-items:center">
+      <img id="avatarImg" src="" alt="Avatar"
+        style="width:80px;height:80px;border-radius:50%;object-fit:cover;background:#222">
+      <div>
+        <p id="email"><strong>Email :</strong> —</p>
+        <p id="type"><strong>Type de compte :</strong></p>
+      </div>
+    </div>
 
-    <!-- 🔘 ACTION PRO -->
+    <!-- 🖼️ AVATAR -->
+    <label style="margin-top:12px">
+      Changer l’avatar
+      <input type="file" id="avatarInput" accept="image/*">
+    </label>
+    <p id="avatarMsg" class="meta"></p>
+
+    <!-- 🚀 PRO -->
     <div id="proAction" class="meta" style="margin-top:12px"></div>
   </div>
 
   <hr>
 
-  <!-- ✏️ MODIFICATION PROFIL -->
-  <h3>Modifier mon profil</h3>
-
+  <!-- ✏️ MODIFIER PROFIL -->
+  <h3>Modifier mes informations</h3>
   <div class="card">
     <label>
       Prénom
-      <input type="text" id="firstNameInput" placeholder="Votre prénom">
+      <input type="text" id="firstNameInput">
     </label>
 
     <label style="margin-top:12px">
       Téléphone
-      <input type="text" id="phoneInput" placeholder="Votre téléphone">
+      <input type="text" id="phoneInput">
     </label>
 
     <button id="saveProfileBtn" class="btn btn-ok" style="margin-top:16px">
-      💾 Enregistrer les modifications
+      💾 Enregistrer
     </button>
 
     <p id="profileMsg" class="meta"></p>
+  </div>
+
+  <hr>
+
+  <!-- 🔒 MOT DE PASSE -->
+  <h3>Sécurité</h3>
+  <div class="card">
+    <label>
+      Nouveau mot de passe
+      <input type="password" id="newPassword">
+    </label>
+
+    <button id="changePasswordBtn" class="btn btn-danger" style="margin-top:12px">
+      🔒 Changer le mot de passe
+    </button>
+
+    <p id="passwordMsg" class="meta"></p>
+  </div>
+
+  <hr>
+
+  <!-- 📧 EMAIL -->
+  <h3>Adresse email</h3>
+  <div class="card">
+    <label>
+      Nouvel email
+      <input type="email" id="newEmail">
+    </label>
+
+    <button id="changeEmailBtn" class="btn btn-outline" style="margin-top:12px">
+      📧 Changer l’email
+    </button>
+
+    <p id="emailMsg" class="meta"></p>
   </div>
 </main>
 
@@ -65,25 +111,44 @@
   </div>
 </footer>
 
-<!-- 🔐 LOGIQUE PROFIL COMPLETE -->
+<!-- 🔐 LOGIQUE PROFIL ULTRA -->
 <script type="module">
   import { auth, db } from "/wauklink-site/shared/firebase.js";
-  import { onAuthStateChanged } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import {
+    onAuthStateChanged,
+    updatePassword,
+    updateEmail
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
   import {
     doc, getDoc, updateDoc,
     collection, query, where, getDocs, addDoc, serverTimestamp
-  } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  import {
+    getStorage, ref, uploadBytes, getDownloadURL
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
+
+  const storage = getStorage();
 
   const emailEl = document.getElementById("email");
   const typeEl = document.getElementById("type");
   const proAction = document.getElementById("proAction");
 
+  const avatarImg = document.getElementById("avatarImg");
+  const avatarInput = document.getElementById("avatarInput");
+  const avatarMsg = document.getElementById("avatarMsg");
+
   const firstNameInput = document.getElementById("firstNameInput");
   const phoneInput = document.getElementById("phoneInput");
   const saveBtn = document.getElementById("saveProfileBtn");
-  const msgEl = document.getElementById("profileMsg");
+  const profileMsg = document.getElementById("profileMsg");
+
+  const newPassword = document.getElementById("newPassword");
+  const changePasswordBtn = document.getElementById("changePasswordBtn");
+  const passwordMsg = document.getElementById("passwordMsg");
+
+  const newEmail = document.getElementById("newEmail");
+  const changeEmailBtn = document.getElementById("changeEmailBtn");
+  const emailMsg = document.getElementById("emailMsg");
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
@@ -91,85 +156,90 @@
       return;
     }
 
-    // Email (Auth)
-    emailEl.innerHTML =
-      `<strong>Email :</strong> ${user.email}`;
+    emailEl.innerHTML = `<strong>Email :</strong> ${user.email}`;
+    newEmail.value = user.email;
 
-    const ref = doc(db, "users", user.uid);
-    const snap = await getDoc(ref);
+    const userRef = doc(db, "users", user.uid);
+    const snap = await getDoc(userRef);
     if (!snap.exists()) return;
 
     const data = snap.data();
 
-    // Pré-remplissage
     firstNameInput.value = data.firstName || "";
     phoneInput.value = data.phone || "";
+    if (data.avatarUrl) avatarImg.src = data.avatarUrl;
 
-    // 👑 ADMIN
+    // TYPE DE COMPTE
     if (data.role === "admin") {
-      typeEl.innerHTML =
-        `<strong>Type de compte :</strong> 👑 Administrateur`;
-      return;
-    }
-
-    // 🟢 PRO
-    if (data.isPro === true) {
-      typeEl.innerHTML =
-        `<strong>Type de compte :</strong> 🟢 Compte PRO`;
-      return;
-    }
-
-    // ⚪ STANDARD
-    typeEl.innerHTML =
-      `<strong>Type de compte :</strong> ⚪ Compte standard`;
-
-    // ⏳ Demande PRO existante ?
-    const q = query(
-      collection(db, "pro_requests"),
-      where("userId", "==", user.uid),
-      where("status", "==", "pending")
-    );
-    const reqSnap = await getDocs(q);
-
-    if (!reqSnap.empty) {
-      proAction.textContent =
-        "⏳ Demande PRO en attente de validation";
+      typeEl.innerHTML = `<strong>Type de compte :</strong> 👑 Administrateur`;
+    } else if (data.isPro === true) {
+      typeEl.innerHTML = `<strong>Type de compte :</strong> 🟢 Compte PRO`;
     } else {
-      const btn = document.createElement("button");
-      btn.className = "btn btn-ok";
-      btn.textContent = "🚀 Passer PRO";
+      typeEl.innerHTML = `<strong>Type de compte :</strong> ⚪ Compte standard`;
 
-      btn.onclick = async () => {
-        btn.disabled = true;
-        await addDoc(collection(db, "pro_requests"), {
-          userId: user.uid,
-          status: "pending",
-          createdAt: serverTimestamp()
-        });
-        proAction.textContent =
-          "⏳ Demande PRO envoyée";
-      };
+      const q = query(
+        collection(db, "pro_requests"),
+        where("userId", "==", user.uid),
+        where("status", "==", "pending")
+      );
+      const reqSnap = await getDocs(q);
 
-      proAction.appendChild(btn);
+      if (!reqSnap.empty) {
+        proAction.textContent = "⏳ Demande PRO en attente";
+      } else {
+        const btn = document.createElement("button");
+        btn.className = "btn btn-ok";
+        btn.textContent = "🚀 Passer PRO";
+        btn.onclick = async () => {
+          btn.disabled = true;
+          await addDoc(collection(db, "pro_requests"), {
+            userId: user.uid,
+            status: "pending",
+            createdAt: serverTimestamp()
+          });
+          proAction.textContent = "⏳ Demande PRO envoyée";
+        };
+        proAction.appendChild(btn);
+      }
     }
 
-    // 💾 SAUVEGARDE PROFIL
-    saveBtn.addEventListener("click", async () => {
-      const firstName = firstNameInput.value.trim();
-      const phone = phoneInput.value.trim();
+    // 💾 SAVE PROFIL
+    saveBtn.onclick = async () => {
+      await updateDoc(userRef, {
+        firstName: firstNameInput.value.trim(),
+        phone: phoneInput.value.trim()
+      });
+      profileMsg.textContent = "✅ Profil mis à jour";
+    };
 
-      if (!firstName) {
-        msgEl.textContent = "❌ Le prénom est obligatoire";
+    // 🖼️ AVATAR
+    avatarInput.onchange = async () => {
+      const file = avatarInput.files[0];
+      if (!file) return;
+      const avatarRef = ref(storage, `avatars/${user.uid}`);
+      await uploadBytes(avatarRef, file);
+      const url = await getDownloadURL(avatarRef);
+      await updateDoc(userRef, { avatarUrl: url });
+      avatarImg.src = url;
+      avatarMsg.textContent = "✅ Avatar mis à jour";
+    };
+
+    // 🔒 PASSWORD
+    changePasswordBtn.onclick = async () => {
+      if (newPassword.value.length < 6) {
+        passwordMsg.textContent = "❌ 6 caractères minimum";
         return;
       }
+      await updatePassword(user, newPassword.value);
+      passwordMsg.textContent = "✅ Mot de passe modifié";
+      newPassword.value = "";
+    };
 
-      await updateDoc(ref, {
-        firstName,
-        phone
-      });
-
-      msgEl.textContent = "✅ Profil mis à jour avec succès";
-    });
+    // 📧 EMAIL
+    changeEmailBtn.onclick = async () => {
+      await updateEmail(user, newEmail.value.trim());
+      emailMsg.textContent = "✅ Email modifié";
+    };
   });
 </script>
 
