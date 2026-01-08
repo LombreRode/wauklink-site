@@ -19,10 +19,36 @@
     </nav>
   </div>
 
-  <div id="userStatus" class="user-status hidden">
-    👤 <span id="userName"></span>
-    <button id="logoutBtn">Déconnexion</button>
-  </div>
+  <!-- 👤 CONNECTÉ -->
+   <div id="userNav" class="user-nav hidden">
+
+    <img
+     id="navAvatar"
+     src="/wauklink-site/assets/avatar-default.png"
+     alt="Avatar"
+     style="
+     width:36px;   
+     height:36px;
+     border-radius:50%;
+     object-fit:cover;
+     border:1px solid #2ecc71;
+    "     
+  >
+
+  <a href="../dashboard/index.html" class="btn btn-outline">
+    📊 Dashboard
+  </a>
+
+  <a href="../profil/index.html" class="btn btn-outline">
+    👤 Profil
+  </a>
+
+  <button id="logoutBtn" class="btn btn-danger">
+    Déconnexion
+  </button>
+
+</div>
+
 
   <div id="guestStatus" class="guest-status hidden">
     <a href="../auth/login.html">Connexion</a>
