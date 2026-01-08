@@ -40,6 +40,9 @@ body {
     var(--bg-dark)
   );
 }
+#avatarImg {
+  display: block;
+}
 
 /* =========================
    LAYOUT
