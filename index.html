@@ -22,9 +22,20 @@
     <nav class="topbar-nav">
 
   <!-- 👤 CONNECTÉ -->
-  <div id="userStatus" class="user-status hidden">
-    👤 <span id="userName"></span>
-    <button id="logoutBtn">Déconnexion</button>
+   <div id="userNav" class="user-nav hidden">
+    <span id="userEmail"></span>
+
+    <a href="./dashboard/index.html" class="btn btn-outline">
+      📊 Tableau de bord
+    </a>
+
+    <a href="./profil/index.html" class="btn btn-outline">
+      👤 Profil
+    </a>
+
+    <button id="logoutBtn" class="btn btn-danger">
+      Déconnexion
+    </button>
   </div>
 
   <!-- 👥 INVITÉ -->
