@@ -155,18 +155,11 @@ onAuthStateChanged(auth, async (user) => {
   // =========================
   // AVATAR (VERSION FINALE)
   // =========================
-  avatarInput.addEventListener("change", async (e) => {
+ avatarInput.addEventListener("change", async (e) => {
   const file = e.target.files?.[0];
 
   if (!file) {
     console.log("❌ Aucun fichier sélectionné");
-    return;
-  }
-
-  // 🔹 A) BLOQUER LES FICHIERS > 5 Mo
-  if (file.size > 5 * 1024 * 1024) {
-    avatarMsg.textContent = "❌ Image trop lourde (max 5 Mo)";
-    avatarInput.value = ""; // reset
     return;
   }
 
@@ -180,15 +173,19 @@ onAuthStateChanged(auth, async (user) => {
     });
 
     const url = await getDownloadURL(avatarRef);
+    console.log("🔗 URL AVATAR :", url);
 
     await updateDoc(doc(db, "users", auth.currentUser.uid), {
       avatarUrl: url
     });
 
+    // 🔥 FORCER L’AFFICHAGE
     avatarImg.src = url + "?t=" + Date.now();
+    avatarImg.style.display = "block";
+    avatarImg.style.visibility = "visible";
+
     avatarMsg.textContent = "✅ Avatar mis à jour";
 
-    // 🔹 B) RESET INPUT APRÈS UPLOAD
     avatarInput.value = "";
 
   } catch (err) {
@@ -196,6 +193,7 @@ onAuthStateChanged(auth, async (user) => {
     avatarMsg.textContent = "❌ Erreur avatar";
   }
 });
+
 
   // =========================
   // PASSWORD
