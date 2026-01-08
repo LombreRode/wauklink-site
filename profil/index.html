@@ -29,22 +29,23 @@
   <!-- 📌 INFOS COMPTE -->
   <div class="card">
     <div style="display:flex;gap:16px;align-items:center">
-   <img
-  id="avatarImg"
-  src="/wauklink-site/assets/avatar-default.png"
-  alt="Avatar"
-  style="width:80px;height:80px;border-radius:50%;object-fit:cover;background:#222"
-/>
 
-        style="width:80px;height:80px;border-radius:50%;object-fit:cover;background:#222">
+      <!-- ✅ AVATAR CORRECT -->
+      <img
+        id="avatarImg"
+        src="/wauklink-site/assets/avatar-default.png"
+        alt="Avatar"
+        style="width:80px;height:80px;border-radius:50%;object-fit:cover;background:#222"
+      />
+
       <div>
         <p id="email"><strong>Email :</strong> —</p>
         <p id="type"><strong>Type de compte :</strong></p>
       </div>
     </div>
 
-    <!-- 🖼️ AVATAR -->
-    <label style="margin-top:12px">
+    <!-- 🖼️ CHANGER AVATAR -->
+    <label style="margin-top:12px;display:block">
       Changer l’avatar
       <input type="file" id="avatarInput" accept="image/*">
     </label>
@@ -117,7 +118,7 @@
   </div>
 </footer>
 
-<!-- 🔐 LOGIQUE PROFIL ULTRA -->
+<!-- 🔐 LOGIQUE PROFIL -->
 <script type="module">
   import { auth, db } from "/wauklink-site/shared/firebase.js";
   import {
@@ -173,11 +174,13 @@
 
     firstNameInput.value = data.firstName || "";
     phoneInput.value = data.phone || "";
-   if (data.avatarUrl) {
-     avatarImg.src = data.avatarUrl + "?t=" + Date.now();
-  }
 
-    // TYPE DE COMPTE
+    // 🖼️ AVATAR EXISTANT
+    if (data.avatarUrl) {
+      avatarImg.src = data.avatarUrl + "?t=" + Date.now();
+    }
+
+    // 🏷️ TYPE DE COMPTE
     if (data.role === "admin") {
       typeEl.innerHTML = `<strong>Type de compte :</strong> 👑 Administrateur`;
     } else if (data.isPro === true) {
@@ -190,8 +193,8 @@
         where("userId", "==", user.uid),
         where("status", "==", "pending")
       );
-      const reqSnap = await getDocs(q);
 
+      const reqSnap = await getDocs(q);
       if (!reqSnap.empty) {
         proAction.textContent = "⏳ Demande PRO en attente";
       } else {
@@ -211,7 +214,7 @@
       }
     }
 
-    // 💾 SAVE PROFIL
+    // 💾 SAUVEGARDE PROFIL
     saveBtn.onclick = async () => {
       await updateDoc(userRef, {
         firstName: firstNameInput.value.trim(),
@@ -220,19 +223,22 @@
       profileMsg.textContent = "✅ Profil mis à jour";
     };
 
-    // 🖼️ AVATAR
+    // 🖼️ UPLOAD AVATAR
     avatarInput.onchange = async () => {
       const file = avatarInput.files[0];
       if (!file) return;
-      const avatarRef = ref(storage, `avatars/${user.uid}`);
+
+      const avatarRef = ref(storage, `avatars/${user.uid}.jpg`);
       await uploadBytes(avatarRef, file);
       const url = await getDownloadURL(avatarRef);
+
       await updateDoc(userRef, { avatarUrl: url });
+
       avatarImg.src = url + "?t=" + Date.now();
       avatarMsg.textContent = "✅ Avatar mis à jour";
     };
 
-    // 🔒 PASSWORD
+    // 🔒 MOT DE PASSE
     changePasswordBtn.onclick = async () => {
       if (newPassword.value.length < 6) {
         passwordMsg.textContent = "❌ 6 caractères minimum";
