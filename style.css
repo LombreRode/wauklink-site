@@ -39,14 +39,11 @@ body {
     var(--bg-green),
     var(--bg-dark)
   );
+   
 }
 #avatarImg {
   display: block;
-}
-
-#avatarImg {
-  display: block !important;
-  opacity: 1 !important;
+  opacity: 1;
   position: relative;
   z-index: 10;
 }
