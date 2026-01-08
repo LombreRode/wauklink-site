@@ -167,7 +167,9 @@
 
     firstNameInput.value = data.firstName || "";
     phoneInput.value = data.phone || "";
-    if (data.avatarUrl) avatarImg.src = data.avatarUrl;
+   if (data.avatarUrl) {
+     avatarImg.src = data.avatarUrl + "?t=" + Date.now();
+  }
 
     // TYPE DE COMPTE
     if (data.role === "admin") {
