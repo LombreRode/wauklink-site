@@ -25,20 +25,26 @@
 <main class="container main-layout">
   <h2>Mon profil</h2>
 
-  <div class="card">
-    <div style="display:flex;gap:16px;align-items:center;overflow:visible">
+   <div class="card">
+  <div style="display:flex;gap:16px;align-items:center;overflow:visible">
+    
+    <div class="avatar-wrapper">
       <img
         id="avatarImg"
-        src="https://picsum.photos/200"
         alt="Avatar"
-        style="width:80px;height:80px;border-radius:50%;object-fit:cover;"
-     />
-  
-      <div>
-        <p id="email"><strong>Email :</strong></p>
-        <p id="type"><strong>Type de compte :</strong></p>
-      </div>
+        style="width:80px;height:80px;border-radius:50%;background:#222;object-fit:cover;"
+      />
+      <div id="avatarLoader" class="avatar-loader hidden"></div>
     </div>
+
+    <div>
+      <p id="email"><strong>Email :</strong></p>
+      <p id="type"><strong>Type de compte :</strong></p>
+    </div>
+
+  </div>
+</div>
+
 
     <label style="margin-top:12px;display:block">
       Changer l’avatar
