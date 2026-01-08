@@ -19,7 +19,8 @@ import {
 import {
   ref,
   uploadBytesResumable,
-  getDownloadURL
+  getDownloadURL,
+  deleteObject
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
 console.log("✅ PROFIL.JS CHARGÉ");
@@ -30,6 +31,8 @@ console.log("✅ PROFIL.JS CHARGÉ");
 const avatarImg = document.getElementById("avatarImg");
 const avatarInput = document.getElementById("avatarInput");
 const avatarMsg = document.getElementById("avatarMsg");
+const avatarLoader = document.getElementById("avatarLoader");
+
 const emailEl = document.getElementById("email");
 const typeEl = document.getElementById("type");
 const proAction = document.getElementById("proAction");
@@ -43,6 +46,37 @@ const changePasswordBtn = document.getElementById("changePasswordBtn");
 const newEmail = document.getElementById("newEmail");
 const changeEmailBtn = document.getElementById("changeEmailBtn");
 const emailMsg = document.getElementById("emailMsg");
+
+// =========================
+// RESIZE IMAGE (AVANT UPLOAD)
+// =========================
+function resizeImage(file, maxSize = 256) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const scale = Math.min(maxSize / img.width, maxSize / img.height);
+
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob(
+          (blob) => resolve(blob),
+          "image/jpeg",
+          0.85
+        );
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 // =========================
 // AUTH
@@ -81,12 +115,11 @@ onAuthStateChanged(auth, async (user) => {
   phoneInput.value = data.phone || "";
 
   // =========================
-  // 🔥 AVATAR AU CHARGEMENT (SANS CACHE‑BUST)
+  // AVATAR AU CHARGEMENT (SANS CACHE‑BUST)
   // =========================
   if (data.avatarUrl) {
     avatarImg.src = data.avatarUrl;
-    avatarImg.style.display = "block";
-    avatarImg.style.visibility = "visible";
+    avatarImg.classList.remove("hidden");
   }
 
   // =========================
@@ -133,34 +166,41 @@ onAuthStateChanged(auth, async (user) => {
         phone: phoneInput.value.trim()
       });
       profileMsg.textContent = "✅ Profil mis à jour";
-    } catch (err) {
+    } catch {
       profileMsg.textContent = "❌ Erreur lors de la sauvegarde";
     }
   };
 
   // =========================
-  // 🔥 AVATAR — UPLOAD FINAL
+  // AVATAR — UPLOAD FINAL (PRO)
   // =========================
   let uploadingAvatar = false;
 
   avatarInput.addEventListener("change", async (e) => {
     if (uploadingAvatar) return;
-    const file = e.target.files?.[0];
-    if (!file) return;
+
+    const originalFile = e.target.files?.[0];
+    if (!originalFile) return;
 
     uploadingAvatar = true;
     avatarInput.disabled = true;
     avatarMsg.textContent = "⏳ Upload en cours...";
 
+    avatarImg.classList.add("hidden");
+    avatarLoader.classList.remove("hidden");
+
+    const oldAvatarUrl = data.avatarUrl || null;
+
     try {
-      const ext = file.name.split(".").pop();
+      const resizedFile = await resizeImage(originalFile);
+
       const avatarRef = ref(
         storage,
-        `avatars/${user.uid}_${Date.now()}.${ext}`
+        `avatars/${user.uid}_${Date.now()}.jpg`
       );
 
-      const uploadTask = uploadBytesResumable(avatarRef, file, {
-        contentType: file.type
+      const uploadTask = uploadBytesResumable(avatarRef, resizedFile, {
+        contentType: "image/jpeg"
       });
 
       await new Promise((resolve, reject) => {
@@ -169,15 +209,17 @@ onAuthStateChanged(auth, async (user) => {
 
       const url = await getDownloadURL(avatarRef);
 
-      await updateDoc(userRef, {
-        avatarUrl: url
-      });
+      await updateDoc(userRef, { avatarUrl: url });
+      data.avatarUrl = url;
 
-      // 🔥 cache‑bust UNIQUEMENT après upload
+      // 🗑️ suppression ancien avatar
+      if (oldAvatarUrl) {
+        try {
+          await deleteObject(ref(storage, oldAvatarUrl));
+        } catch {}
+      }
+
       avatarImg.src = url + "?t=" + Date.now();
-      avatarImg.style.display = "block";
-      avatarImg.style.visibility = "visible";
-
       avatarMsg.textContent = "✅ Avatar mis à jour";
     } catch (err) {
       console.error(err);
@@ -186,6 +228,8 @@ onAuthStateChanged(auth, async (user) => {
       uploadingAvatar = false;
       avatarInput.disabled = false;
       avatarInput.value = "";
+      avatarLoader.classList.add("hidden");
+      avatarImg.classList.remove("hidden");
     }
   });
 
