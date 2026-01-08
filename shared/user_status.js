@@ -8,18 +8,17 @@ import {
   getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-// Éléments navbar (peuvent ne pas exister selon la page)
-const userNav    = document.getElementById("userNav");
-const guestNav   = document.getElementById("guestStatus");
-const navAvatar  = document.getElementById("navAvatar");
-const logoutBtn  = document.getElementById("logoutBtn");
+const userNav   = document.getElementById("userNav");
+const guestNav  = document.getElementById("guestStatus");
+const navAvatar = document.getElementById("navAvatar");
+const logoutBtn = document.getElementById("logoutBtn");
 
-// 🛑 Si aucun bloc concerné, on sort proprement
 if (!userNav && !guestNav) {
   console.warn("ℹ️ user_status.js ignoré sur cette page");
 } else {
 
   onAuthStateChanged(auth, async (user) => {
+
     // 👥 INVITÉ
     if (!user) {
       userNav?.classList.add("hidden");
@@ -31,17 +30,16 @@ if (!userNav && !guestNav) {
     guestNav?.classList.add("hidden");
     userNav?.classList.remove("hidden");
 
-    // 🖼️ AVATAR
+    // 🖼️ AVATAR (avec bypass cache)
     if (navAvatar) {
       try {
         const snap = await getDoc(doc(db, "users", user.uid));
         if (snap.exists() && snap.data().avatarUrl) {
-         navAvatar.src = snap.data().avatarUrl + "?t=" + Date.now();
+          navAvatar.src = snap.data().avatarUrl + "?t=" + Date.now();
         } else {
           navAvatar.src = "/wauklink-site/assets/avatar-default.png";
         }
-
-      } catch (e) {
+      } catch {
         navAvatar.src = "/wauklink-site/assets/avatar-default.png";
       }
     }
