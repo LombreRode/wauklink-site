@@ -77,38 +77,33 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   const data = snap.data();
-
   firstNameInput.value = data.firstName || "";
   phoneInput.value = data.phone || "";
 
- // =========================
-// 🔥 AVATAR AU CHARGEMENT (VERSION CORRECTE)
-// =========================
-if (data.avatarUrl) {
-  console.log("🖼️ AVATAR AU CHARGEMENT :", data.avatarUrl);
-  avatarImg.src = data.avatarUrl; // ✅ SANS ?t=
-  avatarImg.style.display = "block";
-  avatarImg.style.visibility = "visible";
-}
+  // =========================
+  // 🔥 AVATAR AU CHARGEMENT (SANS CACHE‑BUST)
+  // =========================
+  if (data.avatarUrl) {
+    avatarImg.src = data.avatarUrl;
+    avatarImg.style.display = "block";
+    avatarImg.style.visibility = "visible";
+  }
 
   // =========================
   // TYPE DE COMPTE
   // =========================
   proAction.innerHTML = "";
-
   if (data.role === "admin") {
     typeEl.innerHTML = `<strong>Type de compte :</strong> 👑 Administrateur`;
   } else if (data.isPro === true) {
     typeEl.innerHTML = `<strong>Type de compte :</strong> 🟢 Compte PRO`;
   } else {
     typeEl.innerHTML = `<strong>Type de compte :</strong> ⚪ Compte standard`;
-
     const q = query(
       collection(db, "pro_requests"),
       where("userId", "==", user.uid),
       where("status", "==", "pending")
     );
-
     const reqSnap = await getDocs(q);
     if (!reqSnap.empty) {
       proAction.textContent = "⏳ Demande PRO en attente";
@@ -139,7 +134,6 @@ if (data.avatarUrl) {
       });
       profileMsg.textContent = "✅ Profil mis à jour";
     } catch (err) {
-      console.error(err);
       profileMsg.textContent = "❌ Erreur lors de la sauvegarde";
     }
   };
@@ -147,63 +141,53 @@ if (data.avatarUrl) {
   // =========================
   // 🔥 AVATAR — UPLOAD FINAL
   // =========================
-let uploadingAvatar = false;
+  let uploadingAvatar = false;
 
-avatarInput.addEventListener("change", async (e) => {
-  if (uploadingAvatar) return;
+  avatarInput.addEventListener("change", async (e) => {
+    if (uploadingAvatar) return;
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  const file = e.target.files?.[0];
-  if (!file) return;
+    uploadingAvatar = true;
+    avatarInput.disabled = true;
+    avatarMsg.textContent = "⏳ Upload en cours...";
 
-  uploadingAvatar = true;
-  avatarInput.disabled = true;
-  avatarMsg.textContent = "⏳ Upload en cours...";
-
-  console.log("📁 FICHIER OK :", file.name);
-
-  try {
-    const ext = file.name.split(".").pop();
-    const avatarRef = ref(
-      storage,
-      `avatars/${user.uid}_${Date.now()}.${ext}`
-    );
-
-    const uploadTask = uploadBytesResumable(avatarRef, file, {
-      contentType: file.type
-    });
-
-    await new Promise((resolve, reject) => {
-      uploadTask.on(
-        "state_changed",
-        null,
-        reject,
-        resolve
+    try {
+      const ext = file.name.split(".").pop();
+      const avatarRef = ref(
+        storage,
+        `avatars/${user.uid}_${Date.now()}.${ext}`
       );
-    });
 
-    const url = await getDownloadURL(avatarRef);
+      const uploadTask = uploadBytesResumable(avatarRef, file, {
+        contentType: file.type
+      });
 
-    await updateDoc(userRef, {
-      avatarUrl: url
-    });
+      await new Promise((resolve, reject) => {
+        uploadTask.on("state_changed", null, reject, resolve);
+      });
 
-    avatarImg.src = url + "?t=" + Date.now();
-    avatarImg.style.display = "block";
-    avatarImg.style.visibility = "visible";
+      const url = await getDownloadURL(avatarRef);
 
-    avatarMsg.textContent = "✅ Avatar mis à jour";
+      await updateDoc(userRef, {
+        avatarUrl: url
+      });
 
-  } catch (err) {
-    console.error("❌ ERREUR AVATAR :", err);
-    avatarMsg.textContent = "❌ Erreur upload";
-  } finally {
-    uploadingAvatar = false;
-    avatarInput.disabled = false;
-    avatarInput.value = "";
-  }
-});
+      // 🔥 cache‑bust UNIQUEMENT après upload
+      avatarImg.src = url + "?t=" + Date.now();
+      avatarImg.style.display = "block";
+      avatarImg.style.visibility = "visible";
 
-
+      avatarMsg.textContent = "✅ Avatar mis à jour";
+    } catch (err) {
+      console.error(err);
+      avatarMsg.textContent = "❌ Erreur upload";
+    } finally {
+      uploadingAvatar = false;
+      avatarInput.disabled = false;
+      avatarInput.value = "";
+    }
+  });
 
   // =========================
   // PASSWORD
