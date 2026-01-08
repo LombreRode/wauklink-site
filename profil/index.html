@@ -8,8 +8,6 @@
 </head>
 
 <body>
-
-<!-- ================= HEADER ================= -->
 <header class="topbar">
   <div class="container topbar-row">
     <div>
@@ -24,14 +22,10 @@
   </div>
 </header>
 
-<!-- ================= MAIN ================= -->
 <main class="container main-layout">
-
   <h2>Mon profil</h2>
 
-  <!-- ===== INFOS COMPTE ===== -->
   <div class="card">
-
     <div style="display:flex;gap:16px;align-items:center">
       <img
         id="avatarImg"
@@ -45,21 +39,17 @@
       </div>
     </div>
 
-    <!-- AVATAR -->
     <label style="margin-top:12px;display:block">
       Changer l’avatar
       <input type="file" id="avatarInput" accept="image/*">
     </label>
+
     <p id="avatarMsg" class="meta"></p>
-
-    <!-- PASSER PRO -->
     <div id="proAction" class="meta" style="margin-top:12px"></div>
-
   </div>
 
   <hr>
 
-  <!-- ===== MODIFIER PROFIL ===== -->
   <h3>Modifier mes informations</h3>
   <div class="card">
     <label>
@@ -81,7 +71,6 @@
 
   <hr>
 
-  <!-- ===== SÉCURITÉ ===== -->
   <h3>Sécurité</h3>
   <div class="card">
     <label>
@@ -98,7 +87,6 @@
 
   <hr>
 
-  <!-- ===== EMAIL ===== -->
   <h3>Adresse email</h3>
   <div class="card">
     <label>
@@ -112,148 +100,15 @@
 
     <p id="emailMsg" class="meta"></p>
   </div>
-
 </main>
 
-<!-- ================= FOOTER ================= -->
 <footer class="footer">
   <div class="container footer-row">
     <span>© WAUKLINK</span>
   </div>
 </footer>
 
-<!-- ================= SCRIPT PROFIL ================= -->
-<script type="module">
-  import { auth, db } from "/wauklink-site/shared/firebase.js";
-  import {
-    onAuthStateChanged,
-    updatePassword,
-    updateEmail
-  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-  import {
-    doc, getDoc, updateDoc,
-    collection, query, where, getDocs, addDoc, serverTimestamp
-  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-  import {
-    getStorage, ref, uploadBytes, getDownloadURL
-  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
-
-  const storage = getStorage();
-
-  const emailEl        = document.getElementById("email");
-  const typeEl         = document.getElementById("type");
-  const proAction      = document.getElementById("proAction");
-  const avatarImg      = document.getElementById("avatarImg");
-  const avatarInput    = document.getElementById("avatarInput");
-  const avatarMsg      = document.getElementById("avatarMsg");
-  const firstNameInput = document.getElementById("firstNameInput");
-  const phoneInput     = document.getElementById("phoneInput");
-  const saveBtn        = document.getElementById("saveProfileBtn");
-  const profileMsg     = document.getElementById("profileMsg");
-  const newPassword    = document.getElementById("newPassword");
-  const passwordMsg    = document.getElementById("passwordMsg");
-  const changePasswordBtn = document.getElementById("changePasswordBtn");
-  const newEmail       = document.getElementById("newEmail");
-  const changeEmailBtn = document.getElementById("changeEmailBtn");
-  const emailMsg       = document.getElementById("emailMsg");
-
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      location.href = "/wauklink-site/auth/login.html";
-      return;
-    }
-
-    emailEl.innerHTML = `<strong>Email :</strong> ${user.email}`;
-    newEmail.value = user.email;
-
-    const userRef = doc(db, "users", user.uid);
-    const snap = await getDoc(userRef);
-    if (!snap.exists()) return;
-
-    const data = snap.data();
-
-    firstNameInput.value = data.firstName || "";
-    phoneInput.value     = data.phone || "";
-
-    if (data.avatarUrl) {
-      avatarImg.src = data.avatarUrl + "?t=" + Date.now();
-    }
-
-    // TYPE DE COMPTE
-    if (data.role === "admin") {
-      typeEl.innerHTML = `<strong>Type de compte :</strong> 👑 Administrateur`;
-    } else if (data.isPro === true) {
-      typeEl.innerHTML = `<strong>Type de compte :</strong> 🟢 Compte PRO`;
-    } else {
-      typeEl.innerHTML = `<strong>Type de compte :</strong> ⚪ Compte standard`;
-
-      const q = query(
-        collection(db, "pro_requests"),
-        where("userId", "==", user.uid),
-        where("status", "==", "pending")
-      );
-      const reqSnap = await getDocs(q);
-
-      if (!reqSnap.empty) {
-        proAction.textContent = "⏳ Demande PRO en attente";
-      } else {
-        const btn = document.createElement("button");
-        btn.className = "btn btn-ok";
-        btn.textContent = "🚀 Passer PRO";
-        btn.onclick = async () => {
-          btn.disabled = true;
-          await addDoc(collection(db, "pro_requests"), {
-            userId: user.uid,
-            status: "pending",
-            createdAt: serverTimestamp()
-          });
-          proAction.textContent = "⏳ Demande PRO envoyée";
-        };
-        proAction.appendChild(btn);
-      }
-    }
-
-    // SAVE PROFIL
-    saveBtn.onclick = async () => {
-      await updateDoc(userRef, {
-        firstName: firstNameInput.value.trim(),
-        phone: phoneInput.value.trim()
-      });
-      profileMsg.textContent = "✅ Profil mis à jour";
-    };
-
-    // AVATAR
-    avatarInput.onchange = async () => {
-      const file = avatarInput.files[0];
-      if (!file) return;
-
-      const avatarRef = ref(storage, `avatars/${user.uid}.jpg`);
-      await uploadBytes(avatarRef, file);
-      const url = await getDownloadURL(avatarRef);
-
-      await updateDoc(userRef, { avatarUrl: url });
-      avatarImg.src = url + "?t=" + Date.now();
-      avatarMsg.textContent = "✅ Avatar mis à jour";
-    };
-
-    // PASSWORD
-    changePasswordBtn.onclick = async () => {
-      if (newPassword.value.length < 6) {
-        passwordMsg.textContent = "❌ 6 caractères minimum";
-        return;
-      }
-      await updatePassword(user, newPassword.value);
-      passwordMsg.textContent = "✅ Mot de passe modifié";
-      newPassword.value = "";
-    };
-
-    // EMAIL
-    changeEmailBtn.onclick = async () => {
-      await updateEmail(user, newEmail.value.trim());
-      emailMsg.textContent = "✅ Email modifié";
-    };
-  });
+<!-- UN SEUL SCRIPT -->
 <script type="module" src="./profil.js"></script>
-
 </body>
 </html>
