@@ -1,11 +1,9 @@
 import { auth, db, storage } from "/wauklink-site/shared/firebase.js";
-
 import {
   onAuthStateChanged,
   updatePassword,
   updateEmail
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-
 import {
   doc,
   getDoc,
@@ -18,7 +16,6 @@ import {
   getDocs,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
 import {
   ref,
   uploadBytes,
@@ -33,20 +30,16 @@ console.log("✅ PROFIL.JS CHARGÉ");
 const avatarImg = document.getElementById("avatarImg");
 const avatarInput = document.getElementById("avatarInput");
 const avatarMsg = document.getElementById("avatarMsg");
-
 const emailEl = document.getElementById("email");
 const typeEl = document.getElementById("type");
 const proAction = document.getElementById("proAction");
-
 const firstNameInput = document.getElementById("firstNameInput");
 const phoneInput = document.getElementById("phoneInput");
 const saveBtn = document.getElementById("saveProfileBtn");
 const profileMsg = document.getElementById("profileMsg");
-
 const newPassword = document.getElementById("newPassword");
 const passwordMsg = document.getElementById("passwordMsg");
 const changePasswordBtn = document.getElementById("changePasswordBtn");
-
 const newEmail = document.getElementById("newEmail");
 const changeEmailBtn = document.getElementById("changeEmailBtn");
 const emailMsg = document.getElementById("emailMsg");
@@ -60,9 +53,6 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  // =========================
-  // USER REF
-  // =========================
   const userRef = doc(db, "users", user.uid);
 
   // =========================
@@ -75,7 +65,6 @@ onAuthStateChanged(auth, async (user) => {
   // FIRESTORE USER
   // =========================
   let snap = await getDoc(userRef);
-
   if (!snap.exists()) {
     await setDoc(userRef, {
       role: "user",
@@ -92,8 +81,14 @@ onAuthStateChanged(auth, async (user) => {
   firstNameInput.value = data.firstName || "";
   phoneInput.value = data.phone || "";
 
+  // =========================
+  // 🔥 AVATAR AU CHARGEMENT (CLÉ)
+  // =========================
   if (data.avatarUrl) {
+    console.log("🖼️ AVATAR AU CHARGEMENT :", data.avatarUrl);
     avatarImg.src = data.avatarUrl + "?t=" + Date.now();
+    avatarImg.style.display = "block";
+    avatarImg.style.visibility = "visible";
   }
 
   // =========================
@@ -115,14 +110,12 @@ onAuthStateChanged(auth, async (user) => {
     );
 
     const reqSnap = await getDocs(q);
-
     if (!reqSnap.empty) {
       proAction.textContent = "⏳ Demande PRO en attente";
     } else {
       const btn = document.createElement("button");
       btn.className = "btn btn-ok";
       btn.textContent = "🚀 Passer PRO";
-
       btn.onclick = async () => {
         await addDoc(collection(db, "pro_requests"), {
           userId: user.uid,
@@ -131,7 +124,6 @@ onAuthStateChanged(auth, async (user) => {
         });
         proAction.textContent = "⏳ Demande PRO envoyée";
       };
-
       proAction.appendChild(btn);
     }
   }
@@ -153,47 +145,39 @@ onAuthStateChanged(auth, async (user) => {
   };
 
   // =========================
-  // AVATAR (VERSION FINALE)
+  // 🔥 AVATAR — UPLOAD FINAL
   // =========================
- avatarInput.addEventListener("change", async (e) => {
-  const file = e.target.files?.[0];
+  avatarInput.addEventListener("change", async (e) => {
+    const file = e.target.files?.[0];
 
-  if (!file) {
-    console.log("❌ Aucun fichier sélectionné");
-    return;
-  }
+    if (!file) return;
 
-  console.log("📁 FICHIER OK :", file.name);
+    console.log("📁 FICHIER OK :", file.name);
 
-  try {
-    const avatarRef = ref(storage, `avatars/${auth.currentUser.uid}`);
+    try {
+      const avatarRef = ref(storage, `avatars/${user.uid}`);
 
-    await uploadBytes(avatarRef, file, {
-      contentType: file.type
-    });
+      await uploadBytes(avatarRef, file, {
+        contentType: file.type
+      });
 
-    const url = await getDownloadURL(avatarRef);
-    console.log("🔗 URL AVATAR :", url);
+      const url = await getDownloadURL(avatarRef);
+      console.log("🔗 URL AVATAR :", url);
 
-    await updateDoc(doc(db, "users", auth.currentUser.uid), {
-      avatarUrl: url
-    });
+      await updateDoc(userRef, { avatarUrl: url });
 
-    // 🔥 FORCER L’AFFICHAGE
-    avatarImg.src = url + "?t=" + Date.now();
-    avatarImg.style.display = "block";
-    avatarImg.style.visibility = "visible";
+      avatarImg.src = url + "?t=" + Date.now();
+      avatarImg.style.display = "block";
+      avatarImg.style.visibility = "visible";
 
-    avatarMsg.textContent = "✅ Avatar mis à jour";
+      avatarMsg.textContent = "✅ Avatar mis à jour";
+      avatarInput.value = "";
 
-    avatarInput.value = "";
-
-  } catch (err) {
-    console.error("❌ ERREUR AVATAR :", err);
-    avatarMsg.textContent = "❌ Erreur avatar";
-  }
-});
-
+    } catch (err) {
+      console.error("❌ ERREUR AVATAR :", err);
+      avatarMsg.textContent = "❌ Erreur avatar";
+    }
+  });
 
   // =========================
   // PASSWORD
@@ -203,7 +187,6 @@ onAuthStateChanged(auth, async (user) => {
       passwordMsg.textContent = "❌ 6 caractères minimum";
       return;
     }
-
     await updatePassword(user, newPassword.value);
     passwordMsg.textContent = "✅ Mot de passe modifié";
     newPassword.value = "";
