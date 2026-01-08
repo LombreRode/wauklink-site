@@ -29,7 +29,13 @@
   <!-- 📌 INFOS COMPTE -->
   <div class="card">
     <div style="display:flex;gap:16px;align-items:center">
-      <img id="avatarImg" src="" alt="Avatar"
+   <img
+   id="avatarImg"
+   src="/wauklink-site/assets/avatar-default.png"
+   alt="Avatar"
+   style="width:80px;height:80px;border-radius:50%;object-fit:cover;background:#222"
+>
+
         style="width:80px;height:80px;border-radius:50%;object-fit:cover;background:#222">
       <div>
         <p id="email"><strong>Email :</strong> —</p>
@@ -222,7 +228,7 @@
       await uploadBytes(avatarRef, file);
       const url = await getDownloadURL(avatarRef);
       await updateDoc(userRef, { avatarUrl: url });
-      avatarImg.src = url;
+      avatarImg.src = url + "?t=" + Date.now();
       avatarMsg.textContent = "✅ Avatar mis à jour";
     };
 
