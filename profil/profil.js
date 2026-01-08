@@ -44,6 +44,7 @@ onAuthStateChanged(auth, async (user) => {
   const userRef = doc(db, "users", user.uid);
   let snap = await getDoc(userRef);
 
+  // Création auto du user si absent
   if (!snap.exists()) {
     await setDoc(userRef, {
       role: "user",
@@ -66,7 +67,6 @@ onAuthStateChanged(auth, async (user) => {
 
   // TYPE DE COMPTE
   proAction.innerHTML = "";
-
   if (data.role === "admin") {
     typeEl.innerHTML = `<strong>Type de compte :</strong> 👑 Administrateur`;
   } else if (data.isPro === true) {
@@ -79,7 +79,6 @@ onAuthStateChanged(auth, async (user) => {
       where("userId", "==", user.uid),
       where("status", "==", "pending")
     );
-
     const reqSnap = await getDocs(q);
 
     if (!reqSnap.empty) {
