@@ -8,9 +8,7 @@ import {
   ref, uploadBytes, getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
-console.log("✅ profil.js chargé");
-
-// HTML
+// ELEMENTS HTML
 const avatarImg = document.getElementById("avatarImg");
 const avatarInput = document.getElementById("avatarInput");
 const avatarMsg = document.getElementById("avatarMsg");
@@ -19,8 +17,10 @@ const typeEl = document.getElementById("type");
 const proAction = document.getElementById("proAction");
 const firstNameInput = document.getElementById("firstNameInput");
 const phoneInput = document.getElementById("phoneInput");
-const saveBtn = document.getElementById("saveBtn");
+const saveBtn = document.getElementById("saveProfileBtn");
 const profileMsg = document.getElementById("profileMsg");
+
+console.log("✅ profil.js chargé");
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
@@ -28,12 +28,12 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  emailEl.textContent = "Email : " + user.email;
+  emailEl.innerHTML = `<strong>Email :</strong> ${user.email}`;
 
   const userRef = doc(db, "users", user.uid);
   let snap = await getDoc(userRef);
 
-  // 🔥 CRÉATION AUTO DU PROFIL
+  // 🔥 CRÉATION AUTO DU USER SI ABSENT
   if (!snap.exists()) {
     await setDoc(userRef, {
       role: "user",
@@ -54,15 +54,15 @@ onAuthStateChanged(auth, async (user) => {
     avatarImg.src = data.avatarUrl + "?t=" + Date.now();
   }
 
-  // 🟢 TYPE DE COMPTE + PRO
+  // ===== TYPE DE COMPTE =====
   proAction.innerHTML = "";
 
   if (data.role === "admin") {
-    typeEl.textContent = "👑 Administrateur";
+    typeEl.innerHTML = `<strong>Type de compte :</strong> 👑 Administrateur`;
   } else if (data.isPro === true) {
-    typeEl.textContent = "🟢 Compte PRO";
+    typeEl.innerHTML = `<strong>Type de compte :</strong> 🟢 Compte PRO`;
   } else {
-    typeEl.textContent = "⚪ Compte standard";
+    typeEl.innerHTML = `<strong>Type de compte :</strong> ⚪ Compte standard`;
 
     const q = query(
       collection(db, "pro_requests"),
@@ -90,16 +90,16 @@ onAuthStateChanged(auth, async (user) => {
     }
   }
 
-  // 💾 ENREGISTREMENT PROFIL
+  // ===== SAVE PROFIL =====
   saveBtn.onclick = async () => {
     await updateDoc(userRef, {
-      firstName: firstNameInput.value || "",
-      phone: phoneInput.value || ""
+      firstName: firstNameInput.value.trim(),
+      phone: phoneInput.value.trim()
     });
-    profileMsg.textContent = "✅ Profil enregistré";
+    profileMsg.textContent = "✅ Profil mis à jour";
   };
 
-  // 🖼️ AVATAR
+  // ===== AVATAR =====
   avatarInput.onchange = async () => {
     const file = avatarInput.files[0];
     if (!file) return;
@@ -113,4 +113,3 @@ onAuthStateChanged(auth, async (user) => {
     avatarMsg.textContent = "✅ Avatar mis à jour";
   };
 });
-
