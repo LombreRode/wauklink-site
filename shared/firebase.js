@@ -1,9 +1,6 @@
 // =================================================
-// WAUKLINK — Firebase central
-// Compatible GitHub Pages
-// Version stable
+// WAUKLINK — Firebase central (FIX STORAGE)
 // =================================================
-
 import { initializeApp, getApps, getApp } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 
@@ -17,7 +14,7 @@ import { getStorage } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
 // =========================
-// CONFIG FIREBASE
+// CONFIG
 // =========================
 const firebaseConfig = {
   apiKey: "AIzaSyA6GuK8h2YGgbWaRC8ybBlQa5LO67cdePM",
@@ -29,14 +26,14 @@ const firebaseConfig = {
 };
 
 // =========================
-// INIT UNIQUE (ANTI DOUBLE INIT)
+// INIT
 // =========================
 const app = getApps().length === 0
   ? initializeApp(firebaseConfig)
   : getApp();
 
 // =========================
-// EXPORTS
+// EXPORTS (IMPORTANT)
 // =========================
 export const auth    = getAuth(app);
 export const db      = getFirestore(app);
