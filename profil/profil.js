@@ -155,41 +155,35 @@ onAuthStateChanged(auth, async (user) => {
   // =========================
   // AVATAR (VERSION FINALE)
   // =========================
-  avatarInput.onchange = async () => {
-  console.log("🟢 CHANGE AVATAR DÉCLENCHÉ");
+  avatarInput.addEventListener("change", async (e) => {
+  const file = e.target.files?.[0];
+
+  if (!file) {
+    console.log("❌ Aucun fichier sélectionné");
+    return;
+  }
+
+  console.log("📁 FICHIER OK :", file.name);
 
   try {
-    const file = avatarInput.files[0];
-    console.log("📁 FICHIER :", file);
-
-    if (!file) {
-      console.log("❌ Aucun fichier");
-      return;
-    }
-
-    const avatarRef = ref(storage, `avatars/${user.uid}.jpg`);
-    console.log("📤 UPLOAD EN COURS");
-
+    const avatarRef = ref(storage, `avatars/${auth.currentUser.uid}`);
     await uploadBytes(avatarRef, file, {
-      contentType: file.type || "image/jpeg"
+      contentType: file.type
     });
 
-    console.log("✅ UPLOAD OK");
-
     const url = await getDownloadURL(avatarRef);
-    console.log("🔗 URL :", url);
-
-    await updateDoc(userRef, { avatarUrl: url });
-    console.log("✅ FIRESTORE OK");
+    await updateDoc(doc(db, "users", auth.currentUser.uid), {
+      avatarUrl: url
+    });
 
     avatarImg.src = url + "?t=" + Date.now();
     avatarMsg.textContent = "✅ Avatar mis à jour";
-
   } catch (err) {
     console.error("❌ ERREUR AVATAR :", err);
     avatarMsg.textContent = "❌ Erreur avatar";
   }
-};
+});
+
 
 
   // =========================
