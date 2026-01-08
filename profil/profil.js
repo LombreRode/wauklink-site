@@ -153,7 +153,7 @@ onAuthStateChanged(auth, async (user) => {
   };
 
   // =========================
-  // AVATAR
+  // AVATAR (VERSION FINALE)
   // =========================
   avatarInput.onchange = async () => {
     try {
@@ -161,19 +161,23 @@ onAuthStateChanged(auth, async (user) => {
       if (!file) return;
 
       const avatarRef = ref(storage, `avatars/${user.uid}.jpg`);
-      await uploadBytes(avatarRef, file);
 
-      const url = await getDownloadURL(avatarRef);
+    // 🔴 METADATA OBLIGATOIRE
+    await uploadBytes(avatarRef, file, {
+      contentType: file.type || "image/jpeg"
+    });
 
-      await updateDoc(userRef, { avatarUrl: url });
+    const url = await getDownloadURL(avatarRef);
 
-      avatarImg.src = url + "?t=" + Date.now();
-      avatarMsg.textContent = "✅ Avatar mis à jour";
-    } catch (err) {
-      console.error(err);
-      avatarMsg.textContent = "❌ Erreur avatar";
-    }
-  };
+    await updateDoc(userRef, { avatarUrl: url });
+
+    avatarImg.src = url + "?t=" + Date.now();
+    avatarMsg.textContent = "✅ Avatar mis à jour";
+  } catch (err) {
+    console.error("Erreur avatar :", err);
+    avatarMsg.textContent = "❌ Erreur avatar";
+  }
+};
 
   // =========================
   // PASSWORD
