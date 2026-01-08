@@ -1,50 +1,81 @@
 import { auth, db, storage } from "/wauklink-site/shared/firebase.js";
+
 import {
   onAuthStateChanged,
   updatePassword,
   updateEmail
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
 import {
-  doc, getDoc, setDoc, updateDoc,
-  collection, addDoc, query, where, getDocs, serverTimestamp
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
 import {
-  ref, uploadBytes, getDownloadURL
+  ref,
+  uploadBytes,
+  getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
 console.log("✅ PROFIL.JS CHARGÉ");
 
-// ELEMENTS
+// =========================
+// ELEMENTS DOM
+// =========================
 const avatarImg = document.getElementById("avatarImg");
 const avatarInput = document.getElementById("avatarInput");
 const avatarMsg = document.getElementById("avatarMsg");
+
 const emailEl = document.getElementById("email");
 const typeEl = document.getElementById("type");
 const proAction = document.getElementById("proAction");
+
 const firstNameInput = document.getElementById("firstNameInput");
 const phoneInput = document.getElementById("phoneInput");
 const saveBtn = document.getElementById("saveProfileBtn");
 const profileMsg = document.getElementById("profileMsg");
+
 const newPassword = document.getElementById("newPassword");
 const passwordMsg = document.getElementById("passwordMsg");
 const changePasswordBtn = document.getElementById("changePasswordBtn");
+
 const newEmail = document.getElementById("newEmail");
 const changeEmailBtn = document.getElementById("changeEmailBtn");
 const emailMsg = document.getElementById("emailMsg");
 
+// =========================
+// AUTH
+// =========================
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     location.href = "/wauklink-site/auth/login.html";
     return;
   }
 
+  // =========================
+  // USER REF
+  // =========================
+  const userRef = doc(db, "users", user.uid);
+
+  // =========================
+  // INFOS AUTH
+  // =========================
   emailEl.innerHTML = `<strong>Email :</strong> ${user.email}`;
   newEmail.value = user.email;
 
-  const userRef = doc(db, "users", user.uid);
+  // =========================
+  // FIRESTORE USER
+  // =========================
   let snap = await getDoc(userRef);
 
-  // Création auto du user si absent
   if (!snap.exists()) {
     await setDoc(userRef, {
       role: "user",
@@ -65,8 +96,11 @@ onAuthStateChanged(auth, async (user) => {
     avatarImg.src = data.avatarUrl + "?t=" + Date.now();
   }
 
+  // =========================
   // TYPE DE COMPTE
+  // =========================
   proAction.innerHTML = "";
+
   if (data.role === "admin") {
     typeEl.innerHTML = `<strong>Type de compte :</strong> 👑 Administrateur`;
   } else if (data.isPro === true) {
@@ -79,6 +113,7 @@ onAuthStateChanged(auth, async (user) => {
       where("userId", "==", user.uid),
       where("status", "==", "pending")
     );
+
     const reqSnap = await getDocs(q);
 
     if (!reqSnap.empty) {
@@ -87,6 +122,7 @@ onAuthStateChanged(auth, async (user) => {
       const btn = document.createElement("button");
       btn.className = "btn btn-ok";
       btn.textContent = "🚀 Passer PRO";
+
       btn.onclick = async () => {
         await addDoc(collection(db, "pro_requests"), {
           userId: user.uid,
@@ -95,63 +131,67 @@ onAuthStateChanged(auth, async (user) => {
         });
         proAction.textContent = "⏳ Demande PRO envoyée";
       };
+
       proAction.appendChild(btn);
     }
   }
 
+  // =========================
   // SAVE PROFIL
+  // =========================
   saveBtn.onclick = async () => {
-  try {
-    await updateDoc(userRef, {
-      firstName: firstNameInput.value.trim(),
-      phone: phoneInput.value.trim()
-    });
+    try {
+      await updateDoc(userRef, {
+        firstName: firstNameInput.value.trim(),
+        phone: phoneInput.value.trim()
+      });
+      profileMsg.textContent = "✅ Profil mis à jour";
+    } catch (err) {
+      console.error(err);
+      profileMsg.textContent = "❌ Erreur lors de la sauvegarde";
+    }
+  };
 
-    profileMsg.textContent = "✅ Profil mis à jour";
-  } catch (err) {
-    console.error("Erreur update profil :", err);
-    profileMsg.textContent = "❌ Erreur lors de la sauvegarde";
-  }
-};
-
-
+  // =========================
   // AVATAR
-avatarInput.onchange = async () => {
-  try {
-    const file = avatarInput.files[0];
-    if (!file) return;
+  // =========================
+  avatarInput.onchange = async () => {
+    try {
+      const file = avatarInput.files[0];
+      if (!file) return;
 
-    const avatarRef = ref(storage, `avatars/${user.uid}.jpg`);
-    await uploadBytes(avatarRef, file);
+      const avatarRef = ref(storage, `avatars/${user.uid}.jpg`);
+      await uploadBytes(avatarRef, file);
 
-    const url = await getDownloadURL(avatarRef);
+      const url = await getDownloadURL(avatarRef);
 
-    // 🔴 ON ÉCRIT FIRESTORE AVANT TOUT
-    await updateDoc(userRef, { avatarUrl: url });
+      await updateDoc(userRef, { avatarUrl: url });
 
-    // 🟢 ON MET À JOUR L’UI SEULEMENT APRÈS
-    avatarImg.src = url + "?t=" + Date.now();
-    avatarMsg.textContent = "✅ Avatar mis à jour";
+      avatarImg.src = url + "?t=" + Date.now();
+      avatarMsg.textContent = "✅ Avatar mis à jour";
+    } catch (err) {
+      console.error(err);
+      avatarMsg.textContent = "❌ Erreur avatar";
+    }
+  };
 
-  } catch (err) {
-    console.error("Erreur avatar :", err);
-    avatarMsg.textContent = "❌ Erreur avatar";
-  }
-};
-
-
+  // =========================
   // PASSWORD
+  // =========================
   changePasswordBtn.onclick = async () => {
     if (newPassword.value.length < 6) {
       passwordMsg.textContent = "❌ 6 caractères minimum";
       return;
     }
+
     await updatePassword(user, newPassword.value);
     passwordMsg.textContent = "✅ Mot de passe modifié";
     newPassword.value = "";
   };
 
+  // =========================
   // EMAIL
+  // =========================
   changeEmailBtn.onclick = async () => {
     await updateEmail(user, newEmail.value.trim());
     emailMsg.textContent = "✅ Email modifié";
