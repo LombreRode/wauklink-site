@@ -162,7 +162,12 @@ avatarInput.addEventListener("change", async (e) => {
   console.log("📁 FICHIER OK :", file.name);
 
   try {
-    const avatarRef = ref(storage, `avatars/${auth.currentUser.uid}`);
+    const ext = file.name.split(".").pop();
+
+    const avatarRef = ref(
+      storage,
+      `avatars/${user.uid}_${Date.now()}.${ext}`
+    );
 
     await uploadBytes(avatarRef, file, {
       contentType: file.type
@@ -171,7 +176,7 @@ avatarInput.addEventListener("change", async (e) => {
     const url = await getDownloadURL(avatarRef);
     console.log("🔗 URL AVATAR :", url);
 
-    await updateDoc(doc(db, "users", auth.currentUser.uid), {
+    await updateDoc(userRef, {
       avatarUrl: url
     });
 
@@ -183,13 +188,14 @@ avatarInput.addEventListener("change", async (e) => {
 
   } catch (err) {
     console.error("❌ ERREUR AVATAR :", err);
-    avatarMsg.textContent = "❌ Erreur upload (réessaie dans 5s)";
+    avatarMsg.textContent = "❌ Erreur upload";
   } finally {
     uploadingAvatar = false;
     avatarInput.disabled = false;
     avatarInput.value = "";
   }
 });
+
 
   // =========================
   // PASSWORD
