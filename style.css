@@ -44,6 +44,13 @@ body {
   display: block;
 }
 
+#avatarImg {
+  display: block !important;
+  opacity: 1 !important;
+  position: relative;
+  z-index: 10;
+}
+
 /* =========================
    LAYOUT
 ========================= */
