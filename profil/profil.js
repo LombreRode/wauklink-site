@@ -81,15 +81,15 @@ onAuthStateChanged(auth, async (user) => {
   firstNameInput.value = data.firstName || "";
   phoneInput.value = data.phone || "";
 
-  // =========================
-  // 🔥 AVATAR AU CHARGEMENT (CLÉ)
-  // =========================
-  if (data.avatarUrl) {
-    console.log("🖼️ AVATAR AU CHARGEMENT :", data.avatarUrl);
-    avatarImg.src = data.avatarUrl + "?t=" + Date.now();
-    avatarImg.style.display = "block";
-    avatarImg.style.visibility = "visible";
-  }
+ // =========================
+// 🔥 AVATAR AU CHARGEMENT (VERSION CORRECTE)
+// =========================
+if (data.avatarUrl) {
+  console.log("🖼️ AVATAR AU CHARGEMENT :", data.avatarUrl);
+  avatarImg.src = data.avatarUrl; // ✅ SANS ?t=
+  avatarImg.style.display = "block";
+  avatarImg.style.visibility = "visible";
+}
 
   // =========================
   // TYPE DE COMPTE
