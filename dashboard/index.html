@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <title>WAUKLINK — Tableau de bord</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="../style.css">
 </head>
 <body>
@@ -17,24 +18,25 @@
       <a class="btn" href="../index.html">← Accueil</a>
     </nav>
   </div>
-  
+
   <div id="userStatus" class="user-status hidden">
-  👤 <span id="userName"></span>
-  <button id="logoutBtn">Déconnexion</button>
-</div>
+    👤 <span id="userName"></span>
+    <button id="logoutBtn">Déconnexion</button>
+  </div>
 
-<div id="guestStatus" class="guest-status hidden">
-  <a href="../auth/login.html">Connexion</a>
-  <a href="../auth/register.html">Inscription</a>
-</div>
-
+  <div id="guestStatus" class="guest-status hidden">
+    <a href="../auth/login.html">Connexion</a>
+    <a href="../auth/register.html">Inscription</a>
+  </div>
 </header>
 
 <main class="container main-layout">
   <h2>Mon tableau de bord</h2>
 
-  <div class="grid">
+  <!-- 🔰 STATUT PRO -->
+  <div id="proStatus" class="meta" style="margin:16px 0"></div>
 
+  <div class="grid">
     <a class="card" href="../deposer/annonce-location.html">
       <strong>➕ Déposer une annonce</strong>
       <p class="meta">Publier une nouvelle annonce</p>
@@ -59,7 +61,6 @@
       <strong>👤 Mon profil</strong>
       <p class="meta">Gérer mon compte</p>
     </a>
-  <div id="proStatus" class="meta"></div>
   </div>
 </main>
 
@@ -68,8 +69,8 @@
     <span>© WAUKLINK</span>
   </div>
 </footer>
-  
-<!-- 🔐 Protection -->
+
+<!-- 🔐 Protection utilisateur connecté -->
 <script type="module">
   import { requireUser } from "../shared/guard.js";
   requireUser({ redirectTo: "../auth/login.html" });
@@ -77,7 +78,71 @@
 
 <!-- 👤 Connexion / Déconnexion -->
 <script type="module" src="../shared/user_status.js"></script>
+
+<!-- 🟢 LOGIQUE PRO -->
+<script type="module">
+  import { auth, db } from "../shared/firebase.js";
+  import { onAuthStateChanged } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import {
+    doc, getDoc,
+    collection, query, where, getDocs, addDoc, serverTimestamp
+  } from
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+  const proStatus = document.getElementById("proStatus");
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) return;
+
+    const snap = await getDoc(doc(db, "users", user.uid));
+    if (!snap.exists()) return;
+
+    const data = snap.data();
+
+    // 👑 ADMIN
+    if (data.role === "admin") {
+      proStatus.textContent = "👑 Administrateur";
+      return;
+    }
+
+    // 🟢 PRO
+    if (data.isPro === true) {
+      proStatus.textContent = "🟢 Compte PRO";
+      return;
+    }
+
+    // ⏳ DEMANDE EN COURS ?
+    const q = query(
+      collection(db, "pro_requests"),
+      where("userId", "==", user.uid),
+      where("status", "==", "pending")
+    );
+    const reqSnap = await getDocs(q);
+
+    if (!reqSnap.empty) {
+      proStatus.textContent = "⏳ Demande PRO en attente";
+      return;
+    }
+
+    // 🔘 BOUTON PASSER PRO
+    const btn = document.createElement("button");
+    btn.className = "btn btn-ok";
+    btn.textContent = "🚀 Passer PRO";
+
+    btn.onclick = async () => {
+      btn.disabled = true;
+      await addDoc(collection(db, "pro_requests"), {
+        userId: user.uid,
+        status: "pending",
+        createdAt: serverTimestamp()
+      });
+      proStatus.textContent = "⏳ Demande PRO envoyée";
+    };
+
+    proStatus.appendChild(btn);
+  });
+</script>
+
 </body>
 </html>
-
-
