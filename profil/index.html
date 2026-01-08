@@ -31,12 +31,13 @@
     <div style="display:flex;gap:16px;align-items:center">
 
       <!-- ✅ AVATAR CORRECT -->
-      <img
-        id="avatarImg"
-        src="/wauklink-site/assets/avatar-default.png"
-        alt="Avatar"
-        style="width:80px;height:80px;border-radius:50%;object-fit:cover;background:#222"
-      />
+     <img
+  id="avatarImg"
+  src="/wauklink-site/assets/avatar-default.png"
+  alt="Avatar"
+  style="width:80px;height:80px;border-radius:50%;object-fit:cover;background:#222"
+/>
+
 
       <div>
         <p id="email"><strong>Email :</strong> —</p>
@@ -223,20 +224,25 @@
       profileMsg.textContent = "✅ Profil mis à jour";
     };
 
-    // 🖼️ UPLOAD AVATAR
-    avatarInput.onchange = async () => {
-      const file = avatarInput.files[0];
-      if (!file) return;
+   // 🖼️ AVATAR
+avatarInput.onchange = async () => {
+  const file = avatarInput.files[0];
+  if (!file) return;
 
-      const avatarRef = ref(storage, `avatars/${user.uid}.jpg`);
-      await uploadBytes(avatarRef, file);
-      const url = await getDownloadURL(avatarRef);
+  const avatarRef = ref(storage, `avatars/${user.uid}.jpg`);
 
-      await updateDoc(userRef, { avatarUrl: url });
+  await uploadBytes(avatarRef, file);
 
-      avatarImg.src = url + "?t=" + Date.now();
-      avatarMsg.textContent = "✅ Avatar mis à jour";
-    };
+  const url = await getDownloadURL(avatarRef);
+
+  await updateDoc(userRef, {
+    avatarUrl: url
+  });
+
+  avatarImg.src = url + "?t=" + Date.now();
+  avatarMsg.textContent = "✅ Avatar mis à jour";
+};
+
 
     // 🔒 MOT DE PASSE
     changePasswordBtn.onclick = async () => {
