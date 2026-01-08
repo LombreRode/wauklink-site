@@ -9,6 +9,7 @@
 
 <body>
 
+<!-- ================= HEADER ================= -->
 <header class="topbar">
   <div class="container topbar-row">
     <div>
@@ -23,42 +24,42 @@
   </div>
 </header>
 
+<!-- ================= MAIN ================= -->
 <main class="container main-layout">
+
   <h2>Mon profil</h2>
 
-  <!-- 📌 INFOS COMPTE -->
+  <!-- ===== INFOS COMPTE ===== -->
   <div class="card">
+
     <div style="display:flex;gap:16px;align-items:center">
-
-      <!-- ✅ AVATAR CORRECT -->
-     <img
-  id="avatarImg"
-  src="/wauklink-site/assets/avatar-default.png"
-  alt="Avatar"
-  style="width:80px;height:80px;border-radius:50%;object-fit:cover;background:#222"
-/>
-
-
+      <img
+        id="avatarImg"
+        src="/wauklink-site/assets/avatar-default.png"
+        alt="Avatar"
+        style="width:80px;height:80px;border-radius:50%;object-fit:cover;background:#222"
+      >
       <div>
         <p id="email"><strong>Email :</strong> —</p>
         <p id="type"><strong>Type de compte :</strong></p>
       </div>
     </div>
 
-    <!-- 🖼️ CHANGER AVATAR -->
+    <!-- AVATAR -->
     <label style="margin-top:12px;display:block">
       Changer l’avatar
       <input type="file" id="avatarInput" accept="image/*">
     </label>
     <p id="avatarMsg" class="meta"></p>
 
-    <!-- 🚀 PRO -->
+    <!-- PASSER PRO -->
     <div id="proAction" class="meta" style="margin-top:12px"></div>
+
   </div>
 
   <hr>
 
-  <!-- ✏️ MODIFIER PROFIL -->
+  <!-- ===== MODIFIER PROFIL ===== -->
   <h3>Modifier mes informations</h3>
   <div class="card">
     <label>
@@ -80,7 +81,7 @@
 
   <hr>
 
-  <!-- 🔒 MOT DE PASSE -->
+  <!-- ===== SÉCURITÉ ===== -->
   <h3>Sécurité</h3>
   <div class="card">
     <label>
@@ -97,7 +98,7 @@
 
   <hr>
 
-  <!-- 📧 EMAIL -->
+  <!-- ===== EMAIL ===== -->
   <h3>Adresse email</h3>
   <div class="card">
     <label>
@@ -111,15 +112,17 @@
 
     <p id="emailMsg" class="meta"></p>
   </div>
+
 </main>
 
+<!-- ================= FOOTER ================= -->
 <footer class="footer">
   <div class="container footer-row">
     <span>© WAUKLINK</span>
   </div>
 </footer>
 
-<!-- 🔐 LOGIQUE PROFIL -->
+<!-- ================= SCRIPT PROFIL ================= -->
 <script type="module">
   import { auth, db } from "/wauklink-site/shared/firebase.js";
   import {
@@ -137,26 +140,22 @@
 
   const storage = getStorage();
 
-  const emailEl = document.getElementById("email");
-  const typeEl = document.getElementById("type");
-  const proAction = document.getElementById("proAction");
-
-  const avatarImg = document.getElementById("avatarImg");
-  const avatarInput = document.getElementById("avatarInput");
-  const avatarMsg = document.getElementById("avatarMsg");
-
+  const emailEl        = document.getElementById("email");
+  const typeEl         = document.getElementById("type");
+  const proAction      = document.getElementById("proAction");
+  const avatarImg      = document.getElementById("avatarImg");
+  const avatarInput    = document.getElementById("avatarInput");
+  const avatarMsg      = document.getElementById("avatarMsg");
   const firstNameInput = document.getElementById("firstNameInput");
-  const phoneInput = document.getElementById("phoneInput");
-  const saveBtn = document.getElementById("saveProfileBtn");
-  const profileMsg = document.getElementById("profileMsg");
-
-  const newPassword = document.getElementById("newPassword");
+  const phoneInput     = document.getElementById("phoneInput");
+  const saveBtn        = document.getElementById("saveProfileBtn");
+  const profileMsg     = document.getElementById("profileMsg");
+  const newPassword    = document.getElementById("newPassword");
+  const passwordMsg    = document.getElementById("passwordMsg");
   const changePasswordBtn = document.getElementById("changePasswordBtn");
-  const passwordMsg = document.getElementById("passwordMsg");
-
-  const newEmail = document.getElementById("newEmail");
+  const newEmail       = document.getElementById("newEmail");
   const changeEmailBtn = document.getElementById("changeEmailBtn");
-  const emailMsg = document.getElementById("emailMsg");
+  const emailMsg       = document.getElementById("emailMsg");
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
@@ -174,14 +173,13 @@
     const data = snap.data();
 
     firstNameInput.value = data.firstName || "";
-    phoneInput.value = data.phone || "";
+    phoneInput.value     = data.phone || "";
 
-    // 🖼️ AVATAR EXISTANT
     if (data.avatarUrl) {
       avatarImg.src = data.avatarUrl + "?t=" + Date.now();
     }
 
-    // 🏷️ TYPE DE COMPTE
+    // TYPE DE COMPTE
     if (data.role === "admin") {
       typeEl.innerHTML = `<strong>Type de compte :</strong> 👑 Administrateur`;
     } else if (data.isPro === true) {
@@ -194,8 +192,8 @@
         where("userId", "==", user.uid),
         where("status", "==", "pending")
       );
-
       const reqSnap = await getDocs(q);
+
       if (!reqSnap.empty) {
         proAction.textContent = "⏳ Demande PRO en attente";
       } else {
@@ -215,7 +213,7 @@
       }
     }
 
-    // 💾 SAUVEGARDE PROFIL
+    // SAVE PROFIL
     saveBtn.onclick = async () => {
       await updateDoc(userRef, {
         firstName: firstNameInput.value.trim(),
@@ -224,27 +222,21 @@
       profileMsg.textContent = "✅ Profil mis à jour";
     };
 
-   // 🖼️ AVATAR
-avatarInput.onchange = async () => {
-  const file = avatarInput.files[0];
-  if (!file) return;
+    // AVATAR
+    avatarInput.onchange = async () => {
+      const file = avatarInput.files[0];
+      if (!file) return;
 
-  const avatarRef = ref(storage, `avatars/${user.uid}.jpg`);
+      const avatarRef = ref(storage, `avatars/${user.uid}.jpg`);
+      await uploadBytes(avatarRef, file);
+      const url = await getDownloadURL(avatarRef);
 
-  await uploadBytes(avatarRef, file);
+      await updateDoc(userRef, { avatarUrl: url });
+      avatarImg.src = url + "?t=" + Date.now();
+      avatarMsg.textContent = "✅ Avatar mis à jour";
+    };
 
-  const url = await getDownloadURL(avatarRef);
-
-  await updateDoc(userRef, {
-    avatarUrl: url
-  });
-
-  avatarImg.src = url + "?t=" + Date.now();
-  avatarMsg.textContent = "✅ Avatar mis à jour";
-};
-
-
-    // 🔒 MOT DE PASSE
+    // PASSWORD
     changePasswordBtn.onclick = async () => {
       if (newPassword.value.length < 6) {
         passwordMsg.textContent = "❌ 6 caractères minimum";
@@ -255,7 +247,7 @@ avatarInput.onchange = async () => {
       newPassword.value = "";
     };
 
-    // 📧 EMAIL
+    // EMAIL
     changeEmailBtn.onclick = async () => {
       await updateEmail(user, newEmail.value.trim());
       emailMsg.textContent = "✅ Email modifié";
