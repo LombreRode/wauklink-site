@@ -1,46 +1,39 @@
+// shared/user_status.js
 import { auth, db } from "./firebase.js";
-import {
-  onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import {
-  doc,
-  getDoc
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { onAuthStateChanged, signOut } from
+  "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { doc, getDoc } from
+  "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-const userStatus  = document.getElementById("userStatus");
+// 🔗 IDs DU HTML
+const userNav     = document.getElementById("userNav");
 const guestStatus = document.getElementById("guestStatus");
-const userNameEl  = document.getElementById("userName");
+const userEmailEl = document.getElementById("userEmail");
 const logoutBtn   = document.getElementById("logoutBtn");
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    userStatus?.classList.add("hidden");
+    userNav?.classList.add("hidden");
     guestStatus?.classList.remove("hidden");
     return;
   }
 
   guestStatus?.classList.add("hidden");
-  userStatus?.classList.remove("hidden");
+  userNav?.classList.remove("hidden");
 
   try {
     const snap = await getDoc(doc(db, "users", user.uid));
-
     if (snap.exists()) {
       const data = snap.data();
-
-      // ✅ AFFICHAGE SÛR
-      userNameEl.textContent =
+      userEmailEl.textContent =
         data.firstName && data.lastName
           ? `${data.firstName} ${data.lastName}`
           : user.email;
-
     } else {
-      userNameEl.textContent = user.email;
+      userEmailEl.textContent = user.email;
     }
-
   } catch (e) {
-    userNameEl.textContent = user.email;
+    userEmailEl.textContent = user.email;
   }
 });
 
