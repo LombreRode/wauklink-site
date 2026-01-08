@@ -101,26 +101,44 @@ onAuthStateChanged(auth, async (user) => {
 
   // SAVE PROFIL
   saveBtn.onclick = async () => {
+  try {
     await updateDoc(userRef, {
       firstName: firstNameInput.value.trim(),
       phone: phoneInput.value.trim()
     });
+
     profileMsg.textContent = "✅ Profil mis à jour";
-  };
+  } catch (err) {
+    console.error("Erreur update profil :", err);
+    profileMsg.textContent = "❌ Erreur lors de la sauvegarde";
+  }
+};
+
 
   // AVATAR
-  avatarInput.onchange = async () => {
+avatarInput.onchange = async () => {
+  try {
     const file = avatarInput.files[0];
     if (!file) return;
 
     const avatarRef = ref(storage, `avatars/${user.uid}.jpg`);
     await uploadBytes(avatarRef, file);
+
     const url = await getDownloadURL(avatarRef);
 
+    // 🔴 ON ÉCRIT FIRESTORE AVANT TOUT
     await updateDoc(userRef, { avatarUrl: url });
+
+    // 🟢 ON MET À JOUR L’UI SEULEMENT APRÈS
     avatarImg.src = url + "?t=" + Date.now();
     avatarMsg.textContent = "✅ Avatar mis à jour";
-  };
+
+  } catch (err) {
+    console.error("Erreur avatar :", err);
+    avatarMsg.textContent = "❌ Erreur avatar";
+  }
+};
+
 
   // PASSWORD
   changePasswordBtn.onclick = async () => {
