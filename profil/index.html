@@ -6,7 +6,6 @@
   <title>WAUKLINK — Mon profil</title>
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
-
 <body>
 
 <header class="topbar">
@@ -30,12 +29,11 @@
     <div style="display:flex;gap:16px;align-items:center">
       <img
         id="avatarImg"
-        src="/wauklink-site/assets/avatar-default.png"
         alt="Avatar"
-        style="width:80px;height:80px;border-radius:50%;object-fit:cover;background:#222"
+        style="width:80px;height:80px;border-radius:50%;background:#222"
       >
       <div>
-        <p id="email"><strong>Email :</strong> —</p>
+        <p id="email"><strong>Email :</strong></p>
         <p id="type"><strong>Type de compte :</strong></p>
       </div>
     </div>
@@ -44,8 +42,8 @@
       Changer l’avatar
       <input type="file" id="avatarInput" accept="image/*">
     </label>
-
     <p id="avatarMsg" class="meta"></p>
+
     <div id="proAction" class="meta" style="margin-top:12px"></div>
   </div>
 
@@ -55,7 +53,9 @@
   <div class="card">
     <label>Prénom <input type="text" id="firstNameInput"></label>
     <label style="margin-top:12px">Téléphone <input type="text" id="phoneInput"></label>
-    <button id="saveProfileBtn" class="btn btn-ok" style="margin-top:16px">💾 Enregistrer</button>
+    <button id="saveProfileBtn" class="btn btn-ok" style="margin-top:16px">
+      💾 Enregistrer
+    </button>
     <p id="profileMsg" class="meta"></p>
   </div>
 
@@ -64,7 +64,9 @@
   <h3>Sécurité</h3>
   <div class="card">
     <label>Nouveau mot de passe <input type="password" id="newPassword"></label>
-    <button id="changePasswordBtn" class="btn btn-danger" style="margin-top:12px">🔒 Changer le mot de passe</button>
+    <button id="changePasswordBtn" class="btn btn-danger" style="margin-top:12px">
+      🔒 Changer le mot de passe
+    </button>
     <p id="passwordMsg" class="meta"></p>
   </div>
 
@@ -73,7 +75,9 @@
   <h3>Adresse email</h3>
   <div class="card">
     <label>Nouvel email <input type="email" id="newEmail"></label>
-    <button id="changeEmailBtn" class="btn btn-outline" style="margin-top:12px">📧 Changer l’email</button>
+    <button id="changeEmailBtn" class="btn btn-outline" style="margin-top:12px">
+      📧 Changer l’email
+    </button>
     <p id="emailMsg" class="meta"></p>
   </div>
 </main>
@@ -84,8 +88,7 @@
   </div>
 </footer>
 
-<!-- 🔥 UN SEUL SCRIPT -->
+<!-- UN SEUL SCRIPT -->
 <script type="module" src="./profil.js"></script>
-
 </body>
 </html>
