@@ -25,26 +25,27 @@
 <main class="container main-layout">
   <h2>Mon profil</h2>
 
-   <div class="card">
-  <div style="display:flex;gap:16px;align-items:center;overflow:visible">
-    
-    <div class="avatar-wrapper">
-      <img
-        id="avatarImg"
-        alt="Avatar"
-        style="width:80px;height:80px;border-radius:50%;background:#222;object-fit:cover;"
-      />
-      <div id="avatarLoader" class="avatar-loader hidden"></div>
+  <!-- PROFIL CARD -->
+  <div class="card">
+    <div style="display:flex;gap:16px;align-items:center">
+
+      <!-- AVATAR -->
+      <div class="avatar-wrapper">
+        <img
+          id="avatarImg"
+          alt="Avatar"
+          style="width:80px;height:80px;border-radius:50%;background:#222;object-fit:cover;"
+        />
+        <div id="avatarLoader" class="avatar-loader hidden"></div>
+      </div>
+
+      <!-- INFOS -->
+      <div>
+        <p id="email"><strong>Email :</strong></p>
+        <p id="type"><strong>Type de compte :</strong></p>
+      </div>
+
     </div>
-
-    <div>
-      <p id="email"><strong>Email :</strong></p>
-      <p id="type"><strong>Type de compte :</strong></p>
-    </div>
-
-  </div>
-</div>
-
 
     <label style="margin-top:12px;display:block">
       Changer l’avatar
@@ -57,18 +58,18 @@
 
   <hr>
 
+  <!-- INFOS PERSO -->
   <h3>Modifier mes informations</h3>
   <div class="card">
     <label>Prénom <input type="text" id="firstNameInput"></label>
     <label style="margin-top:12px">Téléphone <input type="text" id="phoneInput"></label>
-    <button id="saveProfileBtn" class="btn btn-ok" style="margin-top:16px">
-      💾 Enregistrer
-    </button>
+    <button id="saveProfileBtn" class="btn btn-ok" style="margin-top:16px">💾 Enregistrer</button>
     <p id="profileMsg" class="meta"></p>
   </div>
 
   <hr>
 
+  <!-- SÉCURITÉ -->
   <h3>Sécurité</h3>
   <div class="card">
     <label>Nouveau mot de passe <input type="password" id="newPassword"></label>
@@ -80,6 +81,7 @@
 
   <hr>
 
+  <!-- EMAIL -->
   <h3>Adresse email</h3>
   <div class="card">
     <label>Nouvel email <input type="email" id="newEmail"></label>
@@ -89,6 +91,7 @@
     <p id="emailMsg" class="meta"></p>
   </div>
 </main>
+
 
 <footer class="footer">
   <div class="container footer-row">
