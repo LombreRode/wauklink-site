@@ -182,9 +182,10 @@ avatarInput.addEventListener("change", async (e) => {
     });
 
     const url = await getDownloadURL(avatarRef);
-    console.log("🔗 URL AVATAR :", url);
 
-    await updateDoc(userRef, { avatarUrl: url });
+    await updateDoc(userRef, {
+      avatarUrl: url
+    });
 
     avatarImg.src = url + "?t=" + Date.now();
     avatarImg.style.display = "block";
