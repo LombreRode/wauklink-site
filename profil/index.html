@@ -1,3 +1,48 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WAUKLINK — Mon profil</title>
+  <link rel="stylesheet" href="/wauklink-site/style.css">
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Mon profil</div>
+    </div>
+    <nav class="topbar-nav">
+      <a class="btn btn-outline" href="/wauklink-site/dashboard/index.html">
+        ← Tableau de bord
+      </a>
+    </nav>
+  </div>
+</header>
+
+<main class="container main-layout">
+  <h2>Mon profil</h2>
+
+  <div class="card">
+    <p id="name"><strong>Nom :</strong> —</p>
+    <p id="email"><strong>Email :</strong> —</p>
+    <p id="type"><strong>Type de compte :</strong></p>
+
+    <!-- 🔘 ACTION PRO -->
+    <div id="proAction" class="meta" style="margin-top:12px"></div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <span>© WAUKLINK</span>
+  </div>
+</footer>
+
+<!-- 🔐 LOGIQUE PROFIL + PRO (ANTI PAGE BLANCHE) -->
 <script type="module">
   import { auth, db } from "/wauklink-site/shared/firebase.js";
   import { onAuthStateChanged } from
@@ -8,64 +53,87 @@
   } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
+  const nameEl = document.getElementById("name");
+  const emailEl = document.getElementById("email");
   const typeEl = document.getElementById("type");
   const proAction = document.getElementById("proAction");
 
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) return;
+  // 🛑 Sécurité anti page blanche
+  if (!nameEl || !emailEl || !typeEl || !proAction) {
+    console.error("❌ Élément profil manquant dans le HTML");
+  } else {
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        location.href = "/wauklink-site/auth/login.html";
+        return;
+      }
 
-    const snap = await getDoc(doc(db, "users", user.uid));
-    if (!snap.exists()) return;
+      emailEl.innerHTML =
+        `<strong>Email :</strong> ${user.email}`;
 
-    const data = snap.data();
+      const snap = await getDoc(doc(db, "users", user.uid));
+      if (!snap.exists()) {
+        typeEl.innerHTML =
+          `<strong>Type de compte :</strong> ⚠️ Profil incomplet`;
+        return;
+      }
 
-    // 👑 ADMIN
-    if (data.role === "admin") {
+      const data = snap.data();
+
+      nameEl.innerHTML =
+        `<strong>Nom :</strong> ${data.firstName || "—"}`;
+
+      // 👑 ADMIN
+      if (data.role === "admin") {
+        typeEl.innerHTML =
+          `<strong>Type de compte :</strong> 👑 Administrateur`;
+        return;
+      }
+
+      // 🟢 PRO
+      if (data.isPro === true) {
+        typeEl.innerHTML =
+          `<strong>Type de compte :</strong> 🟢 Compte PRO`;
+        return;
+      }
+
+      // ⚪ UTILISATEUR STANDARD
       typeEl.innerHTML =
-        `<strong>Type de compte :</strong> 👑 Administrateur`;
-      return;
-    }
+        `<strong>Type de compte :</strong> ⚪ Compte standard`;
 
-    // 🟢 PRO
-    if (data.isPro === true) {
-      typeEl.innerHTML =
-        `<strong>Type de compte :</strong> 🟢 Compte PRO`;
-      return;
-    }
+      // ⏳ Demande PRO en attente ?
+      const q = query(
+        collection(db, "pro_requests"),
+        where("userId", "==", user.uid),
+        where("status", "==", "pending")
+      );
+      const reqSnap = await getDocs(q);
 
-    // ⚪ USER STANDARD
-    typeEl.innerHTML =
-      `<strong>Type de compte :</strong> ⚪ Compte standard`;
+      if (!reqSnap.empty) {
+        proAction.textContent =
+          "⏳ Demande PRO en attente de validation";
+        return;
+      }
 
-    // ⏳ Demande PRO en attente ?
-    const q = query(
-      collection(db, "pro_requests"),
-      where("userId", "==", user.uid),
-      where("status", "==", "pending")
-    );
-    const reqSnap = await getDocs(q);
+      // 🔘 Bouton Passer PRO
+      const btn = document.createElement("button");
+      btn.className = "btn btn-ok";
+      btn.textContent = "🚀 Passer PRO";
 
-    if (!reqSnap.empty) {
-      proAction.textContent = "⏳ Demande PRO en attente de validation";
-      return;
-    }
+      btn.onclick = async () => {
+        btn.disabled = true;
+        await addDoc(collection(db, "pro_requests"), {
+          userId: user.uid,
+          status: "pending",
+          createdAt: serverTimestamp()
+        });
+        proAction.textContent = "⏳ Demande PRO envoyée";
+      };
 
-    // 🔘 Bouton Passer PRO
-    const btn = document.createElement("button");
-    btn.className = "btn btn-ok";
-    btn.textContent = "🚀 Passer PRO";
-
-    btn.onclick = async () => {
-      btn.disabled = true;
-      await addDoc(collection(db, "pro_requests"), {
-        userId: user.uid,
-        status: "pending",
-        createdAt: serverTimestamp()
-      });
-      proAction.textContent = "⏳ Demande PRO envoyée";
-    };
-
-    proAction.appendChild(btn);
-  });
+      proAction.appendChild(btn);
+    });
+  }
 </script>
 
+</body>
+</html>
