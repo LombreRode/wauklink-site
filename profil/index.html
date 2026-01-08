@@ -26,13 +26,36 @@
 <main class="container main-layout">
   <h2>Mon profil</h2>
 
+  <!-- 📌 INFOS COMPTE -->
   <div class="card">
-    <p id="name"><strong>Nom :</strong> —</p>
     <p id="email"><strong>Email :</strong> —</p>
     <p id="type"><strong>Type de compte :</strong></p>
 
     <!-- 🔘 ACTION PRO -->
     <div id="proAction" class="meta" style="margin-top:12px"></div>
+  </div>
+
+  <hr>
+
+  <!-- ✏️ MODIFICATION PROFIL -->
+  <h3>Modifier mon profil</h3>
+
+  <div class="card">
+    <label>
+      Prénom
+      <input type="text" id="firstNameInput" placeholder="Votre prénom">
+    </label>
+
+    <label style="margin-top:12px">
+      Téléphone
+      <input type="text" id="phoneInput" placeholder="Votre téléphone">
+    </label>
+
+    <button id="saveProfileBtn" class="btn btn-ok" style="margin-top:16px">
+      💾 Enregistrer les modifications
+    </button>
+
+    <p id="profileMsg" class="meta"></p>
   </div>
 </main>
 
@@ -42,80 +65,76 @@
   </div>
 </footer>
 
-<!-- 🔐 LOGIQUE PROFIL + PRO (ANTI PAGE BLANCHE) -->
+<!-- 🔐 LOGIQUE PROFIL COMPLETE -->
 <script type="module">
   import { auth, db } from "/wauklink-site/shared/firebase.js";
   import { onAuthStateChanged } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
   import {
-    doc, getDoc,
+    doc, getDoc, updateDoc,
     collection, query, where, getDocs, addDoc, serverTimestamp
   } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  const nameEl = document.getElementById("name");
   const emailEl = document.getElementById("email");
   const typeEl = document.getElementById("type");
   const proAction = document.getElementById("proAction");
 
-  // 🛑 Sécurité anti page blanche
-  if (!nameEl || !emailEl || !typeEl || !proAction) {
-    console.error("❌ Élément profil manquant dans le HTML");
-  } else {
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        location.href = "/wauklink-site/auth/login.html";
-        return;
-      }
+  const firstNameInput = document.getElementById("firstNameInput");
+  const phoneInput = document.getElementById("phoneInput");
+  const saveBtn = document.getElementById("saveProfileBtn");
+  const msgEl = document.getElementById("profileMsg");
 
-      emailEl.innerHTML =
-        `<strong>Email :</strong> ${user.email}`;
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      location.href = "/wauklink-site/auth/login.html";
+      return;
+    }
 
-      const snap = await getDoc(doc(db, "users", user.uid));
-      if (!snap.exists()) {
-        typeEl.innerHTML =
-          `<strong>Type de compte :</strong> ⚠️ Profil incomplet`;
-        return;
-      }
+    // Email (Auth)
+    emailEl.innerHTML =
+      `<strong>Email :</strong> ${user.email}`;
 
-      const data = snap.data();
+    const ref = doc(db, "users", user.uid);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return;
 
-      nameEl.innerHTML =
-        `<strong>Nom :</strong> ${data.firstName || "—"}`;
+    const data = snap.data();
 
-      // 👑 ADMIN
-      if (data.role === "admin") {
-        typeEl.innerHTML =
-          `<strong>Type de compte :</strong> 👑 Administrateur`;
-        return;
-      }
+    // Pré-remplissage
+    firstNameInput.value = data.firstName || "";
+    phoneInput.value = data.phone || "";
 
-      // 🟢 PRO
-      if (data.isPro === true) {
-        typeEl.innerHTML =
-          `<strong>Type de compte :</strong> 🟢 Compte PRO`;
-        return;
-      }
-
-      // ⚪ UTILISATEUR STANDARD
+    // 👑 ADMIN
+    if (data.role === "admin") {
       typeEl.innerHTML =
-        `<strong>Type de compte :</strong> ⚪ Compte standard`;
+        `<strong>Type de compte :</strong> 👑 Administrateur`;
+      return;
+    }
 
-      // ⏳ Demande PRO en attente ?
-      const q = query(
-        collection(db, "pro_requests"),
-        where("userId", "==", user.uid),
-        where("status", "==", "pending")
-      );
-      const reqSnap = await getDocs(q);
+    // 🟢 PRO
+    if (data.isPro === true) {
+      typeEl.innerHTML =
+        `<strong>Type de compte :</strong> 🟢 Compte PRO`;
+      return;
+    }
 
-      if (!reqSnap.empty) {
-        proAction.textContent =
-          "⏳ Demande PRO en attente de validation";
-        return;
-      }
+    // ⚪ STANDARD
+    typeEl.innerHTML =
+      `<strong>Type de compte :</strong> ⚪ Compte standard`;
 
-      // 🔘 Bouton Passer PRO
+    // ⏳ Demande PRO existante ?
+    const q = query(
+      collection(db, "pro_requests"),
+      where("userId", "==", user.uid),
+      where("status", "==", "pending")
+    );
+    const reqSnap = await getDocs(q);
+
+    if (!reqSnap.empty) {
+      proAction.textContent =
+        "⏳ Demande PRO en attente de validation";
+    } else {
       const btn = document.createElement("button");
       btn.className = "btn btn-ok";
       btn.textContent = "🚀 Passer PRO";
@@ -127,12 +146,31 @@
           status: "pending",
           createdAt: serverTimestamp()
         });
-        proAction.textContent = "⏳ Demande PRO envoyée";
+        proAction.textContent =
+          "⏳ Demande PRO envoyée";
       };
 
       proAction.appendChild(btn);
+    }
+
+    // 💾 SAUVEGARDE PROFIL
+    saveBtn.addEventListener("click", async () => {
+      const firstName = firstNameInput.value.trim();
+      const phone = phoneInput.value.trim();
+
+      if (!firstName) {
+        msgEl.textContent = "❌ Le prénom est obligatoire";
+        return;
+      }
+
+      await updateDoc(ref, {
+        firstName,
+        phone
+      });
+
+      msgEl.textContent = "✅ Profil mis à jour avec succès";
     });
-  }
+  });
 </script>
 
 </body>
