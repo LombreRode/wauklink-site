@@ -163,26 +163,40 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
+  // 🔹 A) BLOQUER LES FICHIERS > 5 Mo
+  if (file.size > 5 * 1024 * 1024) {
+    avatarMsg.textContent = "❌ Image trop lourde (max 5 Mo)";
+    avatarInput.value = ""; // reset
+    return;
+  }
+
   console.log("📁 FICHIER OK :", file.name);
 
   try {
     const avatarRef = ref(storage, `avatars/${auth.currentUser.uid}`);
+
     await uploadBytes(avatarRef, file, {
       contentType: file.type
     });
 
     const url = await getDownloadURL(avatarRef);
+
     await updateDoc(doc(db, "users", auth.currentUser.uid), {
       avatarUrl: url
     });
 
     avatarImg.src = url + "?t=" + Date.now();
     avatarMsg.textContent = "✅ Avatar mis à jour";
+
+    // 🔹 B) RESET INPUT APRÈS UPLOAD
+    avatarInput.value = "";
+
   } catch (err) {
     console.error("❌ ERREUR AVATAR :", err);
     avatarMsg.textContent = "❌ Erreur avatar";
   }
 });
+
 
 
 
