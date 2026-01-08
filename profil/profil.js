@@ -147,37 +147,49 @@ onAuthStateChanged(auth, async (user) => {
   // =========================
   // 🔥 AVATAR — UPLOAD FINAL
   // =========================
-  avatarInput.addEventListener("change", async (e) => {
-    const file = e.target.files?.[0];
+ let uploadingAvatar = false;
 
-    if (!file) return;
+avatarInput.addEventListener("change", async (e) => {
+  if (uploadingAvatar) return;
 
-    console.log("📁 FICHIER OK :", file.name);
+  const file = e.target.files?.[0];
+  if (!file) return;
 
-    try {
-      const avatarRef = ref(storage, `avatars/${user.uid}`);
+  uploadingAvatar = true;
+  avatarInput.disabled = true;
+  avatarMsg.textContent = "⏳ Upload en cours...";
 
-      await uploadBytes(avatarRef, file, {
-        contentType: file.type
-      });
+  console.log("📁 FICHIER OK :", file.name);
 
-      const url = await getDownloadURL(avatarRef);
-      console.log("🔗 URL AVATAR :", url);
+  try {
+    const avatarRef = ref(storage, `avatars/${auth.currentUser.uid}`);
 
-      await updateDoc(userRef, { avatarUrl: url });
+    await uploadBytes(avatarRef, file, {
+      contentType: file.type
+    });
 
-      avatarImg.src = url + "?t=" + Date.now();
-      avatarImg.style.display = "block";
-      avatarImg.style.visibility = "visible";
+    const url = await getDownloadURL(avatarRef);
+    console.log("🔗 URL AVATAR :", url);
 
-      avatarMsg.textContent = "✅ Avatar mis à jour";
-      avatarInput.value = "";
+    await updateDoc(doc(db, "users", auth.currentUser.uid), {
+      avatarUrl: url
+    });
 
-    } catch (err) {
-      console.error("❌ ERREUR AVATAR :", err);
-      avatarMsg.textContent = "❌ Erreur avatar";
-    }
-  });
+    avatarImg.src = url + "?t=" + Date.now();
+    avatarImg.style.display = "block";
+    avatarImg.style.visibility = "visible";
+
+    avatarMsg.textContent = "✅ Avatar mis à jour";
+
+  } catch (err) {
+    console.error("❌ ERREUR AVATAR :", err);
+    avatarMsg.textContent = "❌ Erreur upload (réessaie dans 5s)";
+  } finally {
+    uploadingAvatar = false;
+    avatarInput.disabled = false;
+    avatarInput.value = "";
+  }
+});
 
   // =========================
   // PASSWORD
