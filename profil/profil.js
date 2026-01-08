@@ -156,28 +156,41 @@ onAuthStateChanged(auth, async (user) => {
   // AVATAR (VERSION FINALE)
   // =========================
   avatarInput.onchange = async () => {
-    try {
-      const file = avatarInput.files[0];
-      if (!file) return;
+  console.log("🟢 CHANGE AVATAR DÉCLENCHÉ");
 
-      const avatarRef = ref(storage, `avatars/${user.uid}.jpg`);
+  try {
+    const file = avatarInput.files[0];
+    console.log("📁 FICHIER :", file);
 
-    // 🔴 METADATA OBLIGATOIRE
+    if (!file) {
+      console.log("❌ Aucun fichier");
+      return;
+    }
+
+    const avatarRef = ref(storage, `avatars/${user.uid}.jpg`);
+    console.log("📤 UPLOAD EN COURS");
+
     await uploadBytes(avatarRef, file, {
       contentType: file.type || "image/jpeg"
     });
 
+    console.log("✅ UPLOAD OK");
+
     const url = await getDownloadURL(avatarRef);
+    console.log("🔗 URL :", url);
 
     await updateDoc(userRef, { avatarUrl: url });
+    console.log("✅ FIRESTORE OK");
 
     avatarImg.src = url + "?t=" + Date.now();
     avatarMsg.textContent = "✅ Avatar mis à jour";
+
   } catch (err) {
-    console.error("Erreur avatar :", err);
+    console.error("❌ ERREUR AVATAR :", err);
     avatarMsg.textContent = "❌ Erreur avatar";
   }
 };
+
 
   // =========================
   // PASSWORD
