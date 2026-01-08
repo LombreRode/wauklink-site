@@ -1,43 +1,34 @@
-// shared/user_status.js
-import { auth, db } from "./firebase.js";
-import { onAuthStateChanged, signOut } from
-  "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import { doc, getDoc } from
-  "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { auth } from "/wauklink-site/shared/firebase.js";
+import {
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-// 🔗 IDs DU HTML
-const userNav     = document.getElementById("userNav");
-const guestStatus = document.getElementById("guestStatus");
-const userEmailEl = document.getElementById("userEmail");
-const logoutBtn   = document.getElementById("logoutBtn");
+const userNav   = document.getElementById("userNav");
+const guestNav  = document.getElementById("guestStatus");
+const userEmail = document.getElementById("userEmail");
+const logoutBtn = document.getElementById("logoutBtn");
 
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    userNav?.classList.add("hidden");
-    guestStatus?.classList.remove("hidden");
-    return;
-  }
+// 🛑 Sécurité : si les éléments n’existent pas, on sort
+if (!userNav && !guestNav) {
+  console.warn("ℹ️ user_status.js ignoré sur cette page");
+} else {
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      guestNav?.classList.add("hidden");
+      userNav?.classList.remove("hidden");
 
-  guestStatus?.classList.add("hidden");
-  userNav?.classList.remove("hidden");
-
-  try {
-    const snap = await getDoc(doc(db, "users", user.uid));
-    if (snap.exists()) {
-      const data = snap.data();
-      userEmailEl.textContent =
-        data.firstName && data.lastName
-          ? `${data.firstName} ${data.lastName}`
-          : user.email;
+      if (userEmail) {
+        userEmail.textContent = user.email;
+      }
     } else {
-      userEmailEl.textContent = user.email;
+      userNav?.classList.add("hidden");
+      guestNav?.classList.remove("hidden");
     }
-  } catch (e) {
-    userEmailEl.textContent = user.email;
-  }
-});
+  });
 
-logoutBtn?.addEventListener("click", async () => {
-  await signOut(auth);
-  location.href = "/wauklink-site/auth/login.html";
-});
+  logoutBtn?.addEventListener("click", async () => {
+    await signOut(auth);
+    location.href = "/wauklink-site/auth/login.html";
+  });
+}
