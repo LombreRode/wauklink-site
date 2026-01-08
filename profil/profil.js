@@ -4,12 +4,10 @@ import {
   updatePassword,
   updateEmail
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-
 import {
   doc, getDoc, setDoc, updateDoc,
   collection, addDoc, query, where, getDocs, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
 import {
   ref, uploadBytes, getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
@@ -58,6 +56,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   const data = snap.data();
+
   firstNameInput.value = data.firstName || "";
   phoneInput.value = data.phone || "";
 
