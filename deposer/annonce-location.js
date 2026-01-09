@@ -4,20 +4,37 @@ import { onAuthStateChanged } from
 import {
   collection,
   addDoc,
-  serverTimestamp
+  serverTimestamp,
+  doc,
+  getDoc
 } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const form = document.getElementById("annonceForm");
 const msg  = document.getElementById("msg");
+const planBlock = document.getElementById("planBlock");
 
 if (!form) {
   console.error("Formulaire annonce introuvable");
 }
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (!user || !form) return;
 
+  // 🔎 Récupération du plan utilisateur
+  const userSnap = await getDoc(doc(db, "users", user.uid));
+  if (!userSnap.exists()) return;
+
+  const { plan } = userSnap.data();
+
+  // 🚫 Compte gratuit → blocage UI
+  if (plan === "free") {
+    form.classList.add("hidden");
+    planBlock?.classList.remove("hidden");
+    return;
+  }
+
+  // ✅ Dépôt autorisé
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     msg.textContent = "";
@@ -37,7 +54,7 @@ onAuthStateChanged(auth, (user) => {
     }
 
     try {
-      await addDoc(collection(db, "annonces"), {
+      await addDoc(collection(db, "annonces_location"), {
         title,
         city,
         postalCode,
@@ -45,7 +62,7 @@ onAuthStateChanged(auth, (user) => {
         type,
         price,
         description,
-        userId: user.uid,
+        ownerUid: user.uid,
         status: "pending",
         createdAt: serverTimestamp()
       });
