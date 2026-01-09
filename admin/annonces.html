@@ -106,6 +106,10 @@ async function loadAnnonces() {
       <td class="meta">${esc(a.userId)}</td>
       <td>${esc(a.status)}</td>
       <td>
+        <a class="btn btn-outline"
+           href="/wauklink-site/admin/annonce.html?id=${d.id}">
+           Voir
+        </a>
         <button class="btn btn-ok">Valider</button>
         <button class="btn btn-danger">Refuser</button>
       </td>
