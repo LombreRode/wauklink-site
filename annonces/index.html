@@ -6,7 +6,6 @@
   <title>WAUKLINK — Annonces</title>
   <link rel="stylesheet" href="/wauklink-site/style.css" />
 </head>
-
 <body>
 
 <header class="topbar">
@@ -22,12 +21,9 @@
 </header>
 
 <main class="container main-layout">
-
   <h2 id="pageTitle">Annonces</h2>
   <p id="msg" class="meta">Chargement…</p>
-
   <section id="list" class="grid"></section>
-
 </main>
 
 <footer class="footer">
@@ -37,8 +33,9 @@
 </footer>
 
 <!-- =========================
-     SCRIPT ANNONCES
+     SCRIPT ANNONCES (PROPRE)
 ========================= -->
+<script type="module">
 import { db } from "../shared/firebase.js";
 import {
   collection,
@@ -48,20 +45,25 @@ import {
   getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-const listEl = document.getElementById("list");
-const msgEl  = document.getElementById("msg");
+const listEl  = document.getElementById("list");
+const msgEl   = document.getElementById("msg");
 const titleEl = document.getElementById("pageTitle");
 
 // 🔹 Paramètres URL
-const params = new URLSearchParams(location.search);
-const type = params.get("type"); // travaux, location, emploi, etc.
+const params  = new URLSearchParams(location.search);
+const type    = params.get("type");
+const subType = params.get("subType");
 
-// 🔹 Titre dynamique
-if (!type) {
-  titleEl.textContent = "Toutes les annonces";
-} else {
-  titleEl.textContent = type.charAt(0).toUpperCase() + type.slice(1);
-}
+// 🔹 Titre lisible
+const TITLES = {
+  urgence: "Urgences",
+  travaux: "Travaux",
+  service: "Services & aide à la personne",
+  emploi: "Emploi",
+  location: "Locations"
+};
+
+titleEl.textContent = TITLES[type] || "Toutes les annonces";
 
 // 🔹 Chargement annonces
 async function loadAnnonces() {
@@ -72,9 +74,8 @@ async function loadAnnonces() {
     where("status", "==", "active")
   ];
 
-  if (type) {
-    constraints.push(where("type", "==", type));
-  }
+  if (type) constraints.push(where("type", "==", type));
+  if (subType) constraints.push(where("subType", "==", subType));
 
   const q = query(
     collection(db, "annonces"),
@@ -91,8 +92,9 @@ async function loadAnnonces() {
 
   msgEl.textContent = `${snap.size} annonce(s)`;
 
-  snap.forEach(d => {
-    const a = d.data();
+  snap.forEach(doc => {
+    const a = doc.data();
+
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
@@ -100,74 +102,12 @@ async function loadAnnonces() {
       <div class="meta">${a.city} • ${a.price ?? "—"} €</div>
       <p class="meta">${a.description ?? ""}</p>
     `;
+
     listEl.appendChild(card);
   });
 }
 
 loadAnnonces();
-
-
-  // 🔹 TITRES SIMPLES
-  if (type === "urgence") titleEl.textContent = "Urgences";
-  else if (type === "travaux") titleEl.textContent = "Travaux";
-  else if (type === "service") titleEl.textContent = "Services & Aide à la personne";
-  else if (type === "emploi") titleEl.textContent = "Emploi";
-  else if (type === "location" && subType === "immobilier")
-    titleEl.textContent = "Location immobilière";
-  else if (type === "location" && subType === "loisir")
-    titleEl.textContent = "Location loisir";
-  else if (type === "location" && subType === "divers")
-    titleEl.textContent = "Locations diverses";
-  else
-    titleEl.textContent = "Toutes les annonces";
-
-  // 🔹 Chargement annonces (SIMPLE)
-  async function loadAnnonces() {
-    listEl.innerHTML = "";
-    msgEl.textContent = "Chargement des annonces…";
-
-    const constraints = [
-      where("status", "==", "active")
-    ];
-
-    if (type) constraints.push(where("type", "==", type));
-    if (subType) constraints.push(where("subType", "==", subType));
-
-    const qy = query(
-      collection(db, "annonces"),
-      ...constraints
-    );
-
-    const snap = await getDocs(qy);
-
-    if (snap.empty) {
-      msgEl.textContent = "Aucune annonce disponible.";
-      return;
-    }
-
-    msgEl.textContent = `${snap.size} annonce(s)`;
-
-    snap.forEach(doc => {
-      const a = doc.data();
-
-      const card = document.createElement("div");
-      card.className = "card";
-
-      card.innerHTML = `
-        <strong>${a.titre || "Annonce"}</strong>
-        <div class="meta">
-          ${a.ville || "—"} • ${a.prix ?? "—"} €
-        </div>
-        <p class="meta">
-          ${a.description || ""}
-        </p>
-      `;
-
-      listEl.appendChild(card);
-    });
-  }
-
-  loadAnnonces();
 </script>
 
 </body>
