@@ -53,25 +53,30 @@
 </footer>
 
 <script type="module">
-import { auth, db } from "../shared/firebase.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import { collection, query, where, orderBy, getDocs, doc, updateDoc, getDoc }
-  from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { db } from "../shared/firebase.js";
+import { requireAdmin } from "../shared/guard.js";
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  getDocs,
+  doc,
+  updateDoc
+} from
+  "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const rows = document.getElementById("rows");
 const msg  = document.getElementById("msg");
 
-onAuthStateChanged(auth, async user => {
-  if (!user) {
-    location.href = "/wauklink-site/auth/login.html";
-    return;
-  }
+const esc = s =>
+  String(s ?? "").replace(/[&<>"']/g, m =>
+    ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
+  );
 
-  const snap = await getDoc(doc(db, "users", user.uid));
-  if (!snap.exists() || snap.data().role !== "admin") {
-    msg.textContent = "Accès refusé";
-    return;
-  }
+async function loadAnnonces() {
+  rows.innerHTML = "";
+  msg.textContent = "Chargement…";
 
   const q = query(
     collection(db, "annonces"),
@@ -80,35 +85,55 @@ onAuthStateChanged(auth, async user => {
   );
 
   const res = await getDocs(q);
-  rows.innerHTML = "";
 
   if (res.empty) {
     rows.innerHTML = `<tr><td colspan="7">Aucune annonce</td></tr>`;
+    msg.textContent = "";
     return;
   }
+
+  msg.textContent = `${res.size} annonce(s) en attente`;
 
   res.forEach(d => {
     const a = d.data();
     const tr = document.createElement("tr");
+
     tr.innerHTML = `
-      <td>${a.title}</td>
-      <td>${a.city}</td>
-      <td>${a.type}</td>
+      <td>${esc(a.title)}</td>
+      <td>${esc(a.city)}</td>
+      <td>${esc(a.type)}</td>
       <td>${a.price ?? "-"}</td>
-      <td>${a.userId}</td>
-      <td>${a.status}</td>
+      <td class="meta">${esc(a.userId)}</td>
+      <td>${esc(a.status)}</td>
       <td>
         <button class="btn btn-ok">Valider</button>
         <button class="btn btn-danger">Refuser</button>
       </td>
     `;
+
     const [ok, no] = tr.querySelectorAll("button");
-    ok.onclick = () => updateDoc(doc(db,"annonces",d.id),{status:"active"}).then(()=>location.reload());
-    no.onclick = () => updateDoc(doc(db,"annonces",d.id),{status:"removed"}).then(()=>location.reload());
+
+    ok.onclick = async () => {
+      await updateDoc(doc(db,"annonces",d.id), { status:"active" });
+      tr.remove();
+    };
+
+    no.onclick = async () => {
+      await updateDoc(doc(db,"annonces",d.id), { status:"removed" });
+      tr.remove();
+    };
+
     rows.appendChild(tr);
   });
+}
+
+// 🔒 ADMIN UNIQUEMENT
+requireAdmin({
+  onOk: loadAnnonces,
+  onDenied: () => msg.textContent = "Accès refusé"
 });
 </script>
+
 
 </body>
 </html>
