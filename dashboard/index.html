@@ -119,55 +119,61 @@
   const proStatus = document.getElementById("proStatus");
 
   onAuthStateChanged(auth, async (user) => {
-    if (!user) return;
+  if (!user) return;
 
-    const snap = await getDoc(doc(db, "users", user.uid));
-    if (!snap.exists()) return;
+  const snap = await getDoc(doc(db, "users", user.uid));
+  if (!snap.exists()) return;
 
-    const data = snap.data();
+  const data = snap.data();
+  proStatus.innerHTML = "";
 
-    // 👑 ADMIN
-    if (data.role === "admin") {
-      proStatus.textContent = "👑 Administrateur";
-      return;
-    }
+  // 👑 ADMIN
+  if (data.role === "admin") {
+    proStatus.textContent = "👑 Administrateur";
+    return;
+  }
 
-    // 🟢 PRO
-    if (data.isPro === true) {
-      proStatus.textContent = "🟢 Compte PRO";
-      return;
-    }
+  // 🟢 PRO
+  if (data.plan === "pro") {
+    proStatus.textContent = "🟢 Compte Professionnel";
+    return;
+  }
 
-    // ⏳ DEMANDE PRO EN COURS
-    const q = query(
-      collection(db, "pro_requests"),
-      where("userId", "==", user.uid),
-      where("status", "==", "pending")
-    );
+  // 🟡 PARTICULIER
+  if (data.plan === "particulier") {
+    proStatus.textContent = "🟡 Compte Particulier";
+    return;
+  }
 
-    const reqSnap = await getDocs(q);
-    if (!reqSnap.empty) {
-      proStatus.textContent = "⏳ Demande PRO en attente";
-      return;
-    }
+  // ⏳ DEMANDE PRO EN COURS
+  const q = query(
+    collection(db, "pro_requests"),
+    where("userId", "==", user.uid),
+    where("status", "==", "pending")
+  );
+  const reqSnap = await getDocs(q);
+  if (!reqSnap.empty) {
+    proStatus.textContent = "⏳ Demande Professionnel en attente";
+    return;
+  }
 
-    // 🔘 BOUTON PASSER PRO
-    const btn = document.createElement("button");
-    btn.className = "btn btn-ok";
-    btn.textContent = "🚀 Passer PRO";
+  // 🔘 GRATUIT → BOUTON PASSER PRO
+  const btn = document.createElement("button");
+  btn.className = "btn btn-ok";
+  btn.textContent = "🚀 Passer Professionnel";
+  btn.onclick = async () => {
+    btn.disabled = true;
+    await addDoc(collection(db, "pro_requests"), {
+      userId: user.uid,
+      status: "pending",
+      createdAt: serverTimestamp()
+    });
+    proStatus.textContent = "⏳ Demande Professionnel envoyée";
+  };
 
-    btn.onclick = async () => {
-      btn.disabled = true;
-      await addDoc(collection(db, "pro_requests"), {
-        userId: user.uid,
-        status: "pending",
-        createdAt: serverTimestamp()
-      });
-      proStatus.textContent = "⏳ Demande PRO envoyée";
-    };
+  proStatus.appendChild(btn);
+});
 
-    proStatus.appendChild(btn);
-  });
 </script>
 
 </body>
