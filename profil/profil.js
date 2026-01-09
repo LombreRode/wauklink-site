@@ -14,10 +14,11 @@ import {
 import {
   ref,
   uploadBytes,
-  getDownloadURL
+  getDownloadURL,
+  deleteObject
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
-console.log("✅ PROFIL.JS FINAL — STABLE");
+console.log("✅ PROFIL.JS — FINAL STABLE");
 
 // =========================
 // DOM
@@ -26,22 +27,20 @@ const avatarImg = document.getElementById("avatarImg");
 const avatarInput = document.getElementById("avatarInput");
 const avatarLoader = document.getElementById("avatarLoader");
 const avatarMsg = document.getElementById("avatarMsg");
-
 const emailEl = document.getElementById("email");
 const typeEl = document.getElementById("type");
-
 const firstNameInput = document.getElementById("firstNameInput");
 const phoneInput = document.getElementById("phoneInput");
 const saveBtn = document.getElementById("saveProfileBtn");
 const profileMsg = document.getElementById("profileMsg");
-
 const newPassword = document.getElementById("newPassword");
 const passwordMsg = document.getElementById("passwordMsg");
 const changePasswordBtn = document.getElementById("changePasswordBtn");
-
 const newEmail = document.getElementById("newEmail");
 const changeEmailBtn = document.getElementById("changeEmailBtn");
 const emailMsg = document.getElementById("emailMsg");
+
+let uploading = false;
 
 // =========================
 // RESIZE IMAGE
@@ -84,6 +83,7 @@ onAuthStateChanged(auth, async user => {
       firstName: "",
       phone: "",
       avatarUrl: null,
+      avatarPath: null,
       createdAt: serverTimestamp()
     });
     snap = await getDoc(userRef);
@@ -96,8 +96,10 @@ onAuthStateChanged(auth, async user => {
   // =========================
   emailEl.innerHTML = `<strong>Email :</strong> ${user.email}`;
   newEmail.value = user.email;
-
-  typeEl.innerHTML = `<strong>Type de compte :</strong> ${data.role === "admin" ? "👑 Administrateur" : data.isPro ? "🟢 PRO" : "⚪ Standard"}`;
+  typeEl.innerHTML = `<strong>Type de compte :</strong> ${
+    data.role === "admin" ? "👑 Administrateur" :
+    data.isPro ? "🟢 PRO" : "⚪ Standard"
+  }`;
 
   firstNameInput.value = data.firstName || "";
   phoneInput.value = data.phone || "";
@@ -106,21 +108,13 @@ onAuthStateChanged(auth, async user => {
   // AVATAR AU CHARGEMENT
   // =========================
   if (data.avatarUrl) {
-  avatarLoader.classList.remove("hidden");
-
-  avatarImg.onload = () => {
-    avatarLoader.classList.add("hidden");
-    avatarImg.classList.remove("hidden");
-  };
-
-  avatarImg.onerror = () => {
-    avatarLoader.classList.add("hidden");
-    avatarImg.classList.remove("hidden");
-    avatarImg.src = "/wauklink-site/assets/avatar-default.png";
-  };
-
-  avatarImg.src = data.avatarUrl;
-}
+    avatarLoader.classList.remove("hidden");
+    avatarImg.onload = () => {
+      avatarLoader.classList.add("hidden");
+      avatarImg.classList.remove("hidden");
+    };
+    avatarImg.src = data.avatarUrl;
+  }
 
   // =========================
   // SAVE PROFIL
@@ -134,67 +128,55 @@ onAuthStateChanged(auth, async user => {
   };
 
   // =========================
-  // AVATAR UPLOAD — VERSION STABLE
+  // AVATAR UPLOAD (SIMPLE & STABLE)
   // =========================
   avatarInput.onchange = async e => {
-  if (uploading) return;
-  const file = e.target.files[0];
-  if (!file) return;
+    if (uploading) return;
+    const file = e.target.files[0];
+    if (!file) return;
 
-  uploading = true;
-  avatarInput.disabled = true;
-  avatarLoader.classList.remove("hidden");
-  avatarImg.classList.add("hidden");
-  avatarMsg.textContent = "⏳ Upload...";
+    uploading = true;
+    avatarInput.disabled = true;
+    avatarLoader.classList.remove("hidden");
+    avatarImg.classList.add("hidden");
+    avatarMsg.textContent = "⏳ Upload...";
 
-  try {
-    const resized = await resizeImage(file);
-    const path = `avatars/${user.uid}_${Date.now()}.jpg`;
-    const avatarRef = ref(storage, path);
+    try {
+      const resized = await resizeImage(file);
+      const path = `avatars/${user.uid}_${Date.now()}.jpg`;
+      const avatarRef = ref(storage, path);
 
-    await new Promise((resolve, reject) => {
-    const task = uploadBytesResumable(avatarRef, resized);
+      await uploadBytes(avatarRef, resized);
 
-    task.on(
-      "state_changed",
-      null,
-      reject,
-      resolve
-   );
- });
+      const url = await getDownloadURL(avatarRef);
 
-    const url = await getDownloadURL(avatarRef);
+      if (data.avatarPath) {
+        await deleteObject(ref(storage, data.avatarPath)).catch(() => {});
+      }
 
-    // suppression ancien avatar
-    if (data.avatarPath) {
-      await deleteObject(ref(storage, data.avatarPath)).catch(() => {});
+      await updateDoc(userRef, {
+        avatarUrl: url,
+        avatarPath: path
+      });
+
+      data.avatarUrl = url;
+      data.avatarPath = path;
+
+      avatarImg.src = url + "?t=" + Date.now();
+      avatarImg.classList.remove("hidden");
+      avatarMsg.textContent = "✅ Avatar mis à jour";
+    } catch (err) {
+      console.error(err);
+      avatarMsg.textContent = "❌ Erreur upload";
+      avatarImg.classList.remove("hidden");
     }
 
-    await updateDoc(userRef, {
-      avatarUrl: url,
-      avatarPath: path
-    });
-
-    data.avatarUrl = url;
-    data.avatarPath = path;
-
-    // 🔥 AFFICHAGE DIRECT (PAS DE onload)
-    avatarImg.src = url + "?t=" + Date.now();
-    avatarImg.classList.remove("hidden");
     avatarLoader.classList.add("hidden");
+    avatarInput.disabled = false;
+    avatarInput.value = "";
+    uploading = false;
+  };
 
-    avatarMsg.textContent = "✅ Avatar mis à jour";
-  } catch (err) {
-    console.error(err);
-    avatarMsg.textContent = "❌ Erreur upload";
-    avatarLoader.classList.add("hidden");
-    avatarImg.classList.remove("hidden");
-  }
-
-  uploading = false;
-  avatarInput.disabled = false;
-  avatarInput.value = "";
-};
   // =========================
   // PASSWORD
   // =========================
