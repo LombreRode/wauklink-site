@@ -106,13 +106,21 @@ onAuthStateChanged(auth, async user => {
   // AVATAR AU CHARGEMENT
   // =========================
   if (data.avatarUrl) {
-    avatarLoader.classList.remove("hidden");
-    avatarImg.onload = () => {
-      avatarLoader.classList.add("hidden");
-      avatarImg.classList.remove("hidden");
-    };
-    avatarImg.src = data.avatarUrl;
-  }
+  avatarLoader.classList.remove("hidden");
+
+  avatarImg.onload = () => {
+    avatarLoader.classList.add("hidden");
+    avatarImg.classList.remove("hidden");
+  };
+
+  avatarImg.onerror = () => {
+    avatarLoader.classList.add("hidden");
+    avatarImg.classList.remove("hidden");
+    avatarImg.src = "/wauklink-site/assets/avatar-default.png";
+  };
+
+  avatarImg.src = data.avatarUrl;
+}
 
   // =========================
   // SAVE PROFIL
