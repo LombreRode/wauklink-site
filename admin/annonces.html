@@ -63,8 +63,7 @@ import {
   getDocs,
   doc,
   updateDoc
-} from
-  "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const rows = document.getElementById("rows");
 const msg  = document.getElementById("msg");
@@ -108,22 +107,22 @@ async function loadAnnonces() {
       <td>
         <a class="btn btn-outline"
            href="/wauklink-site/admin/annonce.html?id=${d.id}">
-           Voir
+          Voir
         </a>
         <button class="btn btn-ok">Valider</button>
         <button class="btn btn-danger">Refuser</button>
       </td>
     `;
 
-    const [ok, no] = tr.querySelectorAll("button");
+    const [btnOk, btnNo] = tr.querySelectorAll("button");
 
-    ok.onclick = async () => {
-      await updateDoc(doc(db,"annonces",d.id), { status:"active" });
+    btnOk.onclick = async () => {
+      await updateDoc(doc(db, "annonces", d.id), { status: "active" });
       tr.remove();
     };
 
-    no.onclick = async () => {
-      await updateDoc(doc(db,"annonces",d.id), { status:"removed" });
+    btnNo.onclick = async () => {
+      await updateDoc(doc(db, "annonces", d.id), { status: "removed" });
       tr.remove();
     };
 
@@ -131,13 +130,14 @@ async function loadAnnonces() {
   });
 }
 
-// 🔒 ADMIN UNIQUEMENT
 requireAdmin({
   onOk: loadAnnonces,
-  onDenied: () => msg.textContent = "Accès refusé"
+  onDenied: () => {
+    msg.textContent = "⛔ Accès refusé";
+    rows.innerHTML = "";
+  }
 });
 </script>
-
 
 </body>
 </html>
