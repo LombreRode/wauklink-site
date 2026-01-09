@@ -14,10 +14,8 @@ import {
 import {
   ref,
   uploadBytes,
-  getDownloadURL,
-  deleteObject
+  getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
-
 console.log("✅ PROFIL.JS — FINAL STABLE");
 
 // =========================
@@ -127,55 +125,63 @@ onAuthStateChanged(auth, async user => {
     profileMsg.textContent = "✅ Profil mis à jour";
   };
 
-  // =========================
-  // AVATAR UPLOAD (SIMPLE & STABLE)
-  // =========================
-  avatarInput.onchange = async e => {
-    if (uploading) return;
-    const file = e.target.files[0];
-    if (!file) return;
+let uploading = false;
 
-    uploading = true;
-    avatarInput.disabled = true;
-    avatarLoader.classList.remove("hidden");
-    avatarImg.classList.add("hidden");
-    avatarMsg.textContent = "⏳ Upload...";
+// =========================
+// AVATAR UPLOAD (SIMPLE & STABLE)
+// =========================
+avatarInput.onchange = async e => {
+  if (uploading) return;
 
-    try {
-      const resized = await resizeImage(file);
-      const path = `avatars/${user.uid}_${Date.now()}.jpg`;
-      const avatarRef = ref(storage, path);
+  const file = e.target.files[0];
+  if (!file) return;
 
-      await uploadBytes(avatarRef, resized);
+  uploading = true;
+  avatarInput.disabled = true;
+  avatarLoader.classList.remove("hidden");
+  avatarImg.classList.add("hidden");
+  avatarMsg.textContent = "⏳ Upload...";
 
-      const url = await getDownloadURL(avatarRef);
+  try {
+    const resized = await resizeImage(file);
+    const path = `avatars/${user.uid}_${Date.now()}.jpg`;
+    const avatarRef = ref(storage, path);
 
-      if (data.avatarPath) {
-        await deleteObject(ref(storage, data.avatarPath)).catch(() => {});
-      }
+    // ✅ UPLOAD SIMPLE
+    await uploadBytes(avatarRef, resized, {
+      contentType: "image/jpeg"
+    });
 
-      await updateDoc(userRef, {
-        avatarUrl: url,
-        avatarPath: path
-      });
+    const url = await getDownloadURL(avatarRef);
 
-      data.avatarUrl = url;
-      data.avatarPath = path;
-
-      avatarImg.src = url + "?t=" + Date.now();
-      avatarImg.classList.remove("hidden");
-      avatarMsg.textContent = "✅ Avatar mis à jour";
-    } catch (err) {
-      console.error(err);
-      avatarMsg.textContent = "❌ Erreur upload";
-      avatarImg.classList.remove("hidden");
+    // suppression ancien avatar
+    if (data.avatarPath) {
+      await deleteObject(ref(storage, data.avatarPath)).catch(() => {});
     }
 
-    avatarLoader.classList.add("hidden");
-    avatarInput.disabled = false;
-    avatarInput.value = "";
-    uploading = false;
-  };
+    await updateDoc(userRef, {
+      avatarUrl: url,
+      avatarPath: path
+    });
+
+    data.avatarUrl = url;
+    data.avatarPath = path;
+
+    avatarImg.src = url + "?t=" + Date.now();
+    avatarImg.classList.remove("hidden");
+    avatarMsg.textContent = "✅ Avatar mis à jour";
+
+  } catch (err) {
+    console.error(err);
+    avatarMsg.textContent = "❌ Erreur upload";
+    avatarImg.classList.remove("hidden");
+  }
+
+  avatarLoader.classList.add("hidden");
+  avatarInput.disabled = false;
+  avatarInput.value = "";
+  uploading = false;
+};
 
   // =========================
   // PASSWORD
