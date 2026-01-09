@@ -4,15 +4,16 @@
   <meta charset="utf-8">
   <title>Admin — Utilisateurs</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
   <link rel="stylesheet" href="../style.css">
 </head>
-
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
-      <div class="subtitle">Admin — Utilisateurs</div>
+      <div class="subtitle">Administration — Utilisateurs</div>
     </div>
     <nav class="topbar-nav">
       <a class="btn" href="./index.html">← Admin</a>
@@ -33,94 +34,108 @@
 </footer>
 
 <script type="module">
-  import { db } from "../shared/firebase.js";
-  import { requireAdmin } from "../shared/guard.js";
-  import {
-    collection, getDocs, doc, updateDoc
-  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { db } from "../shared/firebase.js";
+import { requireAdmin } from "../shared/guard.js";
+import {
+  collection,
+  getDocs,
+  doc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  const list = document.getElementById("list");
-  const msg  = document.getElementById("msg");
+const list = document.getElementById("list");
+const msg  = document.getElementById("msg");
 
-  async function loadUsers() {
-    list.innerHTML = "";
-    const snap = await getDocs(collection(db, "users"));
+function badgeForUser(u) {
+  if (u.role === "admin") return "👑 Administrateur";
+  if (u.plan === "pro") return "🟢 Professionnel";
+  if (u.plan === "particulier") return "🟡 Particulier";
+  return "⚪ Gratuit";
+}
 
-    if (snap.empty) {
-      msg.textContent = "Aucun utilisateur";
-      return;
-    }
+async function loadUsers() {
+  list.innerHTML = "";
+  msg.textContent = "Chargement…";
 
-    msg.textContent = `${snap.size} utilisateur(s)`;
+  const snap = await getDocs(collection(db, "users"));
 
-    snap.forEach(d => {
-      const u = d.data();
-      const uid = d.id;
-
-      let badge = "⚪ Utilisateur";
-      if (u.role === "admin") badge = "👑 Administrateur";
-      else if (u.isPro === true) badge = "🟢 Compte PRO";
-
-      const card = document.createElement("div");
-      card.className = "card";
-
-      let actions = "";
-
-      // ❌ On ne touche jamais aux admins
-      if (u.role !== "admin") {
-        if (u.isPro === true) {
-          actions = `
-            <button class="btn btn-danger" data-action="remove">
-              Retirer PRO
-            </button>
-          `;
-        } else {
-          actions = `
-            <button class="btn btn-ok" data-action="add">
-              Passer PRO
-            </button>
-          `;
-        }
-      }
-
-      card.innerHTML = `
-        <strong>${u.firstName || "—"}</strong>
-        <div class="meta">${u.email || ""}</div>
-        <div class="meta">${badge}</div>
-        <div class="row-actions" style="margin-top:12px">
-          ${actions}
-        </div>
-      `;
-
-      const btn = card.querySelector("button");
-
-      if (btn) {
-        btn.onclick = async () => {
-          const isAdd = btn.dataset.action === "add";
-          const confirmMsg = isAdd
-            ? "Passer ce compte en PRO ?"
-            : "Retirer le statut PRO ?";
-
-          if (!confirm(confirmMsg)) return;
-
-          await updateDoc(doc(db, "users", uid), {
-            isPro: isAdd
-          });
-
-          loadUsers();
-        };
-      }
-
-      list.appendChild(card);
-    });
+  if (snap.empty) {
+    msg.textContent = "Aucun utilisateur";
+    return;
   }
 
-  requireAdmin({
-    onOk: loadUsers,
-    onDenied: () => {
-      msg.textContent = "⛔ Accès réservé aux administrateurs";
+  msg.textContent = `${snap.size} utilisateur(s)`;
+
+  snap.forEach(d => {
+    const u = d.data();
+    const uid = d.id;
+
+    const card = document.createElement("div");
+    card.className = "card";
+
+    let actions = "";
+    if (u.role !== "admin") {
+      actions = `
+        <label class="meta">Plan utilisateur</label>
+        <select class="planSelect">
+          <option value="free">Gratuit</option>
+          <option value="particulier">Particulier</option>
+          <option value="pro">Professionnel</option>
+        </select>
+      `;
     }
+
+    card.innerHTML = `
+      <strong>${u.firstName || "—"}</strong>
+      <div class="meta">${u.email || ""}</div>
+      <div class="meta">${badgeForUser(u)}</div>
+      <div class="row-actions" style="margin-top:12px">
+        ${actions}
+      </div>
+    `;
+
+    const select = card.querySelector(".planSelect");
+
+    if (select) {
+      select.value = u.plan || "free";
+
+      select.onchange = async () => {
+        const newPlan = select.value;
+
+        if (!confirm(`Changer le plan de cet utilisateur en "${newPlan}" ?`)) {
+          select.value = u.plan || "free";
+          return;
+        }
+
+        try {
+          await updateDoc(doc(db, "users", uid), {
+            plan: newPlan,
+            isPro: newPlan === "pro"
+          });
+
+          alert("✅ Plan utilisateur mis à jour");
+          loadUsers();
+
+        } catch (err) {
+          console.error(err);
+          alert("❌ Erreur lors de la mise à jour");
+          select.value = u.plan || "free";
+        }
+      };
+    }
+
+    list.appendChild(card);
   });
+}
+
+requireAdmin({
+  onOk: loadUsers,
+  onDenied: () => {
+    msg.textContent = "⛔ Accès réservé aux administrateurs";
+    list.innerHTML = "";
+  }
+});
 </script>
+
 </body>
 </html>
