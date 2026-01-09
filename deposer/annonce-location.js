@@ -46,6 +46,22 @@ onAuthStateChanged(auth, async (user) => {
     const type = document.getElementById("type")?.value;
     const price = Number(document.getElementById("price")?.value);
     const description = document.getElementById("description")?.value.trim();
+    const typeSelect = document.getElementById("type");
+    const typeInfo = document.getElementById("typeInfo");
+
+    if (typeSelect && typeInfo) {
+      typeSelect.addEventListener("change", () => {
+        const map = {
+      urgences: "🚨 Cette annonce sera publiée dans la rubrique Urgences",
+      travaux: "🛠️ Cette annonce sera publiée dans la rubrique Travaux",
+      location: "🏠 Cette annonce sera publiée dans la rubrique Locations",
+      emploi: "💼 Cette annonce sera publiée dans la rubrique Emploi",
+      "services-personne": "🤝 Cette annonce sera publiée dans Services à la personne",
+      prestataire: "🧰 Cette annonce sera publiée dans Prestataires / Pro"
+    };
+    typeInfo.textContent = map[typeSelect.value] || "";
+  });
+}
 
     if (!title || !city || !type || !description || !phone || !postalCode) {
       msg.textContent =
