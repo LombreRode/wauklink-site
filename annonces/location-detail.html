@@ -1,198 +1,108 @@
-<!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Détail annonce — WAUKLINK</title>
-
-  <!-- STYLE GLOBAL -->
-  <link rel="stylesheet" href="/wauklink-site/style.css" />
-</head>
-
-<body>
-<header class="topbar">
-  <div class="container topbar-row">
-    <div>
-      <h1>WAUKLINK</h1>
-      <div class="subtitle">Détail de l’annonce</div>
-    </div>
-
-    <!-- NAV ALIGNÉE -->
-    <nav class="topbar-nav">
-      <a class="btn" href="/wauklink-site/annonces.html">← Retour annonces</a>
-    </nav>
-  </div>
-</header>
-
-<main class="container main-layout">
-  <!-- MESSAGE GLOBAL -->
-  <p id="msg" class="meta" aria-live="polite">
-    Chargement…
-  </p>
-
-  <!-- ANNONCE -->
-  <section id="annonce" class="card hidden">
-    <h2 id="titre"></h2>
-    <p id="meta" class="meta"></p>
-    <p id="description"></p>
-
-    <!-- PHOTOS -->
-    <div id="photos" class="grid"></div>
-
-    <hr>
-
-    <!-- RATING -->
-    <div id="ratingSection" class="hidden">
-      <p>Noter cette annonce :</p>
-      <select id="ratingValue">
-        <option value="">Choisir</option>
-        <option value="1">1 ★</option>
-        <option value="2">2 ★</option>
-        <option value="3">3 ★</option>
-        <option value="4">4 ★</option>
-        <option value="5">5 ★</option>
-      </select>
-      <button id="rateBtn" class="btn">Voter</button>
-    </div>
-  </section>
-</main>
-
-<footer class="footer">
-  <div class="container footer-row">
-    <span>© WAUKLINK</span>
-
-    <nav class="footer-nav">
-      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
-      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
-      <a class="link" href="/wauklink-site/legal/privacy.html">
-        Confidentialité
-      </a>
-      <a class="link" href="/wauklink-site/legal/mentions-legales.html">
-        Mentions légales
-      </a>
-    </nav>
-
-    <!-- 🔐 LIENS ADMIN (CACHÉS PAR DÉFAUT) -->
-    <nav class="footer-nav hidden" id="adminLinks">
-      <a class="link" href="/wauklink-site/admin/index.html">
-        Admin
-      </a>
-      <span class="sep">·</span>
-      <a class="link" href="/wauklink-site/dashboard/moderation-location.html">
-        Modération
-      </a>
-    </nav>
-  </div>
-</footer>
-
-<!-- 🔐 SCRIPT ADMIN -->
-<script type="module" src="/wauklink-site/shared/admin_links.js"></script>
-
-
 <script type="module">
-  import { auth, db } from "/wauklink-site/shared/firebase.js";
-  import { onAuthStateChanged } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-  import {
-    doc, getDoc, collection, setDoc, serverTimestamp
-  } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { auth, db } from "/wauklink-site/shared/firebase.js";
+import { onAuthStateChanged } from
+  "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import {
+  doc,
+  getDoc,
+  collection,
+  setDoc,
+  serverTimestamp
+} from
+  "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  const msg = document.getElementById("msg");
-  const box = document.getElementById("annonce");
-  const titre = document.getElementById("titre");
-  const meta = document.getElementById("meta");
-  const desc = document.getElementById("description");
-  const photosEl = document.getElementById("photos");
-  const ratingSection = document.getElementById("ratingSection");
-  const rateBtn = document.getElementById("rateBtn");
-  const ratingValue = document.getElementById("ratingValue");
+const msg = document.getElementById("msg");
+const box = document.getElementById("annonce");
+const titre = document.getElementById("titre");
+const meta = document.getElementById("meta");
+const desc = document.getElementById("description");
+const photosEl = document.getElementById("photos");
+const ratingSection = document.getElementById("ratingSection");
+const rateBtn = document.getElementById("rateBtn");
+const ratingValue = document.getElementById("ratingValue");
 
-  const annonceId = new URLSearchParams(location.search).get("id");
-  if (!annonceId) {
-    msg.textContent = "❌ Annonce introuvable.";
-    throw new Error("Missing id");
+const annonceId = new URLSearchParams(location.search).get("id");
+if (!annonceId) {
+  msg.textContent = "❌ Annonce introuvable.";
+  throw new Error("Missing id");
+}
+
+const annonceRef = doc(db, "annonces", annonceId);
+
+let annonceData = null;
+let currentUser = null;
+
+async function loadAnnonce() {
+  const snap = await getDoc(annonceRef);
+  if (!snap.exists()) {
+    msg.textContent = "Annonce introuvable.";
+    return;
   }
 
-  const annonceRef = doc(db, "annonces_location", annonceId);
-  let annonceData = null;
-  let currentUser = null;
+  annonceData = snap.data();
 
-  async function loadAnnonce(){
-    const snap = await getDoc(annonceRef);
-    if (!snap.exists()) {
-      msg.textContent = "Annonce introuvable.";
-      return;
-    }
-
-    annonceData = snap.data();
-    if (annonceData.status !== "active") {
-      msg.textContent = "Annonce non disponible.";
-      return;
-    }
-
-    titre.textContent = annonceData.titre;
-    meta.textContent = `${annonceData.ville} • ${annonceData.prix} €`;
-    desc.textContent = annonceData.description || "";
-
-    photosEl.innerHTML = "";
-    (annonceData.photos || []).forEach(url => {
-      const img = document.createElement("img");
-      img.src = url;
-      img.alt = "Photo annonce";
-      img.style.borderRadius = "10px";
-      photosEl.appendChild(img);
-    });
-
-    box.classList.remove("hidden");
-    msg.textContent = "";
-
-    await checkRatingAccess();
+  if (annonceData.status !== "active") {
+    msg.textContent = "Annonce non disponible.";
+    return;
   }
 
-  async function checkRatingAccess(){
-    if (!currentUser) return;
+  titre.textContent = annonceData.title;
+  meta.textContent = `${annonceData.city} • ${annonceData.price ?? "—"} €`;
+  desc.textContent = annonceData.description || "";
 
-    const owner = annonceData.ownerUid || annonceData.ownerId;
-    if (owner === currentUser.uid) return;
-
-    const rateRef = doc(
-      collection(annonceRef, "ratings"),
-      currentUser.uid
-    );
-
-    const snap = await getDoc(rateRef);
-    if (snap.exists()) return;
-
-    ratingSection.classList.remove("hidden");
-  }
-
-  rateBtn.onclick = async () => {
-    const v = Number(ratingValue.value);
-    if (!v || v < 1 || v > 5) {
-      alert("Note invalide");
-      return;
-    }
-
-    const rateRef = doc(
-      collection(annonceRef, "ratings"),
-      currentUser.uid
-    );
-
-    await setDoc(rateRef, {
-      value: v,
-      createdAt: serverTimestamp()
-    });
-
-    alert("Merci pour votre note !");
-    ratingSection.classList.add("hidden");
-  };
-
-  onAuthStateChanged(auth, async u => {
-    currentUser = u || null;
-    await loadAnnonce();
+  photosEl.innerHTML = "";
+  (annonceData.photos || []).forEach(url => {
+    const img = document.createElement("img");
+    img.src = url;
+    img.alt = "Photo annonce";
+    img.style.borderRadius = "10px";
+    photosEl.appendChild(img);
   });
-</script>
 
-</body>
-</html>
+  box.classList.remove("hidden");
+  msg.textContent = "";
+
+  await checkRatingAccess();
+}
+
+async function checkRatingAccess() {
+  if (!currentUser) return;
+  if (annonceData.userId === currentUser.uid) return;
+
+  const rateRef = doc(
+    collection(annonceRef, "ratings"),
+    currentUser.uid
+  );
+
+  const snap = await getDoc(rateRef);
+  if (snap.exists()) return;
+
+  ratingSection.classList.remove("hidden");
+}
+
+rateBtn.onclick = async () => {
+  const v = Number(ratingValue.value);
+  if (!v || v < 1 || v > 5) {
+    alert("Note invalide");
+    return;
+  }
+
+  const rateRef = doc(
+    collection(annonceRef, "ratings"),
+    currentUser.uid
+  );
+
+  await setDoc(rateRef, {
+    value: v,
+    createdAt: serverTimestamp()
+  });
+
+  alert("Merci pour votre note !");
+  ratingSection.classList.add("hidden");
+};
+
+onAuthStateChanged(auth, async user => {
+  currentUser = user || null;
+  await loadAnnonce();
+});
+</script>
