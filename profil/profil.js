@@ -137,38 +137,54 @@ onAuthStateChanged(auth, async user => {
   // AVATAR UPLOAD — VERSION STABLE
   // =========================
   avatarInput.onchange = async e => {
-    const file = e.target.files[0];
-    if (!file) return;
+  if (uploading) return;
+  const file = e.target.files[0];
+  if (!file) return;
 
-    avatarImg.classList.add("hidden");
-    avatarLoader.classList.remove("hidden");
-    avatarMsg.textContent = "⏳ Upload...";
+  uploading = true;
+  avatarInput.disabled = true;
+  avatarLoader.classList.remove("hidden");
+  avatarImg.classList.add("hidden");
+  avatarMsg.textContent = "⏳ Upload...";
 
-    try {
-      const resized = await resizeImage(file);
-      const avatarRef = ref(storage, `avatars/${user.uid}.jpg`);
+  try {
+    const resized = await resizeImage(file);
+    const path = `avatars/${user.uid}_${Date.now()}.jpg`;
+    const avatarRef = ref(storage, path);
 
-      await uploadBytes(avatarRef, resized, { contentType: "image/jpeg" });
-      const url = await getDownloadURL(avatarRef);
+    await uploadBytesResumable(avatarRef, resized);
+    const url = await getDownloadURL(avatarRef);
 
-      await updateDoc(userRef, { avatarUrl: url });
-
-      avatarImg.onload = () => {
-        avatarLoader.classList.add("hidden");
-        avatarImg.classList.remove("hidden");
-      };
-      avatarImg.src = url;
-
-      avatarMsg.textContent = "✅ Avatar mis à jour";
-    } catch (e) {
-      console.error(e);
-      avatarMsg.textContent = "❌ Erreur upload";
-      avatarLoader.classList.add("hidden");
+    // suppression ancien avatar
+    if (data.avatarPath) {
+      await deleteObject(ref(storage, data.avatarPath)).catch(() => {});
     }
 
-    avatarInput.value = "";
-  };
+    await updateDoc(userRef, {
+      avatarUrl: url,
+      avatarPath: path
+    });
 
+    data.avatarUrl = url;
+    data.avatarPath = path;
+
+    // 🔥 AFFICHAGE DIRECT (PAS DE onload)
+    avatarImg.src = url + "?t=" + Date.now();
+    avatarImg.classList.remove("hidden");
+    avatarLoader.classList.add("hidden");
+
+    avatarMsg.textContent = "✅ Avatar mis à jour";
+  } catch (err) {
+    console.error(err);
+    avatarMsg.textContent = "❌ Erreur upload";
+    avatarLoader.classList.add("hidden");
+    avatarImg.classList.remove("hidden");
+  }
+
+  uploading = false;
+  avatarInput.disabled = false;
+  avatarInput.value = "";
+};
   // =========================
   // PASSWORD
   // =========================
