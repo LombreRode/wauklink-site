@@ -1,99 +1,14 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WAUKLINK — Annonces Location</title>
-  <link rel="stylesheet" href="../style.css" />
+  <meta charset="utf-8">
+  <meta http-equiv="refresh" content="0; url=./index.html?type=location">
+  <title>Redirection…</title>
 </head>
 <body>
-
-<header class="topbar">
-  <div class="container">
-    <h1>WAUKLINK</h1>
-    <div class="subtitle">Locations disponibles</div>
-  </div>
-</header>
-
-<main class="container" style="padding:22px 0;">
-  <h2>Annonces de location</h2>
-
-  <p id="statusMsg" class="meta">Chargement…</p>
-
-  <section id="content">
-    <div id="list" class="grid"></div>
-  </section>
-
-  <p id="empty" class="muted hidden">
-    Aucune annonce disponible.
+  <p>
+    Redirection vers les annonces de location…<br>
+    <a href="./index.html?type=location">Clique ici si rien ne se passe</a>
   </p>
-
-  <div style="margin-top:20px">
-    <a href="../index.html">← Accueil</a>
-  </div>
-</main>
-
-<script type="module">
-  import { db } from "../shared/firebase.js";
-  import {
-    collection,
-    query,
-    where,
-    orderBy,
-    getDocs
-  } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
-  const statusMsg = document.getElementById("statusMsg");
-  const list = document.getElementById("list");
-  const emptyMsg = document.getElementById("empty");
-
-  const esc = s =>
-    String(s ?? "").replace(/[&<>"']/g, m =>
-      ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
-    );
-
-  async function loadAnnonces() {
-    list.innerHTML = "";
-    statusMsg.textContent = "Chargement…";
-
-    const q = query(
-      collection(db, "annonces"),
-      where("status", "==", "active"),
-      orderBy("createdAt", "desc")
-    );
-
-    const snap = await getDocs(q);
-
-    statusMsg.textContent = "";
-
-    if (snap.empty) {
-      emptyMsg.classList.remove("hidden");
-      return;
-    }
-
-    emptyMsg.classList.add("hidden");
-
-    snap.forEach(d => {
-      const a = d.data();
-
-      const el = document.createElement("a");
-      el.className = "card";
-      el.href = `./location-detail.html?id=${d.id}`;
-
-      el.innerHTML = `
-        <h3>${esc(a.title)}</h3>
-        <p class="meta">${esc(a.city)} — ${esc(a.type)}</p>
-        <p><strong>Prix :</strong> ${a.price ?? "—"} €</p>
-      `;
-
-      list.appendChild(el);
-    });
-  }
-
-  // 🔓 Accès public pour B
-  loadAnnonces();
-</script>
-
 </body>
 </html>
