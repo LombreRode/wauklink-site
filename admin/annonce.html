@@ -77,10 +77,12 @@ const btnDisable  = document.getElementById("btnDisable");
 const btnDelete   = document.getElementById("btnDelete");
 
 const annonceId = new URLSearchParams(location.search).get("id");
+
 if (!annonceId) {
   msg.textContent = "❌ ID annonce manquant";
 }
 
+/* ===== helpers statut ===== */
 function statusLabel(status) {
   if (status === "active") return "🟢 Active";
   if (status === "disabled") return "🟠 Désactivée";
@@ -99,6 +101,7 @@ async function setStatus(ref, status, label) {
   await loadAnnonce();
 }
 
+/* ===== chargement annonce ===== */
 async function loadAnnonce() {
   const ref = doc(db, "annonces", annonceId);
   const snap = await getDoc(ref);
@@ -111,12 +114,12 @@ async function loadAnnonce() {
   const a = snap.data();
 
   title.textContent = a.title || "Annonce";
-  meta.textContent = `${a.type} • ${a.city} • ${a.price ?? "—"} €`;
-  desc.textContent = a.description || "";
-  userEl.textContent = a.userId || "—";
+  meta.textContent  = `${a.type} • ${a.city} • ${a.price ?? "—"} €`;
+  desc.textContent  = a.description || "";
+  userEl.textContent = a.ownerUid || "—";
 
   badge.textContent = statusLabel(a.status);
-  badge.className = `badge ${statusClass(a.status)}`;
+  badge.className   = `badge ${statusClass(a.status)}`;
 
   photosEl.innerHTML = "";
   (a.photos || []).forEach(url => {
@@ -126,11 +129,22 @@ async function loadAnnonce() {
     photosEl.appendChild(img);
   });
 
-  btnActivate.classList.toggle("hidden", a.status === "active");
-  btnDisable.classList.toggle("hidden", a.status !== "active");
+  // boutons selon statut
+  btnActivate.classList.toggle(
+    "hidden",
+    a.status === "active"
+  );
 
-  btnActivate.onclick = () => setStatus(ref, "active", "Activer l’annonce");
-  btnDisable.onclick  = () => setStatus(ref, "disabled", "Désactiver l’annonce");
+  btnDisable.classList.toggle(
+    "hidden",
+    a.status !== "active"
+  );
+
+  btnActivate.onclick = () =>
+    setStatus(ref, "active", "Activer l’annonce");
+
+  btnDisable.onclick  = () =>
+    setStatus(ref, "disabled", "Désactiver l’annonce");
 
   btnDelete.onclick = async () => {
     if (!confirm("⚠️ Supprimer définitivement cette annonce ?")) return;
