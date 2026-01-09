@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Admin — Fiche annonce</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/wauklink-site/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Fiche annonce (Admin)</div>
+    </div>
+    <nav class="topbar-nav">
+      <a class="btn" href="/wauklink-site/admin/annonces.html">← Annonces</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container main-layout">
+  <p id="msg" class="meta">Chargement…</p>
+
+  <section id="annonceBox" class="card hidden">
+    <h2 id="title"></h2>
+    <p class="meta" id="meta"></p>
+
+    <p id="description"></p>
+
+    <h3>Photos</h3>
+    <div id="photos" class="grid"></div>
+
+    <h3>Utilisateur</h3>
+    <p class="meta" id="user"></p>
+
+    <h3>Actions admin</h3>
+    <div class="row-actions">
+      <button id="btnActivate" class="btn btn-ok">Activer</button>
+      <button id="btnDisable" class="btn btn-warning">Désactiver</button>
+      <button id="btnDelete" class="btn btn-danger">Supprimer</button>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <span>© WAUKLINK</span>
+  </div>
+</footer>
+
+<script type="module">
+import { db } from "../shared/firebase.js";
+import { requireAdmin } from "../shared/guard.js";
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  deleteDoc
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const msg   = document.getElementById("msg");
+const box   = document.getElementById("annonceBox");
+const title = document.getElementById("title");
+const meta  = document.getElementById("meta");
+const desc  = document.getElementById("description");
+const photosEl = document.getElementById("photos");
+const userEl   = document.getElementById("user");
+
+const btnActivate = document.getElementById("btnActivate");
+const btnDisable  = document.getElementById("btnDisable");
+const btnDelete   = document.getElementById("btnDelete");
+
+const annonceId = new URLSearchParams(location.search).get("id");
+
+if (!annonceId) {
+  msg.textContent = "❌ ID annonce manquant";
+}
+
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, m =>
+    ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
+  );
+}
+
+async function loadAnnonce() {
+  const ref = doc(db, "annonces", annonceId);
+  const snap = await getDoc(ref);
+
+  if (!snap.exists()) {
+    msg.textContent = "❌ Annonce introuvable";
+    return;
+  }
+
+  const a = snap.data();
+
+  title.textContent = a.title || "Annonce";
+  meta.textContent = `${a.type} • ${a.city} • ${a.price ?? "—"} € • statut : ${a.status}`;
+  desc.textContent = a.description || "";
+
+  userEl.textContent = a.userId || "—";
+
+  photosEl.innerHTML = "";
+  (a.photos || []).forEach(url => {
+    const img = document.createElement("img");
+    img.src = url;
+    img.style.borderRadius = "8px";
+    photosEl.appendChild(img);
+  });
+
+  btnActivate.onclick = async () => {
+    await updateDoc(ref, { status: "active" });
+    alert("Annonce activée");
+    loadAnnonce();
+  };
+
+  btnDisable.onclick = async () => {
+    await updateDoc(ref, { status: "disabled" });
+    alert("Annonce désactivée");
+    loadAnnonce();
+  };
+
+  btnDelete.onclick = async () => {
+    if (!confirm("Supprimer définitivement cette annonce ?")) return;
+    await deleteDoc(ref);
+    location.href = "/wauklink-site/admin/annonces.html";
+  };
+
+  msg.textContent = "";
+  box.classList.remove("hidden");
+}
+
+requireAdmin({
+  onOk: loadAnnonce,
+  onDenied: () => msg.textContent = "⛔ Accès refusé"
+});
+</script>
+
+</body>
+</html>
