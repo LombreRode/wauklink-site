@@ -43,84 +43,85 @@ import { db } from "../shared/firebase.js";
 import {
   collection,
   getDocs,
+  query,
+  where,
+  orderBy,
   doc,
   updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-document.addEventListener("DOMContentLoaded", () => {
-  const list = document.getElementById("list");
-  const msg  = document.getElementById("msg");
+const list = document.getElementById("list");
+const msg  = document.getElementById("msg");
 
-  if (!list || !msg) {
-    console.error("❌ reports.html : éléments manquants");
+const esc = s =>
+  String(s ?? "").replace(/[&<>"']/g, m =>
+    ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
+  );
+
+async function loadReports() {
+  msg.textContent = "⏳ Chargement des signalements…";
+  list.innerHTML = "";
+
+  const q = query(
+    collection(db, "reports"),
+    where("status", "==", "open"),
+    orderBy("createdAt", "desc")
+  );
+
+  const snap = await getDocs(q);
+
+  if (snap.empty) {
+    msg.textContent = "✅ Aucun signalement ouvert.";
+    list.innerHTML = "<p class='meta'>Tout est à jour.</p>";
     return;
   }
 
-  async function loadReports() {
-    msg.textContent = "⏳ Chargement des signalements…";
-    list.innerHTML = "";
+  msg.textContent = `📋 ${snap.size} signalement(s) ouverts`;
 
-    try {
-      const snap = await getDocs(collection(db, "reports"));
+  snap.forEach(d => {
+    const r = d.data();
+    const card = document.createElement("div");
+    card.className = "card";
 
-      if (snap.empty) {
-        msg.textContent = "✅ Aucun signalement.";
-        list.innerHTML =
-          "<p class='meta'>Tout est à jour.</p>";
-        return;
-      }
+    card.innerHTML = `
+      <strong>${esc(r.reason || "Signalement utilisateur")}</strong>
+      <div class="meta">
+        Annonce :
+        <a href="/wauklink-site/annonces/location-detail.html?id=${esc(r.annonceId)}"
+           target="_blank">
+          ${esc(r.annonceId)}
+        </a>
+      </div>
+      <div class="row-actions" style="margin-top:12px">
+        <button class="btn btn-ok">Marquer comme traité</button>
+      </div>
+    `;
 
-      msg.textContent = `📋 ${snap.size} signalement(s)`;
+    card.querySelector("button").onclick = async () => {
+      if (!confirm("Marquer ce signalement comme traité ?")) return;
+      await updateDoc(
+        doc(db, "reports", d.id),
+        { status: "closed" }
+      );
+      card.remove();
+    };
 
-      snap.forEach(d => {
-        const r = d.data();
-
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-          <strong>${r.reason ?? "Signalement utilisateur"}</strong>
-          <div class="meta">
-            Annonce : ${r.annonceId ?? "—"}
-          </div>
-          <div class="row-actions" style="margin-top:12px">
-            <button class="btn btn-danger">
-              Clore le signalement
-            </button>
-          </div>
-        `;
-
-        card.querySelector("button").onclick = async () => {
-          if (!confirm("Clore ce signalement ?")) return;
-
-          await updateDoc(
-            doc(db, "reports", d.id),
-            { status: "closed" }
-          );
-
-          loadReports();
-        };
-
-        list.appendChild(card);
-      });
-
-    } catch (err) {
-      console.error("❌ reports error:", err);
-      msg.textContent = "❌ Accès refusé ou erreur Firestore";
-      list.innerHTML =
-        "<p class='meta'>Impossible de charger les signalements.</p>";
-    }
-  }
-
-  // 🔐 MODÉRATION (admin OU moderator)
-  requireModerator({
-    redirectTo: "../auth/login.html",
-    onOk: () => {
-      msg.textContent = "✅ Accès modération confirmé";
-      loadReports();
-    }
+    list.appendChild(card);
   });
+}
+
+// 🔐 ADMIN / MODÉRATION
+requireModerator({
+  onOk: () => {
+    msg.textContent = "✅ Accès modération confirmé";
+    loadReports();
+  },
+  onDenied: () => {
+    msg.textContent = "⛔ Accès refusé";
+  }
 });
 </script>
+
 
 </body>
 </html>
