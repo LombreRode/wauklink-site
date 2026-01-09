@@ -22,7 +22,9 @@
 
 <main class="container main-layout">
   <h2>Signalements</h2>
-  <p id="msg" class="meta" aria-live="polite">Vérification des droits…</p>
+  <p id="msg" class="meta" aria-live="polite">
+    Vérification des droits…
+  </p>
   <section id="list" class="grid"></section>
 </main>
 
@@ -56,75 +58,92 @@ const esc = s =>
     ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
   );
 
+function showEmpty(text) {
+  msg.textContent = text;
+  list.innerHTML = "<p class='meta'>Tout est à jour.</p>";
+}
+
 async function loadReports() {
   msg.textContent = "⏳ Chargement des signalements…";
   list.innerHTML = "";
 
-  const q = query(
-    collection(db, "reports"),
-    where("status", "==", "open"),
-    orderBy("createdAt", "desc")
-  );
+  try {
+    const q = query(
+      collection(db, "reports"),
+      where("status", "==", "open"),
+      orderBy("createdAt", "desc")
+    );
 
-  const snap = await getDocs(q);
+    const snap = await getDocs(q);
 
-  if (snap.empty) {
-    msg.textContent = "✅ Aucun signalement ouvert.";
-    list.innerHTML = "<p class='meta'>Tout est à jour.</p>";
-    return;
+    if (snap.empty) {
+      showEmpty("✅ Aucun signalement ouvert.");
+      return;
+    }
+
+    msg.textContent = `📋 ${snap.size} signalement(s) ouverts`;
+
+    snap.forEach(d => {
+      const r = d.data();
+
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <strong>${esc(r.reason || "Signalement utilisateur")}</strong>
+
+        <div class="meta">
+          Annonce :
+          <a href="/wauklink-site/admin/annonce.html?id=${esc(r.annonceId)}"
+             class="link"
+             target="_blank">
+            ${esc(r.annonceId)}
+          </a>
+        </div>
+
+        <div class="row-actions" style="margin-top:12px">
+          <button class="btn btn-ok">
+            Marquer comme traité
+          </button>
+        </div>
+      `;
+
+      const btn = card.querySelector("button");
+
+      btn.onclick = async () => {
+        if (!confirm("Marquer ce signalement comme traité ?")) return;
+
+        btn.disabled = true;
+        btn.textContent = "Traitement…";
+
+        try {
+          await updateDoc(
+            doc(db, "reports", d.id),
+            { status: "closed" }
+          );
+          card.remove();
+
+          if (!list.children.length) {
+            showEmpty("✅ Tous les signalements ont été traités.");
+          }
+        } catch (err) {
+          console.error("report update error:", err);
+          btn.disabled = false;
+          btn.textContent = "Marquer comme traité";
+          alert("❌ Erreur lors du traitement du signalement");
+        }
+      };
+
+      list.appendChild(card);
+    });
+
+  } catch (err) {
+    console.error("load reports error:", err);
+    msg.textContent = "❌ Erreur de chargement des signalements";
+    list.innerHTML = "";
   }
-
-  msg.textContent = `📋 ${snap.size} signalement(s) ouverts`;
-
-  snap.forEach(d => {
-    const r = d.data();
-
-    const card = document.createElement("div");
-    card.className = "card";
-
-    card.innerHTML = `
-      <strong>${esc(r.reason || "Signalement utilisateur")}</strong>
-
-      <div class="meta">
-        Annonce :
-        <a href="/wauklink-site/admin/annonce.html?id=${esc(r.annonceId)}"
-           class="link"
-           target="_blank">
-          ${esc(r.annonceId)}
-        </a>
-      </div>
-
-      <div class="row-actions" style="margin-top:12px">
-        <button class="btn btn-ok">Marquer comme traité</button>
-      </div>
-    `;
-
-    const btn = card.querySelector("button");
-
-    btn.onclick = async () => {
-      if (!confirm("Marquer ce signalement comme traité ?")) return;
-
-      btn.disabled = true;
-      btn.textContent = "Traitement…";
-
-      await updateDoc(
-        doc(db, "reports", d.id),
-        { status: "closed" }
-      );
-
-      card.remove();
-
-      if (!list.children.length) {
-        msg.textContent = "✅ Tous les signalements ont été traités.";
-        list.innerHTML = "<p class='meta'>Tout est à jour.</p>";
-      }
-    };
-
-    list.appendChild(card);
-  });
 }
 
-// 🔐 ADMIN / MODÉRATION UNIQUEMENT
+// 🔐 ADMIN + MODÉRATION
 requireModerator({
   onOk: loadReports,
   onDenied: () => {
