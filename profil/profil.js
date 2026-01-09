@@ -152,7 +152,17 @@ onAuthStateChanged(auth, async user => {
     const path = `avatars/${user.uid}_${Date.now()}.jpg`;
     const avatarRef = ref(storage, path);
 
-    await uploadBytesResumable(avatarRef, resized);
+    await new Promise((resolve, reject) => {
+    const task = uploadBytesResumable(avatarRef, resized);
+
+    task.on(
+      "state_changed",
+      null,
+      reject,
+      resolve
+   );
+ });
+
     const url = await getDownloadURL(avatarRef);
 
     // suppression ancien avatar
