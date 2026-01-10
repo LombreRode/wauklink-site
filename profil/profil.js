@@ -184,12 +184,13 @@ onAuthStateChanged(auth, async user => {
       const url = await getDownloadURL(avatarRef);
 
       if (data.avatarPath) {
-        await deleteObject(ref(storage, data.avatarPath)).catch(() => {});
+      await deleteObject(ref(storage, data.avatarPath)).catch(() => {});
       }
 
       await updateDoc(userRef, {
         avatarUrl: url,
-        avatarPath: path
+        avatarPath: path,
+        updatedAt: serverTimestamp()
       });
 
       data.avatarUrl = url;
