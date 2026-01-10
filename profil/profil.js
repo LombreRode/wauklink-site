@@ -174,7 +174,7 @@ onAuthStateChanged(auth, async user => {
 
     try {
       const resized = await resizeImage(file);
-      const path = `avatars/${user.uid}_${Date.now()}.jpg`;
+      const path = `avatars/${user.uid}/${Date.now()}.jpg`;
       const avatarRef = ref(storage, path);
 
       await uploadBytes(avatarRef, resized, {
