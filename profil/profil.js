@@ -135,16 +135,19 @@ onAuthStateChanged(auth, async user => {
   phoneInput.value = data.phone || "";
 
   /* =========================
-     AVATAR AU CHARGEMENT
-  ========================= */
-  if (data.avatarUrl) {
-    avatarLoader.classList.remove("hidden");
-    avatarImg.onload = () => {
-      avatarLoader.classList.add("hidden");
-      avatarImg.classList.remove("hidden");
-    };
-    avatarImg.src = data.avatarUrl;
-  }
+   AVATAR AU CHARGEMENT
+========================= */
+const avatarToShow = localAvatarUrl || data.avatarUrl;
+
+if (avatarToShow) {
+  avatarLoader.classList.remove("hidden");
+  avatarImg.onload = () => {
+    avatarLoader.classList.add("hidden");
+    avatarImg.classList.remove("hidden");
+  };
+  avatarImg.src = avatarToShow;
+}
+
 
   /* =========================
      SAVE PROFIL
