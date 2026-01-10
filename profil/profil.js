@@ -1,16 +1,14 @@
 /* =================================================
    WAUKLINK — PROFIL.JS
-   Version FINALE — propre, stable, sans doublons
+   VERSION FINALE STABLE — AVATAR OK (ADMIN + USERS)
 ================================================= */
 
 import { auth, db, storage } from "/wauklink-site/shared/firebase.js";
-
 import {
   onAuthStateChanged,
   updatePassword,
   updateEmail
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-
 import {
   doc,
   getDoc,
@@ -18,7 +16,6 @@ import {
   updateDoc,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
 import {
   ref,
   uploadBytes,
@@ -26,7 +23,7 @@ import {
   deleteObject
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
-console.log("✅ PROFIL.JS — FINAL CLEAN");
+console.log("✅ PROFIL.JS — VERSION FINALE");
 
 /* =========================
    DOM
@@ -53,9 +50,10 @@ const emailMsg = document.getElementById("emailMsg");
 const changeEmailBtn = document.getElementById("changeEmailBtn");
 
 /* =========================
-   STATE (UNE SEULE FOIS)
+   STATE GLOBAL
 ========================= */
 let uploading = false;
+let localAvatarUrl = null;
 
 /* =========================
    RESIZE IMAGE
@@ -77,11 +75,7 @@ function resizeImage(file, maxSize = 256) {
           .getContext("2d")
           .drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        canvas.toBlob(
-          blob => resolve(blob),
-          "image/jpeg",
-          0.9
-        );
+        canvas.toBlob(blob => resolve(blob), "image/jpeg", 0.9);
       };
       img.src = reader.result;
     };
@@ -135,19 +129,18 @@ onAuthStateChanged(auth, async user => {
   phoneInput.value = data.phone || "";
 
   /* =========================
-   AVATAR AU CHARGEMENT
-========================= */
-const avatarToShow = localAvatarUrl || data.avatarUrl;
+     AVATAR AU CHARGEMENT (STABLE)
+  ========================= */
+  const avatarToShow = localAvatarUrl || data.avatarUrl;
 
-if (avatarToShow) {
-  avatarLoader.classList.remove("hidden");
-  avatarImg.onload = () => {
-    avatarLoader.classList.add("hidden");
-    avatarImg.classList.remove("hidden");
-  };
-  avatarImg.src = avatarToShow;
-}
-
+  if (avatarToShow) {
+    avatarLoader.classList.remove("hidden");
+    avatarImg.onload = () => {
+      avatarLoader.classList.add("hidden");
+      avatarImg.classList.remove("hidden");
+    };
+    avatarImg.src = avatarToShow;
+  }
 
   /* =========================
      SAVE PROFIL
@@ -161,7 +154,7 @@ if (avatarToShow) {
   };
 
   /* =========================
-     AVATAR UPLOAD (SIMPLE & STABLE)
+     AVATAR UPLOAD — VERSION FINALE
   ========================= */
   avatarInput.onchange = async e => {
     if (uploading) return;
@@ -177,7 +170,7 @@ if (avatarToShow) {
 
     try {
       const resized = await resizeImage(file);
-      const path = `avatars/${user.uid}/${Date.now()}.jpg`;
+      const path = `avatars/${user.uid}_${Date.now()}.jpg`;
       const avatarRef = ref(storage, path);
 
       await uploadBytes(avatarRef, resized, {
@@ -187,7 +180,7 @@ if (avatarToShow) {
       const url = await getDownloadURL(avatarRef);
 
       if (data.avatarPath) {
-      await deleteObject(ref(storage, data.avatarPath)).catch(() => {});
+        await deleteObject(ref(storage, data.avatarPath)).catch(() => {});
       }
 
       await updateDoc(userRef, {
@@ -195,6 +188,9 @@ if (avatarToShow) {
         avatarPath: path,
         updatedAt: serverTimestamp()
       });
+
+      // 🔥 LIGNE CLÉ (ANTI-RETOUR ARRIÈRE)
+      localAvatarUrl = url;
 
       data.avatarUrl = url;
       data.avatarPath = path;
@@ -236,4 +232,3 @@ if (avatarToShow) {
     emailMsg.textContent = "✅ Email modifié";
   };
 });
-
