@@ -169,25 +169,31 @@ onAuthStateChanged(auth, async user => {
     avatarMsg.textContent = "⏳ Upload...";
 
     try {
-      const resized = await resizeImage(file);
-      const path = `avatars/${user.uid}_${Date.now()}.jpg`;
-      const avatarRef = ref(storage, path);
+    const resized = await resizeImage(file);
 
-      await uploadBytes(avatarRef, resized, {
-        contentType: "image/jpeg"
-      });
+    const path = `avatars/${user.uid}/${Date.now()}.jpg`;
+    const avatarRef = ref(storage, path);
 
-      const url = await getDownloadURL(avatarRef);
+    await uploadBytes(avatarRef, resized, {
+      contentType: "image/jpeg"
+    });
 
-      if (data.avatarPath) {
-        await deleteObject(ref(storage, data.avatarPath)).catch(() => {});
-      }
+    const url = await getDownloadURL(avatarRef);
 
-      await updateDoc(userRef, {
-        avatarUrl: url,
-        avatarPath: path,
-        updatedAt: serverTimestamp()
-      });
+    if (data.avatarPath) {
+      await deleteObject(ref(storage, data.avatarPath)).catch(() => {});
+    }
+
+     await updateDoc(userRef, {
+       avatarUrl: url,
+       avatarPath: path,
+       updatedAt: serverTimestamp()
+     });
+
+      avatarImg.src = url + "?t=" + Date.now();
+      avatarImg.classList.remove("hidden");
+      avatarMsg.textContent = "✅ Avatar mis à jour";
+
 
       // 🔥 LIGNE CLÉ (ANTI-RETOUR ARRIÈRE)
       localAvatarUrl = url;
