@@ -1,6 +1,6 @@
 /* =================================================
    WAUKLINK — PROFIL.JS
-   VERSION FINALE STABLE — AVATAR OK (ADMIN + USERS)
+   VERSION FINALE STABLE — SANS BUG
 ================================================= */
 
 import { auth, db, storage } from "/wauklink-site/shared/firebase.js";
@@ -23,7 +23,7 @@ import {
   deleteObject
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
-console.log("✅ PROFIL.JS — VERSION FINALE");
+console.log("✅ PROFIL.JS — VERSION STABLE");
 
 /* =========================
    DOM
@@ -50,7 +50,7 @@ const emailMsg = document.getElementById("emailMsg");
 const changeEmailBtn = document.getElementById("changeEmailBtn");
 
 /* =========================
-   STATE GLOBAL
+   STATE
 ========================= */
 let uploading = false;
 let localAvatarUrl = null;
@@ -67,14 +67,9 @@ function resizeImage(file, maxSize = 256) {
       img.onload = () => {
         const canvas = document.createElement("canvas");
         const scale = Math.min(maxSize / img.width, maxSize / img.height);
-
         canvas.width = img.width * scale;
         canvas.height = img.height * scale;
-
-        canvas
-          .getContext("2d")
-          .drawImage(img, 0, 0, canvas.width, canvas.height);
-
+        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
         canvas.toBlob(blob => resolve(blob), "image/jpeg", 0.9);
       };
       img.src = reader.result;
@@ -111,6 +106,11 @@ onAuthStateChanged(auth, async user => {
 
   const data = snap.data();
 
+  // 🔒 Protection cache avatar
+  if (localAvatarUrl) {
+    data.avatarUrl = localAvatarUrl;
+  }
+
   /* =========================
      INFOS
   ========================= */
@@ -129,17 +129,15 @@ onAuthStateChanged(auth, async user => {
   phoneInput.value = data.phone || "";
 
   /* =========================
-     AVATAR AU CHARGEMENT (STABLE)
+     AVATAR AU CHARGEMENT
   ========================= */
-  const avatarToShow = localAvatarUrl || data.avatarUrl;
-
-  if (avatarToShow) {
+  if (data.avatarUrl) {
     avatarLoader.classList.remove("hidden");
     avatarImg.onload = () => {
       avatarLoader.classList.add("hidden");
       avatarImg.classList.remove("hidden");
     };
-    avatarImg.src = avatarToShow;
+    avatarImg.src = data.avatarUrl;
   }
 
   /* =========================
@@ -154,11 +152,10 @@ onAuthStateChanged(auth, async user => {
   };
 
   /* =========================
-     AVATAR UPLOAD — VERSION FINALE
+     AVATAR UPLOAD — FINAL
   ========================= */
   avatarInput.onchange = async e => {
     if (uploading) return;
-
     const file = e.target.files[0];
     if (!file) return;
 
@@ -169,35 +166,28 @@ onAuthStateChanged(auth, async user => {
     avatarMsg.textContent = "⏳ Upload...";
 
     try {
-    const resized = await resizeImage(file);
+      const resized = await resizeImage(file);
+      const path = `avatars/${user.uid}/${Date.now()}.jpg`;
+      const avatarRef = ref(storage, path);
 
-    const path = `avatars/${user.uid}/${Date.now()}.jpg`;
-    const avatarRef = ref(storage, path);
+      await uploadBytes(avatarRef, resized, {
+        contentType: "image/jpeg"
+      });
 
-    await uploadBytes(avatarRef, resized, {
-      contentType: "image/jpeg"
-    });
+      const url = await getDownloadURL(avatarRef);
 
-    const url = await getDownloadURL(avatarRef);
+      if (data.avatarPath) {
+        await deleteObject(ref(storage, data.avatarPath)).catch(() => {});
+      }
 
-    if (data.avatarPath) {
-      await deleteObject(ref(storage, data.avatarPath)).catch(() => {});
-    }
+      await updateDoc(userRef, {
+        avatarUrl: url,
+        avatarPath: path,
+        updatedAt: serverTimestamp()
+      });
 
-     await updateDoc(userRef, {
-       avatarUrl: url,
-       avatarPath: path,
-       updatedAt: serverTimestamp()
-     });
-
-      avatarImg.src = url + "?t=" + Date.now();
-      avatarImg.classList.remove("hidden");
-      avatarMsg.textContent = "✅ Avatar mis à jour";
-
-
-      // 🔥 LIGNE CLÉ (ANTI-RETOUR ARRIÈRE)
+      // 🔒 Sécurisation locale
       localAvatarUrl = url;
-
       data.avatarUrl = url;
       data.avatarPath = path;
 
