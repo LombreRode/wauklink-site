@@ -35,7 +35,7 @@ if (!form) {
 const typeMessages = {
   immobilier: "🏠 Cette annonce sera publiée dans Immobilier",
   loisir: "🎯 Cette annonce sera publiée dans Loisirs",
-  autres: "📦 Cette annonce sera publiée dans Autres",
+  autres: "📦 Autre type de location",
   "services-personne": "🤝 Services à la personne",
   travaux: "🛠️ Travaux",
   urgences: "🚨 Urgences"
