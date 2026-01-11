@@ -1,108 +1,42 @@
-<script type="module">
-import { auth, db } from "/wauklink-site/shared/firebase.js";
-import { onAuthStateChanged } from
-  "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import {
-  doc,
-  getDoc,
-  collection,
-  setDoc,
-  serverTimestamp
-} from
-  "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Détail annonce — WAUKLINK</title>
+  <link rel="stylesheet" href="/wauklink-site/style.css">
+</head>
+<body>
 
-const msg = document.getElementById("msg");
-const box = document.getElementById("annonce");
-const titre = document.getElementById("titre");
-const meta = document.getElementById("meta");
-const desc = document.getElementById("description");
-const photosEl = document.getElementById("photos");
-const ratingSection = document.getElementById("ratingSection");
-const rateBtn = document.getElementById("rateBtn");
-const ratingValue = document.getElementById("ratingValue");
+<header class="topbar">
+  <div class="container topbar-row">
+    <h1>WAUKLINK</h1>
+  </div>
+</header>
 
-const annonceId = new URLSearchParams(location.search).get("id");
-if (!annonceId) {
-  msg.textContent = "❌ Annonce introuvable.";
-  throw new Error("Missing id");
-}
+<main class="container main-layout">
+  <p id="msg" class="meta">Chargement…</p>
 
-const annonceRef = doc(db, "annonces", annonceId);
+  <section id="annonce" class="card hidden">
+    <h2 id="titre"></h2>
+    <div id="meta" class="meta"></div>
+    <p id="description"></p>
+    <div id="photos" class="grid"></div>
 
-let annonceData = null;
-let currentUser = null;
+    <section id="ratingSection" class="hidden">
+      <select id="ratingValue">
+        <option value="">Note</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+      <button id="rateBtn" class="btn">Noter</button>
+    </section>
+  </section>
+</main>
 
-async function loadAnnonce() {
-  const snap = await getDoc(annonceRef);
-  if (!snap.exists()) {
-    msg.textContent = "Annonce introuvable.";
-    return;
-  }
-
-  annonceData = snap.data();
-
-  if (annonceData.status !== "active") {
-    msg.textContent = "Annonce non disponible.";
-    return;
-  }
-
-  titre.textContent = annonceData.title;
-  meta.textContent = `${annonceData.city} • ${annonceData.price ?? "—"} €`;
-  desc.textContent = annonceData.description || "";
-
-  photosEl.innerHTML = "";
-  (annonceData.photos || []).forEach(url => {
-    const img = document.createElement("img");
-    img.src = url;
-    img.alt = "Photo annonce";
-    img.style.borderRadius = "10px";
-    photosEl.appendChild(img);
-  });
-
-  box.classList.remove("hidden");
-  msg.textContent = "";
-
-  await checkRatingAccess();
-}
-
-async function checkRatingAccess() {
-  if (!currentUser) return;
-  if (annonceData.userId === currentUser.uid) return;
-
-  const rateRef = doc(
-    collection(annonceRef, "ratings"),
-    currentUser.uid
-  );
-
-  const snap = await getDoc(rateRef);
-  if (snap.exists()) return;
-
-  ratingSection.classList.remove("hidden");
-}
-
-rateBtn.onclick = async () => {
-  const v = Number(ratingValue.value);
-  if (!v || v < 1 || v > 5) {
-    alert("Note invalide");
-    return;
-  }
-
-  const rateRef = doc(
-    collection(annonceRef, "ratings"),
-    currentUser.uid
-  );
-
-  await setDoc(rateRef, {
-    value: v,
-    createdAt: serverTimestamp()
-  });
-
-  alert("Merci pour votre note !");
-  ratingSection.classList.add("hidden");
-};
-
-onAuthStateChanged(auth, async user => {
-  currentUser = user || null;
-  await loadAnnonce();
-});
-</script>
+<script type="module" src="./location-detail.js"></script>
+</body>
+</html>
