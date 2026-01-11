@@ -15,13 +15,14 @@ import {
   startAfter
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-/* ================== DOM ================== */
+/* DOM */
 const rows = document.getElementById("rows");
 const msg  = document.getElementById("msg");
 
 const filterType   = document.getElementById("filterType");
 const filterStatus = document.getElementById("filterStatus");
 const filterCity   = document.getElementById("filterCity");
+const filterSearch = document.getElementById("filterSearch");
 const btnFilter    = document.getElementById("btnFilter");
 const btnReset     = document.getElementById("btnReset");
 
@@ -29,13 +30,14 @@ const btnPrev  = document.getElementById("btnPrev");
 const btnNext  = document.getElementById("btnNext");
 const pageInfo = document.getElementById("pageInfo");
 
-/* ================== STATE ================== */
+/* State */
 const PAGE_SIZE = 10;
 let lastDoc = null;
 let currentPage = 1;
 let currentFilters = {};
+let currentSearch = "";
 
-/* ================== HELPERS ================== */
+/* Helpers */
 const esc = s =>
   String(s ?? "").replace(/[&<>"']/g, m =>
     ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
@@ -55,34 +57,21 @@ async function logAdmin(action, annonceId, extra = {}) {
       extra,
       createdAt: serverTimestamp()
     });
-  } catch (e) {
-    console.warn("log admin error:", e);
-  }
+  } catch {}
 }
 
-/* ================== QUERY BUILDER ================== */
+/* Query builder */
 function buildQuery({ after = null } = {}) {
-  const constraints = [];
-
-  if (currentFilters.type) {
-    constraints.push(where("type", "==", currentFilters.type));
-  }
-  if (currentFilters.status) {
-    constraints.push(where("status", "==", currentFilters.status));
-  }
-  if (currentFilters.city) {
-    constraints.push(where("city", "==", currentFilters.city));
-  }
-
-  constraints.push(orderBy("createdAt", "desc"));
-  constraints.push(limit(PAGE_SIZE));
-
-  if (after) constraints.push(startAfter(after));
-
-  return query(collection(db, "annonces"), ...constraints);
+  const c = [];
+  if (currentFilters.type)   c.push(where("type", "==", currentFilters.type));
+  if (currentFilters.status) c.push(where("status", "==", currentFilters.status));
+  if (currentFilters.city)   c.push(where("city", "==", currentFilters.city));
+  c.push(orderBy("createdAt", "desc"), limit(PAGE_SIZE));
+  if (after) c.push(startAfter(after));
+  return query(collection(db, "annonces"), ...c);
 }
 
-/* ================== LOAD PAGE ================== */
+/* Load */
 async function loadPage({ reset = false } = {}) {
   if (reset) {
     lastDoc = null;
@@ -98,8 +87,7 @@ async function loadPage({ reset = false } = {}) {
     const res = await getDocs(q);
 
     if (res.empty) {
-      rows.innerHTML =
-        `<tr><td colspan="6" class="meta">Aucune annonce</td></tr>`;
+      rows.innerHTML = `<tr><td colspan="6" class="meta">Aucune annonce</td></tr>`;
       msg.textContent = "";
       btnNext.disabled = true;
       return;
@@ -112,8 +100,14 @@ async function loadPage({ reset = false } = {}) {
 
     res.forEach(d => {
       const a = d.data();
-      const tr = document.createElement("tr");
 
+      // 🔍 recherche texte (titre)
+      if (currentSearch) {
+        const t = (a.title || "").toLowerCase();
+        if (!t.includes(currentSearch)) return;
+      }
+
+      const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${esc(a.title)}</td>
         <td>${esc(a.city)}</td>
@@ -131,18 +125,17 @@ async function loadPage({ reset = false } = {}) {
         </td>
       `;
 
-      const [btnDisable, btnActivate, btnDelete] =
-        tr.querySelectorAll("button");
+      const [btnDisable, btnActivate, btnDelete] = tr.querySelectorAll("button");
 
       btnDisable.onclick = async () => {
-        if (!confirm(`Désactiver l’annonce :\n${a.title} (${a.city}) ?`)) return;
+        if (!confirm(`Désactiver : ${a.title} (${a.city}) ?`)) return;
         await updateDoc(doc(db, "annonces", d.id), { status: "disabled" });
         await logAdmin("disable", d.id);
         tr.children[4].textContent = badge("disabled");
       };
 
       btnActivate.onclick = async () => {
-        if (!confirm(`Activer l’annonce :\n${a.title} (${a.city}) ?`)) return;
+        if (!confirm(`Activer : ${a.title} (${a.city}) ?`)) return;
         await updateDoc(doc(db, "annonces", d.id), { status: "active" });
         await logAdmin("activate", d.id);
         tr.children[4].textContent = badge("active");
@@ -150,12 +143,9 @@ async function loadPage({ reset = false } = {}) {
 
       btnDelete.onclick = async () => {
         const ok = confirm(
-          `⚠️ SUPPRESSION DÉFINITIVE ⚠️\n\n` +
-          `Titre : ${a.title}\nVille : ${a.city}\n\n` +
-          `Cette action est irréversible.\n\nConfirmer ?`
+          `⚠️ SUPPRESSION DÉFINITIVE\n\nTitre : ${a.title}\nVille : ${a.city}\n\nConfirmer ?`
         );
         if (!ok) return;
-
         await deleteDoc(doc(db, "annonces", d.id));
         await logAdmin("delete", d.id, { title: a.title, city: a.city });
         tr.remove();
@@ -171,13 +161,14 @@ async function loadPage({ reset = false } = {}) {
   }
 }
 
-/* ================== FILTERS ================== */
+/* Actions */
 btnFilter.onclick = () => {
   currentFilters = {
     type: filterType.value || null,
     status: filterStatus.value || null,
     city: filterCity.value.trim() || null
   };
+  currentSearch = (filterSearch?.value || "").toLowerCase().trim();
   btnPrev.disabled = true;
   btnNext.disabled = false;
   loadPage({ reset: true });
@@ -187,13 +178,14 @@ btnReset.onclick = () => {
   filterType.value = "";
   filterStatus.value = "";
   filterCity.value = "";
+  if (filterSearch) filterSearch.value = "";
   currentFilters = {};
+  currentSearch = "";
   btnPrev.disabled = true;
   btnNext.disabled = false;
   loadPage({ reset: true });
 };
 
-/* ================== PAGINATION ================== */
 btnNext.onclick = () => {
   currentPage++;
   btnPrev.disabled = false;
@@ -207,7 +199,6 @@ btnPrev.onclick = async () => {
   await loadPage({ reset: true });
 };
 
-/* ================== GUARD ================== */
 requireAdmin({
   onOk: () => loadPage({ reset: true }),
   onDenied: () => {
