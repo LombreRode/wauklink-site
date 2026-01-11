@@ -10,9 +10,12 @@ import {
 const list = document.getElementById("list");
 const msg  = document.getElementById("statusMsg");
 
-const TYPE = "travaux"; // 🔥 changer ici seulement
+const esc = s =>
+  String(s ?? "").replace(/[&<>"']/g, m =>
+    ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
+  );
 
-async function load() {
+async function loadServices() {
   msg.textContent = "Chargement…";
   list.innerHTML = "";
 
@@ -20,31 +23,31 @@ async function load() {
     const q = query(
       collection(db, "annonces"),
       where("status", "==", "active"),
-      where("type", "==", TYPE),
+      where("type", "==", "service"),
       orderBy("createdAt", "desc")
     );
 
     const snap = await getDocs(q);
 
-    msg.textContent = "";
-
     if (snap.empty) {
-      msg.textContent = "Aucune annonce disponible.";
+      msg.textContent = "Aucun service disponible.";
       return;
     }
+
+    msg.textContent = `${snap.size} service(s)`;
 
     snap.forEach(d => {
       const a = d.data();
       const card = document.createElement("div");
       card.className = "card";
       card.innerHTML = `
-        <h3>${a.title}</h3>
-        <p class="meta">${a.city}</p>
-        <p>${a.description}</p>
+        <h3>${esc(a.title)}</h3>
+        <p class="meta">${esc(a.city)}</p>
+        <p>${esc(a.description || "")}</p>
         <p><strong>Prix :</strong> ${a.price ?? "—"} €</p>
         <a class="btn btn-outline"
-           href="/wauklink-site/annonce/index.html?id=${d.id}">
-           Voir
+           href="/wauklink-site/annonces/location-detail.html?id=${d.id}">
+          Voir
         </a>
       `;
       list.appendChild(card);
@@ -56,4 +59,4 @@ async function load() {
   }
 }
 
-load();
+loadServices();
