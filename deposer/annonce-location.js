@@ -61,10 +61,18 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 /* ===== Submit annonce ===== */
+let submitInit = false;
+
 function initSubmit(user) {
+  if (submitInit) return;
+  submitInit = true;
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     msg.textContent = "";
+
+    const priceValue = document.getElementById("price").value;
+    const price = priceValue ? Number(priceValue) : null;
 
     const data = {
       title: document.getElementById("title").value.trim(),
@@ -72,11 +80,16 @@ function initSubmit(user) {
       phone: document.getElementById("phone").value.trim(),
       postalCode: document.getElementById("postalCode").value.trim(),
       type: typeSelect.value,
-      price: Number(document.getElementById("price").value),
+      price,
       description: document.getElementById("description").value.trim()
     };
 
-    if (Object.values(data).some(v => !v)) {
+    if (!data.type) {
+      msg.textContent = "❌ Veuillez choisir une catégorie.";
+      return;
+    }
+
+    if (Object.values(data).some(v => v === "")) {
       msg.textContent = "❌ Tous les champs sont obligatoires.";
       return;
     }
@@ -92,6 +105,7 @@ function initSubmit(user) {
       msg.textContent = "✅ Annonce publiée avec succès";
       form.reset();
       typeInfo.textContent = "";
+
     } catch (err) {
       console.error(err);
       msg.textContent = "❌ Erreur lors de la publication.";
