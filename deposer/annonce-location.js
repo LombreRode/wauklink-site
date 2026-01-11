@@ -10,43 +10,56 @@ import {
 } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
+/* ===== Éléments ===== */
 const form = document.getElementById("annonceForm");
 const msg  = document.getElementById("msg");
 const planBlock = document.getElementById("planBlock");
-const typeSelect = document.getElementById("type");
-const typeInfo   = document.getElementById("typeInfo");
 
+const titleEl = document.getElementById("title");
+const cityEl  = document.getElementById("city");
+const phoneEl = document.getElementById("phone");
+const postalEl = document.getElementById("postalCode");
+const typeEl  = document.getElementById("type");
+const priceEl = document.getElementById("price");
+const descEl  = document.getElementById("description");
+
+const typeInfo = document.getElementById("typeInfo");
+
+/* ===== Sécurité ===== */
 if (!form) {
-  console.error("❌ Formulaire annonce introuvable");
+  console.error("❌ Formulaire introuvable");
   throw new Error("Form missing");
 }
 
-/* ===== Messages par type ===== */
+/* ===== Messages par type (ALIGNÉS HTML) ===== */
 const typeMessages = {
-  urgences: "🚨 Cette annonce sera publiée dans Urgences",
-  travaux: "🛠️ Cette annonce sera publiée dans Travaux",
-  location: "🏠 Cette annonce sera publiée dans Locations",
-  emploi: "💼 Cette annonce sera publiée dans Emploi",
+  immobilier: "🏠 Cette annonce sera publiée dans Immobilier",
+  loisir: "🎯 Cette annonce sera publiée dans Loisirs",
+  autres: "📦 Cette annonce sera publiée dans Autres",
   "services-personne": "🤝 Services à la personne",
-  prestataire: "🧰 Prestataires / Pro"
+  travaux: "🛠️ Travaux",
+  urgences: "🚨 Urgences"
 };
 
-typeSelect?.addEventListener("change", () => {
-  typeInfo.textContent = typeMessages[typeSelect.value] || "";
+typeEl.addEventListener("change", () => {
+  typeInfo.textContent = typeMessages[typeEl.value] || "";
 });
 
 /* ===== Auth + droits ===== */
 let submitInit = false;
 
 onAuthStateChanged(auth, async (user) => {
-  if (!user) return;
+  if (!user) {
+    location.href = "../auth/login.html";
+    return;
+  }
 
   const snap = await getDoc(doc(db, "users", user.uid));
   if (!snap.exists()) return;
 
   const { role, plan } = snap.data();
 
-  // ✅ ADMIN = accès total
+  // ✅ Admin : accès total
   if (role === "admin") {
     form.classList.remove("hidden");
     planBlock.classList.add("hidden");
@@ -54,7 +67,7 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  // ❌ Gratuit = bloqué
+  // ❌ Gratuit : bloqué
   if (!plan || plan === "gratuit") {
     form.classList.add("hidden");
     planBlock.classList.remove("hidden");
@@ -67,7 +80,7 @@ onAuthStateChanged(auth, async (user) => {
   initSubmit(user);
 });
 
-/* ===== Submit sécurisé ===== */
+/* ===== Submit ===== */
 function initSubmit(user) {
   if (submitInit) return;
   submitInit = true;
@@ -76,25 +89,20 @@ function initSubmit(user) {
     e.preventDefault();
     msg.textContent = "";
 
-    const title = document.getElementById("title")?.value.trim();
-    const city  = document.getElementById("city")?.value.trim();
-    const phone = document.getElementById("phone")?.value.trim();
-    const postalCode = document.getElementById("postalCode")?.value.trim();
-    const description = document.getElementById("description")?.value.trim();
-    const type = typeSelect.value;
+    const title = titleEl.value.trim();
+    const city  = cityEl.value.trim();
+    const phone = phoneEl.value.trim();
+    const postalCode = postalEl.value.trim();
+    const description = descEl.value.trim();
+    const type = typeEl.value;
+    const price = priceEl.value ? Number(priceEl.value) : null;
 
-    const priceRaw = document.getElementById("price")?.value;
-    const price = priceRaw ? Number(priceRaw) : null;
-
-    if (!type) {
-      msg.textContent = "❌ Veuillez choisir une catégorie.";
+    if (!title || !city || !phone || !postalCode || !description || !type) {
+      msg.textContent = "❌ Tous les champs obligatoires doivent être remplis";
       return;
     }
 
-    if (!title || !city || !phone || !postalCode || !description) {
-      msg.textContent = "❌ Tous les champs sont obligatoires.";
-      return;
-    }
+    msg.textContent = "⏳ Publication en cours…";
 
     try {
       await addDoc(collection(db, "annonces"), {
@@ -103,20 +111,24 @@ function initSubmit(user) {
         phone,
         postalCode,
         description,
-        type,
+        type,               // ✅ CLÉ UNIQUE
         price,
         ownerUid: user.uid,
-        status: "pending",
+        status: "active",   // 🔁 passer à "pending" si modération
         createdAt: serverTimestamp()
       });
 
-      msg.textContent = "✅ Annonce publiée avec succès";
+      msg.textContent = "✅ Annonce publiée";
       form.reset();
       typeInfo.textContent = "";
 
+      setTimeout(() => {
+        location.href = "../dashboard/index.html";
+      }, 800);
+
     } catch (err) {
-      console.error("Annonce create error:", err);
-      msg.textContent = "❌ Erreur lors de la publication.";
+      console.error(err);
+      msg.textContent = "❌ Erreur lors de la publication";
     }
   });
 }
