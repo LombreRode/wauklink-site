@@ -1,4 +1,5 @@
 import { auth, db } from "../shared/firebase.js";
+import { requireUser } from "../shared/guard.js";
 import { onAuthStateChanged } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import {
@@ -9,6 +10,9 @@ import {
   getDoc
 } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+/* 🔐 Sécurité (HTML clean) */
+requireUser();
 
 /* ===== Éléments ===== */
 const form = document.getElementById("annonceForm");
@@ -25,41 +29,40 @@ const descEl  = document.getElementById("description");
 
 const typeInfo = document.getElementById("typeInfo");
 
-/* ===== Sécurité ===== */
+/* ===== Sécurité DOM ===== */
 if (!form) {
   console.error("❌ Formulaire introuvable");
   throw new Error("Form missing");
 }
 
-/* ===== Messages par type (ALIGNÉS HTML) ===== */
+/* ===== Messages par type ===== */
 const typeMessages = {
-  immobilier: "🏠 Cette annonce sera publiée dans Immobilier",
-  loisir: "🎯 Cette annonce sera publiée dans Loisirs",
-  autres: "📦 Autre type de location",
+  immobilier: "🏠 Immobilier",
+  loisir: "🎯 Loisirs",
+  autres: "📦 Autre location",
   "services-personne": "🤝 Services à la personne",
   travaux: "🛠️ Travaux",
   urgences: "🚨 Urgences"
 };
 
 typeEl.addEventListener("change", () => {
-  typeInfo.textContent = typeMessages[typeEl.value] || "";
+  if (typeInfo) {
+    typeInfo.textContent = typeMessages[typeEl.value] || "";
+  }
 });
 
 /* ===== Auth + droits ===== */
 let submitInit = false;
 
 onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    location.href = "../auth/login.html";
-    return;
-  }
+  if (!user) return;
 
   const snap = await getDoc(doc(db, "users", user.uid));
   if (!snap.exists()) return;
 
   const { role, plan } = snap.data();
 
-  // ✅ Admin : accès total
+  // ✅ Admin
   if (role === "admin") {
     form.classList.remove("hidden");
     planBlock.classList.add("hidden");
@@ -67,7 +70,7 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  // ❌ Gratuit : bloqué
+  // ❌ Gratuit
   if (!plan || plan === "gratuit") {
     form.classList.add("hidden");
     planBlock.classList.remove("hidden");
@@ -87,7 +90,7 @@ function initSubmit(user) {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    msg.textContent = "";
+    if (msg) msg.textContent = "";
 
     const title = titleEl.value.trim();
     const city  = cityEl.value.trim();
@@ -98,11 +101,11 @@ function initSubmit(user) {
     const price = priceEl.value ? Number(priceEl.value) : null;
 
     if (!title || !city || !phone || !postalCode || !description || !type) {
-      msg.textContent = "❌ Tous les champs obligatoires doivent être remplis";
+      if (msg) msg.textContent = "❌ Tous les champs obligatoires doivent être remplis";
       return;
     }
 
-    msg.textContent = "⏳ Publication en cours…";
+    if (msg) msg.textContent = "⏳ Publication en cours…";
 
     try {
       await addDoc(collection(db, "annonces"), {
@@ -111,16 +114,16 @@ function initSubmit(user) {
         phone,
         postalCode,
         description,
-        type,               // ✅ CLÉ UNIQUE
+        type,
         price,
-        ownerUid: user.uid,
-        status: "active",   // 🔁 passer à "pending" si modération
+        userId: user.uid,   // ✅ COMPATIBLE RULES
+        status: "active",
         createdAt: serverTimestamp()
       });
 
-      msg.textContent = "✅ Annonce publiée";
+      if (msg) msg.textContent = "✅ Annonce publiée";
       form.reset();
-      typeInfo.textContent = "";
+      if (typeInfo) typeInfo.textContent = "";
 
       setTimeout(() => {
         location.href = "../dashboard/index.html";
@@ -128,7 +131,7 @@ function initSubmit(user) {
 
     } catch (err) {
       console.error(err);
-      msg.textContent = "❌ Erreur lors de la publication";
+      if (msg) msg.textContent = "❌ Erreur lors de la publication";
     }
   });
 }
