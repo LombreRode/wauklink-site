@@ -2,26 +2,32 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Admin — Toutes les annonces</title>
+  <title>Admin — Annonces en attente</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
-      <div class="subtitle">Toutes les annonces</div>
+      <div class="subtitle">Annonces en attente</div>
     </div>
     <nav class="topbar-nav">
       <a class="btn" href="/wauklink-site/admin/index.html">← Admin</a>
-      <a class="btn btn-outline" href="/wauklink-site/admin/annonces.html">En attente</a>
+      <a class="btn btn-outline" href="/wauklink-site/admin/annonces-all.html">
+        Toutes les annonces
+      </a>
     </nav>
   </div>
 </header>
 
 <main class="container main-layout">
+  <h2>Annonces à valider</h2>
+
   <p id="msg" class="meta">Chargement…</p>
+
   <section class="card">
     <table class="table">
       <thead>
@@ -30,12 +36,14 @@
           <th>Ville</th>
           <th>Type</th>
           <th>Prix</th>
-          <th>Statut</th>
+          <th>Utilisateur</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody id="rows">
-        <tr><td colspan="6" class="meta">Chargement…</td></tr>
+        <tr>
+          <td colspan="6" class="meta">Chargement…</td>
+        </tr>
       </tbody>
     </table>
   </section>
@@ -47,6 +55,7 @@
   </div>
 </footer>
 
-<script type="module" src="./annonces-all.js"></script>
+<!-- ✅ BON JS -->
+<script type="module" src="./annonces.js"></script>
 </body>
 </html>
