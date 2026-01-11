@@ -2,16 +2,58 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="refresh"
-        content="0; url=/wauklink-site/locations/index.html?type=immobilier">
-  <title>Redirection…</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WAUKLINK — Déposer une annonce</title>
+  <link rel="stylesheet" href="../style.css">
 </head>
 <body>
-  <p>
-    Redirection vers les annonces immobilier…<br>
-    <a href="/wauklink-site/locations/index.html?type=immobilier">
-      Clique ici si rien ne se passe
-    </a>
-  </p>
+
+<header class="topbar">
+  <div class="container topbar-row">
+    <h1>WAUKLINK</h1>
+    <div class="subtitle">Déposer une annonce</div>
+    <nav class="topbar-nav">
+      <a class="btn" href="../index.html">← Accueil</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container main-layout">
+  <section class="card" style="max-width:700px;margin:auto">
+    <h2>Nouvelle annonce</h2>
+
+    <label>Titre</label>
+    <input id="title" type="text" required>
+
+    <label>Description</label>
+    <textarea id="description" rows="4" required></textarea>
+
+    <label>Ville</label>
+    <input id="city" type="text" required>
+
+    <label>Prix (€)</label>
+    <input id="price" type="number">
+
+    <!-- ✅ TYPE D’ANNONCE (LA CLÉ) -->
+    <label>Type d’annonce</label>
+    <select id="type" required>
+      <option value="">— Choisir —</option>
+      <option value="immobilier">Immobilier</option>
+      <option value="loisir">Loisir</option>
+      <option value="autres">Autres</option>
+      <option value="service">Service à la personne</option>
+      <option value="travaux">Travaux</option>
+      <option value="urgence">Urgence</option>
+    </select>
+
+    <p id="msg" class="meta"></p>
+
+    <button id="publishBtn" class="btn btn-ok">
+      Publier l’annonce
+    </button>
+  </section>
+</main>
+
+<script type="module" src="./location.js"></script>
 </body>
 </html>
