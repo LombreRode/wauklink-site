@@ -16,7 +16,9 @@
     </div>
     <nav class="topbar-nav">
       <a class="btn" href="/wauklink-site/admin/index.html">← Admin</a>
-      <a class="btn btn-outline" href="/wauklink-site/admin/annonces.html">En attente</a>
+      <a class="btn btn-outline" href="/wauklink-site/admin/annonces.html">
+        En attente
+      </a>
     </nav>
   </div>
 </header>
@@ -25,6 +27,7 @@
 
   <!-- 🔍 FILTRES -->
   <section class="card">
+    <h3>Filtres</h3>
     <div class="row-actions">
       <select id="filterType">
         <option value="">Tous les types</option>
@@ -54,6 +57,7 @@
     </div>
   </section>
 
+  <!-- 📋 LISTE -->
   <p id="msg" class="meta">Chargement…</p>
 
   <section class="card">
@@ -69,9 +73,23 @@
         </tr>
       </thead>
       <tbody id="rows">
-        <tr><td colspan="6" class="meta">Chargement…</td></tr>
+        <tr>
+          <td colspan="6" class="meta">Chargement…</td>
+        </tr>
       </tbody>
     </table>
+
+    <!-- 🔁 PAGINATION -->
+    <div class="row-actions" style="justify-content:space-between; margin-top:12px">
+      <button id="btnPrev" class="btn btn-outline" disabled>
+        ← Précédent
+      </button>
+      <span id="pageInfo" class="meta">Page 1</span>
+      <button id="btnNext" class="btn btn-outline">
+        Suivant →
+      </button>
+    </div>
+
   </section>
 
 </main>
