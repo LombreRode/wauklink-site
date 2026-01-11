@@ -6,7 +6,6 @@
   <title>WAUKLINK — Annonces</title>
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
-
 <body>
 
 <header class="topbar">
@@ -33,75 +32,7 @@
   </div>
 </footer>
 
-<script type="module">
-import { db } from "../shared/firebase.js";
-import {
-  collection,
-  query,
-  where,
-  orderBy,
-  getDocs
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
-const listEl = document.getElementById("list");
-const msgEl  = document.getElementById("msg");
-const titleEl = document.getElementById("pageTitle");
-
-const params = new URLSearchParams(location.search);
-const type = params.get("type");
-
-const TITLES = {
-  urgence: "Urgences",
-  travaux: "Travaux",
-  service: "Services & aide à la personne",
-  emploi: "Emploi",
-  location: "Locations"
-};
-
-titleEl.textContent = TITLES[type] || "Toutes les annonces";
-
-async function loadAnnonces() {
-  msgEl.textContent = "Chargement…";
-  listEl.innerHTML = "";
-
-  const q = query(
-    collection(db, "annonces"),
-    where("status", "==", "active"),
-    orderBy("createdAt", "desc")
-  );
-
-  const snap = await getDocs(q);
-
-  if (snap.empty) {
-    msgEl.textContent = "Aucune annonce disponible.";
-    return;
-  }
-
-  msgEl.textContent = snap.size + " annonce(s)";
-
-  snap.forEach(d => {
-    const a = d.data();
-
-    const card = document.createElement("div");
-    card.className = "card";
-
-    card.innerHTML = `
-      <strong>${a.title || ""}</strong>
-      <div class="meta">${a.city || ""} • ${a.price ?? "—"} €</div>
-      <p class="meta">${a.description || ""}</p>
-
-      <a class="btn"
-         href="/wauklink-site/annonces/location-detail.html?id=${d.id}">
-        Voir
-      </a>
-    `;
-
-    listEl.appendChild(card);
-  });
-}
-
-loadAnnonces();
-</script>
-
+<!-- JS EXTERNE UNIQUEMENT -->
+<script type="module" src="./index.js"></script>
 </body>
 </html>
