@@ -3,6 +3,7 @@ import { requireAdmin } from "../shared/guard.js";
 import {
   collection,
   query,
+  where,
   orderBy,
   getDocs,
   doc,
@@ -12,6 +13,12 @@ import {
 
 const rows = document.getElementById("rows");
 const msg  = document.getElementById("msg");
+
+const filterType   = document.getElementById("filterType");
+const filterStatus = document.getElementById("filterStatus");
+const filterCity   = document.getElementById("filterCity");
+const btnFilter    = document.getElementById("btnFilter");
+const btnReset     = document.getElementById("btnReset");
 
 const esc = s =>
   String(s ?? "").replace(/[&<>"']/g, m =>
@@ -24,16 +31,24 @@ function badge(status) {
   return "🟡 en attente";
 }
 
-async function loadAll() {
+async function loadAll(filters = {}) {
   rows.innerHTML = "";
   msg.textContent = "Chargement…";
 
   try {
-    const q = query(
-      collection(db, "annonces"),
-      orderBy("createdAt", "desc")
-    );
+    const constraints = [orderBy("createdAt", "desc")];
 
+    if (filters.type) {
+      constraints.unshift(where("type", "==", filters.type));
+    }
+    if (filters.status) {
+      constraints.unshift(where("status", "==", filters.status));
+    }
+    if (filters.city) {
+      constraints.unshift(where("city", "==", filters.city));
+    }
+
+    const q = query(collection(db, "annonces"), ...constraints);
     const res = await getDocs(q);
 
     if (res.empty) {
@@ -97,8 +112,24 @@ async function loadAll() {
   }
 }
 
+// 🔘 actions filtres
+btnFilter.onclick = () => {
+  loadAll({
+    type: filterType.value || null,
+    status: filterStatus.value || null,
+    city: filterCity.value.trim() || null
+  });
+};
+
+btnReset.onclick = () => {
+  filterType.value = "";
+  filterStatus.value = "";
+  filterCity.value = "";
+  loadAll();
+};
+
 requireAdmin({
-  onOk: loadAll,
+  onOk: () => loadAll(),
   onDenied: () => {
     msg.textContent = "⛔ Accès refusé";
     rows.innerHTML = "";
