@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WAUKLINK</title>
-  <link rel="stylesheet" href="../style.css" />
+  <meta charset="utf-8">
+  <title>WAUKLINK — Travaux</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../style.css">
 </head>
 <body>
 
@@ -12,7 +12,7 @@
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
-      <div class="subtitle">Section</div>
+      <div class="subtitle">Travaux disponibles</div>
     </div>
     <nav class="topbar-nav">
       <a class="btn" href="../index.html">← Accueil</a>
@@ -21,12 +21,9 @@
 </header>
 
 <main class="container main-layout">
-  <h2>Titre de la page</h2>
-
-  <div class="card">
-    <p>Cette section est en cours de mise en place.</p>
-    <p>Elle sera bientôt disponible 👍</p>
-  </div>
+  <h2>Annonces travaux</h2>
+  <p id="statusMsg" class="meta">Chargement…</p>
+  <section id="list" class="grid"></section>
 </main>
 
 <footer class="footer">
@@ -35,5 +32,6 @@
   </div>
 </footer>
 
+<script type="module" src="./index.js"></script>
 </body>
 </html>
