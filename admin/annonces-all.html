@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Admin — Toutes les annonces</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/wauklink-site/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Toutes les annonces</div>
+    </div>
+    <nav class="topbar-nav">
+      <a class="btn" href="/wauklink-site/admin/index.html">← Admin</a>
+      <a class="btn btn-outline" href="/wauklink-site/admin/annonces.html">En attente</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container main-layout">
+  <p id="msg" class="meta">Chargement…</p>
+  <section class="card">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Titre</th>
+          <th>Ville</th>
+          <th>Type</th>
+          <th>Prix</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="rows">
+        <tr><td colspan="6" class="meta">Chargement…</td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <span>© WAUKLINK</span>
+  </div>
+</footer>
+
+<script type="module" src="./annonces-all.js"></script>
+</body>
+</html>
