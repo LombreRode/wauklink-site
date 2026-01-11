@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
+
 <body>
 
 <header class="topbar">
@@ -22,7 +23,7 @@
 <main class="container main-layout">
   <h2>Nouvelle annonce</h2>
 
-  <!-- Bloc accès restreint -->
+  <!-- Accès restreint -->
   <div id="planBlock" class="card hidden">
     <h3>Accès restreint</h3>
     <p>
@@ -35,8 +36,9 @@
     </a>
   </div>
 
-  <!-- Formulaire -->
+  <!-- FORMULAIRE -->
   <form id="annonceForm" class="card hidden">
+
     <label>
       Titre
       <input type="text" id="title" required>
@@ -57,23 +59,23 @@
       <input type="text" id="postalCode" required>
     </label>
 
+    <!-- ✅ TYPE CORRECT -->
     <label>
-      Type
+      Type d’annonce
       <select id="type" required>
-        <option value="">Choisir</option>
-        <option value="location">Location</option>
+        <option value="">— Choisir —</option>
+        <option value="immobilier">Immobilier</option>
+        <option value="loisir">Loisir</option>
+        <option value="autres">Autres</option>
+        <option value="services-personne">Services à la personne</option>
         <option value="travaux">Travaux</option>
         <option value="urgences">Urgences</option>
-        <option value="services-personne">Services à la personne</option>
-        <option value="emploi">Emploi</option>
-        <option value="prestataire">Prestataire / Pro</option>
       </select>
-      <p id="typeInfo" class="meta"></p>
     </label>
 
     <label>
       Prix (€)
-      <input type="number" id="price" min="0" required>
+      <input type="number" id="price" min="0">
     </label>
 
     <label>
@@ -84,6 +86,7 @@
     <button class="btn btn-ok" type="submit">
       Publier l’annonce
     </button>
+
   </form>
 
   <p id="msg" class="meta"></p>
@@ -95,13 +98,13 @@
   </div>
 </footer>
 
-<!-- Protection utilisateur -->
+<!-- Sécurité utilisateur -->
 <script type="module">
   import { requireUser } from "../shared/guard.js";
   requireUser();
 </script>
 
-<!-- Logique dépôt -->
+<!-- JS dépôt -->
 <script type="module" src="./annonce-location.js"></script>
 
 </body>
