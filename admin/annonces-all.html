@@ -28,6 +28,7 @@
   <!-- 🔍 FILTRES -->
   <section class="card">
     <h3>Filtres</h3>
+
     <div class="row-actions">
       <select id="filterType">
         <option value="">Tous les types</option>
@@ -52,6 +53,12 @@
         placeholder="Ville…"
       />
 
+      <input
+        type="text"
+        id="filterSearch"
+        placeholder="Recherche titre…"
+      />
+
       <button id="btnFilter" class="btn btn-ok">Filtrer</button>
       <button id="btnReset" class="btn btn-outline">Réinitialiser</button>
     </div>
@@ -64,12 +71,6 @@
     <table class="table">
       <thead>
         <tr>
-          <input
-  type="text"
-  id="filterSearch"
-  placeholder="Recherche titre…"
-/>
-
           <th>Titre</th>
           <th>Ville</th>
           <th>Type</th>
