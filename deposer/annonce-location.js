@@ -117,7 +117,7 @@ function initSubmit(user) {
         type,
         price,
         userId: user.uid,   // ✅ COMPATIBLE RULES
-        status: "active",
+        status: "pending",
         createdAt: serverTimestamp()
       });
 
