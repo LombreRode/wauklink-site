@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
 <body>
-
 <header class="topbar">
   <div class="container topbar-row">
     <div>
@@ -16,60 +15,13 @@
     </div>
     <nav class="topbar-nav">
       <a class="btn" href="/wauklink-site/admin/index.html">← Admin</a>
-      <a class="btn btn-outline" href="/wauklink-site/admin/annonces.html">
-        En attente
-      </a>
+      <a class="btn btn-outline" href="/wauklink-site/admin/annonces.html">En attente</a>
     </nav>
   </div>
 </header>
 
 <main class="container main-layout">
-
-  <!-- 🔍 FILTRES -->
-  <section class="card">
-    <h3>Filtres</h3>
-
-    <div class="grid" style="grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap:12px">
-
-      <label>
-        Type
-        <select id="filterType">
-          <option value="">Tous</option>
-          <option value="immobilier">Immobilier</option>
-          <option value="loisir">Loisir</option>
-          <option value="autres">Autres</option>
-          <option value="services-personne">Services à la personne</option>
-          <option value="travaux">Travaux</option>
-          <option value="urgences">Urgences</option>
-        </select>
-      </label>
-
-      <label>
-        Statut
-        <select id="filterStatus">
-          <option value="">Tous</option>
-          <option value="active">Active</option>
-          <option value="pending">En attente</option>
-          <option value="disabled">Désactivée</option>
-        </select>
-      </label>
-
-      <label>
-        Ville
-        <input type="text" id="filterCity" placeholder="ex: Avignon">
-      </label>
-
-    </div>
-
-    <div style="margin-top:12px; display:flex; gap:8px">
-      <button id="btnFilter" class="btn btn-ok">Filtrer</button>
-      <button id="btnReset" class="btn btn-outline">Réinitialiser</button>
-    </div>
-  </section>
-
-  <!-- 📋 LISTE -->
   <p id="msg" class="meta">Chargement…</p>
-
   <section class="card">
     <table class="table">
       <thead>
@@ -83,13 +35,10 @@
         </tr>
       </thead>
       <tbody id="rows">
-        <tr>
-          <td colspan="6" class="meta">Chargement…</td>
-        </tr>
+        <tr><td colspan="6" class="meta">Chargement…</td></tr>
       </tbody>
     </table>
   </section>
-
 </main>
 
 <footer class="footer">
