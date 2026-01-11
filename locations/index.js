@@ -3,7 +3,6 @@ import {
   collection,
   query,
   where,
-  orderBy,
   getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
@@ -24,15 +23,18 @@ async function load() {
 
   try {
     const constraints = [
-      where("status", "==", "active"),
-      orderBy("createdAt", "desc")
+      where("status", "==", "active")
     ];
 
     if (type) {
-      constraints.unshift(where("type", "==", type));
+      constraints.push(where("type", "==", type));
     }
 
-    const q = query(collection(db, "annonces"), ...constraints);
+    const q = query(
+      collection(db, "annonces"),
+      ...constraints
+    );
+
     const snap = await getDocs(q);
 
     if (snap.empty) {
@@ -42,25 +44,27 @@ async function load() {
 
     msg.textContent = `${snap.size} annonce(s)`;
 
-    snap.forEach(d => {
-      const a = d.data();
+    snap.forEach(doc => {
+      const a = doc.data();
+
       const card = document.createElement("div");
       card.className = "card";
       card.innerHTML = `
-        <h3>${a.title || ""}</h3>
-        <p class="meta">${a.city || ""}</p>
-        <p>${a.description || ""}</p>
+        <h3>${a.title ?? ""}</h3>
+        <p class="meta">${a.city ?? ""}</p>
+        <p>${a.description ?? ""}</p>
         <a class="btn"
-           href="/wauklink-site/annonces/location-detail.html?id=${d.id}">
+           href="/wauklink-site/annonces/location-detail.html?id=${doc.id}">
           Voir
         </a>
       `;
+
       list.appendChild(card);
     });
 
-  } catch (e) {
-    console.error(e);
-    msg.textContent = "❌ Erreur de chargement";
+  } catch (err) {
+    console.error(err);
+    msg.textContent = "❌ Erreur de chargement des annonces";
   }
 }
 
