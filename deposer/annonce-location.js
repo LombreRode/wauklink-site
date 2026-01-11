@@ -13,91 +13,88 @@ import {
 const form = document.getElementById("annonceForm");
 const msg  = document.getElementById("msg");
 const planBlock = document.getElementById("planBlock");
-
 const typeSelect = document.getElementById("type");
 const typeInfo   = document.getElementById("typeInfo");
 
-if (!form) {
-  console.error("Formulaire annonce introuvable");
-}
+/* ===== Message selon rubrique ===== */
+const typeMessages = {
+  urgences: "🚨 Cette annonce sera publiée dans Urgences",
+  travaux: "🛠️ Cette annonce sera publiée dans Travaux",
+  location: "🏠 Cette annonce sera publiée dans Locations",
+  emploi: "💼 Cette annonce sera publiée dans Emploi",
+  "services-personne": "🤝 Services à la personne",
+  prestataire: "🧰 Prestataires / Pro"
+};
 
-/* =========================
-   MESSAGE SELON RUBRIQUE
-========================= */
-if (typeSelect && typeInfo) {
-  typeSelect.addEventListener("change", () => {
-    const map = {
-      urgences: "🚨 Cette annonce sera publiée dans la rubrique Urgences",
-      travaux: "🛠️ Cette annonce sera publiée dans la rubrique Travaux",
-      location: "🏠 Cette annonce sera publiée dans la rubrique Locations",
-      emploi: "💼 Cette annonce sera publiée dans la rubrique Emploi",
-      "services-personne": "🤝 Cette annonce sera publiée dans Services à la personne",
-      prestataire: "🧰 Cette annonce sera publiée dans Prestataires / Pro"
-    };
-    typeInfo.textContent = map[typeSelect.value] || "";
-  });
-}
+typeSelect?.addEventListener("change", () => {
+  typeInfo.textContent = typeMessages[typeSelect.value] || "";
+});
 
-/* =========================
-   AUTH + PLAN UTILISATEUR
-========================= */
+/* ===== Auth + droits ===== */
 onAuthStateChanged(auth, async (user) => {
-  if (!user || !form) return;
+  if (!user) return;
 
-  const userSnap = await getDoc(doc(db, "users", user.uid));
-  if (!userSnap.exists()) return;
+  const snap = await getDoc(doc(db, "users", user.uid));
+  if (!snap.exists()) return;
 
-  const { plan } = userSnap.data();
+  const { role, plan } = snap.data();
 
-  // 🚫 Gratuit → blocage
-  if (!plan || plan === "gratuit") {
-    form.classList.add("hidden");
-    planBlock?.classList.remove("hidden");
+  // ✅ ADMIN = ACCÈS TOTAL
+  if (role === "admin") {
+    form.classList.remove("hidden");
+    planBlock.classList.add("hidden");
+    initSubmit(user);
     return;
   }
 
-  /* =========================
-     SUBMIT ANNONCE
-  ========================= */
+  // ❌ Gratuit = bloqué
+  if (!plan || plan === "gratuit") {
+    form.classList.add("hidden");
+    planBlock.classList.remove("hidden");
+    return;
+  }
+
+  // ✅ Particulier / Pro
+  form.classList.remove("hidden");
+  planBlock.classList.add("hidden");
+  initSubmit(user);
+});
+
+/* ===== Submit annonce ===== */
+function initSubmit(user) {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     msg.textContent = "";
 
-    const title = document.getElementById("title")?.value.trim();
-    const city = document.getElementById("city")?.value.trim();
-    const phone = document.getElementById("phone")?.value.trim();
-    const postalCode = document.getElementById("postalCode")?.value.trim();
-    const type = typeSelect?.value;
-    const price = Number(document.getElementById("price")?.value);
-    const description = document.getElementById("description")?.value.trim();
+    const data = {
+      title: document.getElementById("title").value.trim(),
+      city: document.getElementById("city").value.trim(),
+      phone: document.getElementById("phone").value.trim(),
+      postalCode: document.getElementById("postalCode").value.trim(),
+      type: typeSelect.value,
+      price: Number(document.getElementById("price").value),
+      description: document.getElementById("description").value.trim()
+    };
 
-    if (!title || !city || !type || !description || !phone || !postalCode) {
-      msg.textContent =
-        "Tous les champs sont obligatoires (téléphone et code postal inclus).";
+    if (Object.values(data).some(v => !v)) {
+      msg.textContent = "❌ Tous les champs sont obligatoires.";
       return;
     }
 
     try {
-      await addDoc(collection(db, "annonces_location"), {
-        title,
-        city,
-        postalCode,
-        phone,
-        type,
-        price,
-        description,
+      await addDoc(collection(db, "annonces"), {
+        ...data,
         ownerUid: user.uid,
         status: "pending",
         createdAt: serverTimestamp()
       });
 
-      msg.textContent = "Annonce publiée avec succès 🎉";
+      msg.textContent = "✅ Annonce publiée avec succès";
       form.reset();
       typeInfo.textContent = "";
-
     } catch (err) {
       console.error(err);
-      msg.textContent = "Erreur lors de la publication.";
+      msg.textContent = "❌ Erreur lors de la publication.";
     }
   });
-});
+}
