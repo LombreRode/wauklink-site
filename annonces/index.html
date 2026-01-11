@@ -1,11 +1,12 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>WAUKLINK — Annonces</title>
-  <link rel="stylesheet" href="/wauklink-site/style.css" />
+  <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
+
 <body>
 
 <header class="topbar">
@@ -32,9 +33,6 @@
   </div>
 </footer>
 
-<!-- =========================
-     SCRIPT ANNONCES (PROPRE)
-========================= -->
 <script type="module">
 import { db } from "../shared/firebase.js";
 import {
@@ -45,16 +43,13 @@ import {
   getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-const listEl  = document.getElementById("list");
-const msgEl   = document.getElementById("msg");
+const listEl = document.getElementById("list");
+const msgEl  = document.getElementById("msg");
 const titleEl = document.getElementById("pageTitle");
 
-// 🔹 Paramètres URL
-const params  = new URLSearchParams(location.search);
-const type    = params.get("type");
-const subType = params.get("subType");
+const params = new URLSearchParams(location.search);
+const type = params.get("type");
 
-// 🔹 Titre lisible
 const TITLES = {
   urgence: "Urgences",
   travaux: "Travaux",
@@ -65,21 +60,13 @@ const TITLES = {
 
 titleEl.textContent = TITLES[type] || "Toutes les annonces";
 
-// 🔹 Chargement annonces
 async function loadAnnonces() {
-  listEl.innerHTML = "";
   msgEl.textContent = "Chargement…";
-
-  const constraints = [
-    where("status", "==", "active")
-  ];
-
-  if (type) constraints.push(where("type", "==", type));
-  if (subType) constraints.push(where("subType", "==", subType));
+  listEl.innerHTML = "";
 
   const q = query(
     collection(db, "annonces"),
-    ...constraints,
+    where("status", "==", "active"),
     orderBy("createdAt", "desc")
   );
 
@@ -90,17 +77,23 @@ async function loadAnnonces() {
     return;
   }
 
-  msgEl.textContent = `${snap.size} annonce(s)`;
+  msgEl.textContent = snap.size + " annonce(s)";
 
-  snap.forEach(doc => {
-    const a = doc.data();
+  snap.forEach(d => {
+    const a = d.data();
 
     const card = document.createElement("div");
     card.className = "card";
+
     card.innerHTML = `
-      <strong>${a.title}</strong>
-      <div class="meta">${a.city} • ${a.price ?? "—"} €</div>
-      <p class="meta">${a.description ?? ""}</p>
+      <strong>${a.title || ""}</strong>
+      <div class="meta">${a.city || ""} • ${a.price ?? "—"} €</div>
+      <p class="meta">${a.description || ""}</p>
+
+      <a class="btn"
+         href="/wauklink-site/annonces/location-detail.html?id=${d.id}">
+        Voir
+      </a>
     `;
 
     listEl.appendChild(card);
