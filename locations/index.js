@@ -1,6 +1,10 @@
 import { db } from "../shared/firebase.js";
 import {
-  collection, query, where, orderBy, getDocs
+  collection,
+  query,
+  where,
+  orderBy,
+  getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const list = document.getElementById("list");
@@ -8,9 +12,11 @@ const msg  = document.getElementById("statusMsg");
 const subtitle = document.getElementById("subtitle");
 
 const params = new URLSearchParams(location.search);
-const type = params.get("type"); // ex: immobilier, loisir, autres
+const type = params.get("type"); // immobilier | loisir | autres
 
-subtitle.textContent = type ? `Annonces : ${type}` : "Annonces";
+subtitle.textContent = type
+  ? `Annonces : ${type}`
+  : "Toutes les annonces";
 
 async function load() {
   msg.textContent = "Chargement…";
