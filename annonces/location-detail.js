@@ -1,0 +1,86 @@
+import { auth, db } from "/wauklink-site/shared/firebase.js";
+import { onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import {
+  doc, getDoc, collection, setDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const msg = document.getElementById("msg");
+const box = document.getElementById("annonce");
+const titre = document.getElementById("titre");
+const meta = document.getElementById("meta");
+const desc = document.getElementById("description");
+const photosEl = document.getElementById("photos");
+const ratingSection = document.getElementById("ratingSection");
+const rateBtn = document.getElementById("rateBtn");
+const ratingValue = document.getElementById("ratingValue");
+
+const annonceId = new URLSearchParams(location.search).get("id");
+if (!annonceId) {
+  msg.textContent = "❌ Annonce introuvable.";
+  throw new Error("Missing id");
+}
+
+const annonceRef = doc(db, "annonces", annonceId);
+let annonceData = null;
+let currentUser = null;
+
+async function loadAnnonce() {
+  const snap = await getDoc(annonceRef);
+  if (!snap.exists()) {
+    msg.textContent = "Annonce introuvable.";
+    return;
+  }
+
+  annonceData = snap.data();
+  if (annonceData.status !== "active") {
+    msg.textContent = "Annonce non disponible.";
+    return;
+  }
+
+  titre.textContent = annonceData.title;
+  meta.textContent = `${annonceData.city} • ${annonceData.price ?? "—"} €`;
+  desc.textContent = annonceData.description || "";
+
+  photosEl.innerHTML = "";
+  (annonceData.photos || []).forEach(url => {
+    const img = document.createElement("img");
+    img.src = url;
+    img.style.borderRadius = "10px";
+    photosEl.appendChild(img);
+  });
+
+  box.classList.remove("hidden");
+  msg.textContent = "";
+  checkRatingAccess();
+}
+
+async function checkRatingAccess() {
+  if (!currentUser) return;
+  if (annonceData.userId === currentUser.uid) return;
+
+  const rateRef = doc(
+    collection(annonceRef, "ratings"),
+    currentUser.uid
+  );
+  const snap = await getDoc(rateRef);
+  if (!snap.exists()) ratingSection.classList.remove("hidden");
+}
+
+rateBtn.onclick = async () => {
+  const v = Number(ratingValue.value);
+  if (v < 1 || v > 5) return alert("Note invalide");
+
+  await setDoc(
+    doc(collection(annonceRef, "ratings"), currentUser.uid),
+    { value: v, createdAt: serverTimestamp() }
+  );
+
+  alert("Merci pour votre note !");
+  ratingSection.classList.add("hidden");
+};
+
+onAuthStateChanged(auth, user => {
+  currentUser = user || null;
+  loadAnnonce();
+});
