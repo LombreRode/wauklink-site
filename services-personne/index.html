@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WAUKLINK</title>
+  <title>WAUKLINK — Services à la personne</title>
   <link rel="stylesheet" href="../style.css" />
 </head>
 <body>
@@ -12,7 +12,7 @@
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
-      <div class="subtitle">Section</div>
+      <div class="subtitle">Services à la personne</div>
     </div>
     <nav class="topbar-nav">
       <a class="btn" href="../index.html">← Accueil</a>
@@ -21,12 +21,11 @@
 </header>
 
 <main class="container main-layout">
-  <h2>Titre de la page</h2>
+  <h2>Services disponibles</h2>
 
-  <div class="card">
-    <p>Cette section est en cours de mise en place.</p>
-    <p>Elle sera bientôt disponible 👍</p>
-  </div>
+  <p id="statusMsg" class="meta">Chargement…</p>
+
+  <section id="list" class="grid"></section>
 </main>
 
 <footer class="footer">
@@ -35,5 +34,7 @@
   </div>
 </footer>
 
+<!-- JS EXTERNE UNIQUEMENT -->
+<script type="module" src="./index.js"></script>
 </body>
 </html>
