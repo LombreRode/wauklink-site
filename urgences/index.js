@@ -7,46 +7,54 @@ import {
   getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
+const statusMsg = document.getElementById("statusMsg");
 const list = document.getElementById("list");
-const msg  = document.getElementById("msg");
+const emptyMsg = document.getElementById("empty");
+
+const esc = s =>
+  String(s ?? "").replace(/[&<>"']/g, m =>
+    ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
+  );
 
 async function loadUrgences() {
-  msg.textContent = "Chargement…";
+  statusMsg.textContent = "Chargement…";
   list.innerHTML = "";
 
-  try {
-    const q = query(
-      collection(db, "annonces"),
-      where("status", "==", "active"),
-      where("type", "==", "urgences"),
-      orderBy("createdAt", "desc")
-    );
+  const q = query(
+    collection(db, "annonces"),
+    where("status", "==", "active"),
+    where("type", "==", "urgences"),
+    orderBy("createdAt", "desc")
+  );
 
-    const snap = await getDocs(q);
+  const snap = await getDocs(q);
 
-    if (snap.empty) {
-      msg.textContent = "Aucune urgence disponible pour le moment.";
-      return;
-    }
+  statusMsg.textContent = "";
 
-    msg.textContent = `${snap.size} urgence(s) disponible(s)`;
-
-    snap.forEach(d => {
-      const a = d.data();
-      const card = document.createElement("div");
-      card.className = "card";
-      card.innerHTML = `
-        <h3>${a.title}</h3>
-        <p class="meta">${a.city}</p>
-        <p>${a.description}</p>
-      `;
-      list.appendChild(card);
-    });
-
-  } catch (err) {
-    console.error(err);
-    msg.textContent = "❌ Erreur de chargement des urgences";
+  if (snap.empty) {
+    emptyMsg.classList.remove("hidden");
+    return;
   }
+
+  emptyMsg.classList.add("hidden");
+
+  snap.forEach(d => {
+    const a = d.data();
+    const el = document.createElement("div");
+    el.className = "card";
+    el.innerHTML = `
+      <h3>${esc(a.title)}</h3>
+      <p class="meta">${esc(a.city)}</p>
+      <p>${esc(a.description || "")}</p>
+      <p><strong>Prix :</strong> ${a.price ?? "—"} €</p>
+
+      <a class="btn"
+         href="/wauklink-site/annonces/location-detail.html?id=${d.id}">
+        Voir
+      </a>
+    `;
+    list.appendChild(el);
+  });
 }
 
 loadUrgences();
