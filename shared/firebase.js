@@ -1,3 +1,4 @@
+// shared/firebase.js
 import { initializeApp, getApps, getApp } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import { getAuth } from
@@ -11,7 +12,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyA6GuK8h2YGgbWaRC8ybBlQa5LO67cdePM",
   authDomain: "wauklink-9b61f.firebaseapp.com",
   projectId: "wauklink-9b61f",
-  storageBucket: "wauklink-9b61f.firebasestorage.app"
+  storageBucket: "wauklink-9b61f.appspot.com", // ✅ VIRGULE ICI
   messagingSenderId: "398288789090",
   appId: "1:398288789090:web:82b7c1cbcd4ad47af1fb3b"
 };
