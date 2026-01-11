@@ -9,10 +9,13 @@ import {
   doc,
   updateDoc,
   deleteDoc,
+  addDoc,
+  serverTimestamp,
   limit,
   startAfter
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
+/* ================== DOM ================== */
 const rows = document.getElementById("rows");
 const msg  = document.getElementById("msg");
 
@@ -26,12 +29,13 @@ const btnPrev  = document.getElementById("btnPrev");
 const btnNext  = document.getElementById("btnNext");
 const pageInfo = document.getElementById("pageInfo");
 
+/* ================== STATE ================== */
 const PAGE_SIZE = 10;
 let lastDoc = null;
-let firstDoc = null;
 let currentPage = 1;
 let currentFilters = {};
 
+/* ================== HELPERS ================== */
 const esc = s =>
   String(s ?? "").replace(/[&<>"']/g, m =>
     ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
@@ -43,29 +47,45 @@ function badge(status) {
   return "🟡 en attente";
 }
 
+async function logAdmin(action, annonceId, extra = {}) {
+  try {
+    await addDoc(collection(db, "admin_logs"), {
+      action,
+      annonceId,
+      extra,
+      createdAt: serverTimestamp()
+    });
+  } catch (e) {
+    console.warn("log admin error:", e);
+  }
+}
+
+/* ================== QUERY BUILDER ================== */
 function buildQuery({ after = null } = {}) {
-  const constraints = [orderBy("createdAt", "desc"), limit(PAGE_SIZE)];
+  const constraints = [];
 
   if (currentFilters.type) {
-    constraints.unshift(where("type", "==", currentFilters.type));
+    constraints.push(where("type", "==", currentFilters.type));
   }
   if (currentFilters.status) {
-    constraints.unshift(where("status", "==", currentFilters.status));
+    constraints.push(where("status", "==", currentFilters.status));
   }
   if (currentFilters.city) {
-    constraints.unshift(where("city", "==", currentFilters.city));
+    constraints.push(where("city", "==", currentFilters.city));
   }
-  if (after) {
-    constraints.push(startAfter(after));
-  }
+
+  constraints.push(orderBy("createdAt", "desc"));
+  constraints.push(limit(PAGE_SIZE));
+
+  if (after) constraints.push(startAfter(after));
 
   return query(collection(db, "annonces"), ...constraints);
 }
 
+/* ================== LOAD PAGE ================== */
 async function loadPage({ reset = false } = {}) {
   if (reset) {
     lastDoc = null;
-    firstDoc = null;
     currentPage = 1;
     btnPrev.disabled = true;
   }
@@ -85,12 +105,9 @@ async function loadPage({ reset = false } = {}) {
       return;
     }
 
-    firstDoc = res.docs[0];
-    lastDoc  = res.docs[res.docs.length - 1];
-
+    lastDoc = res.docs[res.docs.length - 1];
     pageInfo.textContent = `Page ${currentPage}`;
     btnNext.disabled = res.docs.length < PAGE_SIZE;
-
     msg.textContent = `${res.size} annonce(s)`;
 
     res.forEach(d => {
@@ -118,20 +135,29 @@ async function loadPage({ reset = false } = {}) {
         tr.querySelectorAll("button");
 
       btnDisable.onclick = async () => {
-        if (!confirm("Désactiver cette annonce ?")) return;
+        if (!confirm(`Désactiver l’annonce :\n${a.title} (${a.city}) ?`)) return;
         await updateDoc(doc(db, "annonces", d.id), { status: "disabled" });
+        await logAdmin("disable", d.id);
         tr.children[4].textContent = badge("disabled");
       };
 
       btnActivate.onclick = async () => {
-        if (!confirm("Activer cette annonce ?")) return;
+        if (!confirm(`Activer l’annonce :\n${a.title} (${a.city}) ?`)) return;
         await updateDoc(doc(db, "annonces", d.id), { status: "active" });
+        await logAdmin("activate", d.id);
         tr.children[4].textContent = badge("active");
       };
 
       btnDelete.onclick = async () => {
-        if (!confirm("⚠️ Supprimer définitivement cette annonce ?")) return;
+        const ok = confirm(
+          `⚠️ SUPPRESSION DÉFINITIVE ⚠️\n\n` +
+          `Titre : ${a.title}\nVille : ${a.city}\n\n` +
+          `Cette action est irréversible.\n\nConfirmer ?`
+        );
+        if (!ok) return;
+
         await deleteDoc(doc(db, "annonces", d.id));
+        await logAdmin("delete", d.id, { title: a.title, city: a.city });
         tr.remove();
       };
 
@@ -145,7 +171,7 @@ async function loadPage({ reset = false } = {}) {
   }
 }
 
-// 🔘 Actions filtres
+/* ================== FILTERS ================== */
 btnFilter.onclick = () => {
   currentFilters = {
     type: filterType.value || null,
@@ -167,7 +193,7 @@ btnReset.onclick = () => {
   loadPage({ reset: true });
 };
 
-// 🔁 Pagination
+/* ================== PAGINATION ================== */
 btnNext.onclick = () => {
   currentPage++;
   btnPrev.disabled = false;
@@ -175,14 +201,13 @@ btnNext.onclick = () => {
 };
 
 btnPrev.onclick = async () => {
-  // Pour rester simple et fiable avec Firestore,
-  // on repart de zéro jusqu’à la page précédente
   currentPage = Math.max(1, currentPage - 1);
   btnPrev.disabled = currentPage === 1;
   lastDoc = null;
   await loadPage({ reset: true });
 };
 
+/* ================== GUARD ================== */
 requireAdmin({
   onOk: () => loadPage({ reset: true }),
   onDenied: () => {
