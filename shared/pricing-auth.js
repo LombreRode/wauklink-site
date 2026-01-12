@@ -1,30 +1,36 @@
+// shared/pricing-auth.js
 import { auth } from "./firebase.js";
 import {
   onAuthStateChanged,
   signOut
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-// Éléments UI
+/* ========= DOM ========= */
 const loginBtn = document.querySelector(".btn-login");
 const signupLinks = document.querySelectorAll(".signup-link");
 const dashboardBtn = document.querySelector(".btn-dashboard");
 const logoutBtn = document.getElementById("logoutBtn");
 const freeCard = document.querySelector(".free-card");
 
-// État de connexion
-onAuthStateChanged(auth, (user) => {
+/* ========= PATHS ========= */
+const PATHS = {
+  dashboard: "/wauklink-site/dashboard/index.html",
+  register: "/wauklink-site/auth/register.html",
+  home: "/wauklink-site/index.html"
+};
+
+/* ========= AUTH STATE ========= */
+onAuthStateChanged(auth, user => {
   if (user) {
-    // 🔒 Utilisateur connecté
+    // 🔒 Connecté
     loginBtn?.classList.add("hidden");
     signupLinks.forEach(el => el.classList.add("hidden"));
     dashboardBtn?.classList.remove("hidden");
     logoutBtn?.classList.remove("hidden");
 
-    // Carte Gratuit → Dashboard
     if (freeCard) {
-      freeCard.href = "./dashboard/index.html";
+      freeCard.href = PATHS.dashboard;
     }
-
   } else {
     // 👤 Visiteur
     loginBtn?.classList.remove("hidden");
@@ -32,17 +38,21 @@ onAuthStateChanged(auth, (user) => {
     dashboardBtn?.classList.add("hidden");
     logoutBtn?.classList.add("hidden");
 
-    // Carte Gratuit → Inscription
     if (freeCard) {
-      freeCard.href = "./auth/register.html";
+      freeCard.href = PATHS.register;
     }
   }
 });
 
-// Déconnexion
+/* ========= LOGOUT ========= */
 if (logoutBtn) {
   logoutBtn.addEventListener("click", async () => {
-    await signOut(auth);
-    window.location.href = "./index.html";
+    try {
+      await signOut(auth);
+    } catch (err) {
+      console.error("logout error:", err);
+    } finally {
+      window.location.href = PATHS.home;
+    }
   });
 }
