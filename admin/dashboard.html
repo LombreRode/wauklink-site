@@ -14,7 +14,11 @@
     .stat {
       padding: 18px;
       border-radius: 14px;
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.25));
+      background: linear-gradient(
+        180deg,
+        rgba(255,255,255,.06),
+        rgba(0,0,0,.25)
+      );
     }
     .stat h3 {
       margin: 0;
@@ -26,9 +30,9 @@
       font-weight: 700;
       margin-top: 6px;
     }
-    .ok{color:#35d07f}
-    .warn{color:#f7b955}
-    .bad{color:#ff6b6b}
+    .ok   { color:#35d07f }
+    .warn { color:#f7b955 }
+    .bad  { color:#ff6b6b }
   </style>
 </head>
 
@@ -72,7 +76,7 @@
 
   <!-- 🔎 FILTRE TEMPS -->
   <div class="row-actions mt">
-    <button class="btn btn-outline active" data-range="1">Aujourd’hui</button>
+    <button class="btn btn-outline btn-ok" data-range="1">Aujourd’hui</button>
     <button class="btn btn-outline" data-range="7">7 jours</button>
     <button class="btn btn-outline" data-range="30">30 jours</button>
   </div>
