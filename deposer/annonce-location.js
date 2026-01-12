@@ -121,7 +121,8 @@ form.addEventListener("submit", async (e) => {
       if (!file.type.startsWith("image/")) continue;
       if (file.size > 5 * 1024 * 1024) continue;
 
-      const path = `annonces/${docRef.id}/${Date.now()}_${file.name}`;
+      const path =
+        `annonces/${currentUser.uid}/${docRef.id}/${Date.now()}_${file.name}`;
       const fileRef = ref(storage, path);
 
       await uploadBytes(fileRef, file);
