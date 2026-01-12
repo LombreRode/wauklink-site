@@ -85,6 +85,18 @@
       <textarea id="description" rows="4" required></textarea>
     </label>
 
+    <label>
+      Photos de l’annonce (max 6)
+      <input
+        type="file"
+        id="photosInput"
+        accept="image/*"
+        multiple
+    >
+  </label>
+
+  <div id="preview" class="grid" style="margin-top:10px"></div>
+
     <button class="btn btn-ok" type="submit">
       Publier l’annonce
     </button>
