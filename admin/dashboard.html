@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Admin — Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/wauklink-site/style.css">
+  <style>
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .stat {
+      padding: 18px;
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.25));
+    }
+    .stat h3 {
+      margin: 0;
+      font-size: 14px;
+      opacity: .8;
+    }
+    .stat .v {
+      font-size: 28px;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+    .ok{color:#35d07f}
+    .warn{color:#f7b955}
+    .bad{color:#ff6b6b}
+  </style>
+</head>
+
+<body>
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Dashboard administrateur</div>
+    </div>
+    <nav class="topbar-nav">
+      <a class="btn" href="/wauklink-site/admin/index.html">← Admin</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container main-layout">
+
+  <section class="card">
+    <h2>Vue d’ensemble</h2>
+    <div class="stats">
+      <div class="stat">
+        <h3>Total annonces</h3>
+        <div class="v" id="sTotal">—</div>
+      </div>
+      <div class="stat">
+        <h3>Actives</h3>
+        <div class="v ok" id="sActive">—</div>
+      </div>
+      <div class="stat">
+        <h3>Désactivées</h3>
+        <div class="v warn" id="sDisabled">—</div>
+      </div>
+      <div class="stat">
+        <h3>En attente</h3>
+        <div class="v" id="sPending">—</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Activité admin</h2>
+    <div class="stats">
+      <div class="stat">
+        <h3>Actions aujourd’hui</h3>
+        <div class="v" id="sToday">—</div>
+      </div>
+      <div class="stat">
+        <h3>Actions 7 jours</h3>
+        <div class="v" id="sWeek">—</div>
+      </div>
+      <div class="stat">
+        <h3>Signalements en attente</h3>
+        <div class="v bad" id="sReports">—</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <span>© WAUKLINK</span>
+  </div>
+</footer>
+
+<script type="module" src="./dashboard.js"></script>
+</body>
+</html>
