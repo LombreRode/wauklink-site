@@ -13,7 +13,7 @@ import {
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 import {
   ref,
-  uploadBytes,
+  uploadBytesResumable,
   getDownloadURL
 } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
@@ -24,7 +24,6 @@ import {
 const form        = document.getElementById("annonceForm");
 const msg         = document.getElementById("msg");
 const planBlock   = document.getElementById("planBlock");
-
 const titleEl     = document.getElementById("title");
 const cityEl      = document.getElementById("city");
 const phoneEl     = document.getElementById("phone");
@@ -32,7 +31,6 @@ const postalEl    = document.getElementById("postalCode");
 const typeEl      = document.getElementById("type");
 const priceEl     = document.getElementById("price");
 const descEl      = document.getElementById("description");
-
 const photosInput = document.getElementById("photosInput");
 const preview     = document.getElementById("preview");
 
@@ -48,7 +46,6 @@ photosInput.addEventListener("change", () => {
 
   files.forEach(file => {
     if (!file.type.startsWith("image/")) return;
-
     const img = document.createElement("img");
     img.src = URL.createObjectURL(file);
     img.style.maxWidth = "120px";
@@ -76,7 +73,6 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   const role = snap.data().role;
-
   if (!["particulier", "professionnel", "admin"].includes(role)) {
     planBlock.classList.remove("hidden");
     form.classList.add("hidden");
@@ -109,7 +105,9 @@ form.addEventListener("submit", async (e) => {
       return;
     }
 
-    /* 1️⃣ CRÉATION ANNONCE */
+    /* =========================
+       1️⃣ CRÉATION DE L’ANNONCE
+    ========================= */
     const annonceRef = await addDoc(collection(db, "annonces"), {
       title: titleEl.value.trim(),
       city: cityEl.value.trim(),
@@ -124,7 +122,9 @@ form.addEventListener("submit", async (e) => {
       createdAt: serverTimestamp()
     });
 
-    /* 2️⃣ UPLOAD PHOTOS */
+    /* =========================
+       2️⃣ UPLOAD DES PHOTOS
+    ========================= */
     for (const file of files) {
       if (!file.type.startsWith("image/")) continue;
       if (file.size > 5 * 1024 * 1024) continue;
@@ -133,14 +133,19 @@ form.addEventListener("submit", async (e) => {
         `annonces/${currentUser.uid}/${annonceRef.id}/${Date.now()}_${file.name}`;
 
       const fileRef = ref(storage, path);
-      await uploadBytes(fileRef, file);
+
+      const task = uploadBytesResumable(fileRef, file);
+
+      await new Promise((resolve, reject) => {
+        task.on("state_changed", null, reject, resolve);
+      });
+
       const url = await getDownloadURL(fileRef);
 
       await updateDoc(doc(db, "annonces", annonceRef.id), {
-       photos: arrayUnion(url),
-       updatedAt: serverTimestamp()
-     });
-
+        photos: arrayUnion(url),
+        updatedAt: serverTimestamp()
+      });
     }
 
     msg.textContent = "✅ Annonce envoyée en validation";
