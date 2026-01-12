@@ -266,35 +266,21 @@ input:focus {
 }
 
 /* =========================
-   BARRE ADMIN — INDEX
+   BARRE ADMIN — INDEX (FINAL)
 ========================= */
 .admin-bar {
   display: flex;
-  flex-wrap: wrap;            /* 🔥 empêche la superposition */
+  flex-wrap: wrap;            /* empêche la superposition */
   gap: 10px;
   justify-content: center;
   align-items: center;
   padding: 14px 16px;
   margin-top: 32px;
-}
-
-.admin-bar .btn {
-  white-space: nowrap;
-}
-
-/* Mobile */
-@media (max-width: 768px) {
-  .admin-bar {
-    justify-content: flex-start;
-  }
-}
-
-/* Séparation élégante zone admin */
-.admin-bar {
   border-top: 1px solid rgba(255,255,255,.12);
 }
 
 .admin-bar .btn {
+  white-space: nowrap;
   transition: 
     background-color .2s ease,
     transform .15s ease,
@@ -307,6 +293,7 @@ input:focus {
   box-shadow: 0 6px 18px rgba(0,0,0,.35);
 }
 
+/* Label admin discret */
 .admin-bar::before {
   content: "Administration";
   font-size: 12px;
@@ -316,6 +303,9 @@ input:focus {
   margin-right: 12px;
 }
 
-.admin-bar {
-  align-items: center;
+/* Mobile */
+@media (max-width: 768px) {
+  .admin-bar {
+    justify-content: flex-start;
+  }
 }
