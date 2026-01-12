@@ -1,5 +1,6 @@
 /* ===============================
-   ADMIN — SIGNALMENTS (REPORTS)
+   ADMIN / MODÉRATION — SIGNALEMENTS
+   (STABLE – GitHub Pages)
    =============================== */
 
 import { db } from "/wauklink-site/shared/firebase.js";
@@ -27,7 +28,7 @@ const esc = s =>
 
 function showEmpty(text) {
   msg.textContent = text;
-  list.innerHTML = `<p class="meta">Tout est à jour.</p>`;
+  list.innerHTML = "<p class='meta'>Tout est à jour.</p>";
 }
 
 /* ========= LOAD REPORTS ========= */
@@ -49,17 +50,15 @@ async function loadReports() {
       return;
     }
 
-    msg.textContent = `📋 ${snap.size} signalement(s) ouverts`;
+    msg.textContent = `📋 ${snap.size} signalement(s) ouvert(s)`;
 
     snap.forEach(d => {
       const r = d.data();
-
       const card = document.createElement("div");
       card.className = "card";
 
       card.innerHTML = `
-        <strong>${esc(r.reason || "Signalement utilisateur")}</strong>
-
+        <strong>${esc(r.reason || "Signalement")}</strong>
         <div class="meta">
           Annonce :
           <a class="link"
@@ -68,11 +67,9 @@ async function loadReports() {
             ${esc(r.annonceId)}
           </a>
         </div>
-
         <div class="meta">
-          Signalé par : ${esc(r.reporterEmail || "inconnu")}
+          Signalé par ${esc(r.reporterEmail || "inconnu")}
         </div>
-
         <div class="row-actions" style="margin-top:12px">
           <button class="btn btn-ok">
             Marquer comme traité
@@ -81,7 +78,6 @@ async function loadReports() {
       `;
 
       const btn = card.querySelector("button");
-
       btn.onclick = async () => {
         if (!confirm("Marquer ce signalement comme traité ?")) return;
 
@@ -93,7 +89,6 @@ async function loadReports() {
             doc(db, "reports", d.id),
             { status: "closed" }
           );
-
           card.remove();
 
           if (!list.children.length) {
@@ -121,7 +116,7 @@ async function loadReports() {
 requireModerator({
   onOk: loadReports,
   onDenied: () => {
-    msg.textContent = "⛔ Accès réservé à la modération";
+    msg.textContent = "⛔ Accès refusé";
     list.innerHTML = "";
   }
 });
