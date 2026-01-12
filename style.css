@@ -293,3 +293,16 @@ input:focus {
 .admin-bar {
   border-top: 1px solid rgba(255,255,255,.12);
 }
+
+.admin-bar .btn {
+  transition: 
+    background-color .2s ease,
+    transform .15s ease,
+    box-shadow .15s ease;
+}
+
+.admin-bar .btn:hover {
+  background: rgba(34,197,94,.25);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0,0,0,.35);
+}
