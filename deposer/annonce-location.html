@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
-
 <body>
 
 <header class="topbar">
@@ -23,7 +22,7 @@
 <main class="container main-layout">
   <h2>Nouvelle annonce</h2>
 
-  <!-- Accès restreint -->
+  <!-- 🚫 Accès restreint -->
   <div id="planBlock" class="card hidden">
     <h3>Accès restreint</h3>
     <p>
@@ -36,7 +35,7 @@
     </a>
   </div>
 
-  <!-- Formulaire -->
+  <!-- ✅ Formulaire -->
   <form id="annonceForm" class="card hidden">
 
     <label>
@@ -70,9 +69,6 @@
         <option value="travaux">Travaux</option>
         <option value="urgences">Urgences</option>
       </select>
-
-      <!-- ✅ MESSAGE EXPLICATIF -->
-      <p id="typeInfo" class="meta"></p>
     </label>
 
     <label>
@@ -85,6 +81,7 @@
       <textarea id="description" rows="4" required></textarea>
     </label>
 
+    <!-- 📷 PHOTOS -->
     <label>
       Photos de l’annonce (max 6)
       <input
@@ -92,10 +89,10 @@
         id="photosInput"
         accept="image/*"
         multiple
-    >
-  </label>
+      >
+    </label>
 
-  <div id="preview" class="grid" style="margin-top:10px"></div>
+    <div id="preview" class="grid" style="margin-top:10px"></div>
 
     <button class="btn btn-ok" type="submit">
       Publier l’annonce
@@ -103,7 +100,7 @@
 
   </form>
 
-  <p id="msg" class="meta"></p>
+  <p id="msg" class="meta" aria-live="polite"></p>
 </main>
 
 <footer class="footer">
@@ -112,7 +109,7 @@
   </div>
 </footer>
 
-<!-- JS UNIQUE -->
+<!-- JS -->
 <script type="module" src="./annonce-location.js"></script>
 
 </body>
