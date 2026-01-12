@@ -1,4 +1,4 @@
-import { auth, db } from "./../shared/firebase.js";
+import { auth, db } from "/wauklink-site/shared/firebase.js";
 import {
   signInWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
@@ -31,11 +31,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-
       msg.textContent = "✅ Connexion réussie";
 
       setTimeout(() => {
-        window.location.href = "../index.html";
+        window.location.href = "/wauklink-site/index.html";
       }, 500);
 
     } catch (err) {
@@ -50,4 +49,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-
