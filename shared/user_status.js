@@ -1,3 +1,4 @@
+// shared/user_status.js
 import { auth, db } from "/wauklink-site/shared/firebase.js";
 import {
   onAuthStateChanged,
@@ -16,9 +17,7 @@ const logoutBtn = document.getElementById("logoutBtn");
 if (!userNav && !guestNav) {
   console.warn("ℹ️ user_status.js ignoré sur cette page");
 } else {
-
-  onAuthStateChanged(auth, async (user) => {
-
+  onAuthStateChanged(auth, async user => {
     // 👥 INVITÉ
     if (!user) {
       userNav?.classList.add("hidden");
@@ -30,24 +29,33 @@ if (!userNav && !guestNav) {
     guestNav?.classList.add("hidden");
     userNav?.classList.remove("hidden");
 
-    // 🖼️ AVATAR (avec bypass cache)
+    // 🖼️ AVATAR
     if (navAvatar) {
       try {
         const snap = await getDoc(doc(db, "users", user.uid));
         if (snap.exists() && snap.data().avatarUrl) {
-          navAvatar.src = snap.data().avatarUrl + "?t=" + Date.now();
+          navAvatar.src =
+            snap.data().avatarUrl + "?t=" + Date.now();
         } else {
-          navAvatar.src = "/wauklink-site/assets/avatar-default.png";
+          navAvatar.src =
+            "/wauklink-site/assets/avatar-default.png";
         }
-      } catch {
-        navAvatar.src = "/wauklink-site/assets/avatar-default.png";
+      } catch (e) {
+        console.error("avatar load error:", e);
+        navAvatar.src =
+          "/wauklink-site/assets/avatar-default.png";
       }
     }
   });
 
   // 🔓 Déconnexion
   logoutBtn?.addEventListener("click", async () => {
-    await signOut(auth);
-    location.href = "/wauklink-site/auth/login.html";
+    try {
+      await signOut(auth);
+    } catch (err) {
+      console.error("logout error:", err);
+    } finally {
+      location.href = "/wauklink-site/auth/login.html";
+    }
   });
 }
