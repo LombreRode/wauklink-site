@@ -33,12 +33,10 @@
 </footer>
 
 <!-- 🔐 MENU ADMIN -->
-<script type="module" src="/wauklink-site/shared/admin_links.js"></script>
-
-<!-- 🔐 LOGIQUE ADMIN PRO -->
 <script type="module">
-import { db } from "../shared/firebase.js";
+import { db, auth } from "../shared/firebase.js";
 import { requireAdmin } from "../shared/guard.js";
+import { logAdminAction } from "../shared/admin_logger.js";
 import {
   collection, query, where,
   getDocs, getDoc,
@@ -49,8 +47,14 @@ import {
 const list = document.getElementById("list");
 const msg  = document.getElementById("msg");
 
+const esc = s =>
+  String(s ?? "").replace(/[&<>"']/g, m =>
+    ({ "&":"&amp;","<":"&lt;",">":"&gt;",
+       '"':"&quot;","'":"&#039;" }[m])
+  );
+
 /* =========================
-   CHARGEMENT DEMANDES PRO
+   LOAD PRO REQUESTS
 ========================= */
 async function loadRequests() {
   list.innerHTML = "";
@@ -74,17 +78,20 @@ async function loadRequests() {
     for (const d of snap.docs) {
       const req = d.data();
 
-      // 🔎 Récupération utilisateur
-      const userSnap = await getDoc(doc(db, "users", req.userId));
+      const userSnap = await getDoc(
+        doc(db, "users", req.userId)
+      );
       if (!userSnap.exists()) continue;
+
       const u = userSnap.data();
 
       const card = document.createElement("div");
       card.className = "card";
+
       card.innerHTML = `
-        <strong>${u.firstName || ""} ${u.lastName || ""}</strong>
-        <div class="meta">${u.email || "—"}</div>
-        <div class="meta">Téléphone : ${u.phone || "—"}</div>
+        <strong>${esc(u.firstName)} ${esc(u.lastName)}</strong>
+        <div class="meta">${esc(u.email)}</div>
+        <div class="meta">Téléphone : ${esc(u.phone || "—")}</div>
         <div class="row-actions" style="margin-top:12px">
           <button class="btn btn-ok">Valider</button>
           <button class="btn btn-danger">Refuser</button>
@@ -105,6 +112,13 @@ async function loadRequests() {
           "pro.validatedAt": serverTimestamp()
         });
 
+        await logAdminAction({
+          action: "pro_validate",
+          adminUid: auth.currentUser?.uid,
+          adminEmail: auth.currentUser?.email,
+          extra: { userId: req.userId }
+        });
+
         await deleteDoc(doc(db, "pro_requests", d.id));
         loadRequests();
       };
@@ -118,13 +132,19 @@ async function loadRequests() {
           "pro.requested": false
         });
 
+        await logAdminAction({
+          action: "pro_refuse",
+          adminUid: auth.currentUser?.uid,
+          adminEmail: auth.currentUser?.email,
+          extra: { userId: req.userId }
+        });
+
         await deleteDoc(doc(db, "pro_requests", d.id));
         loadRequests();
       };
 
       list.appendChild(card);
     }
-
   } catch (err) {
     console.error(err);
     msg.textContent = "❌ Erreur Firestore ou accès refusé";
@@ -135,13 +155,13 @@ async function loadRequests() {
    GUARD ADMIN
 ========================= */
 requireAdmin({
-  redirectTo: "/wauklink-site/auth/login.html",
   onOk: loadRequests,
   onDenied: () => {
     msg.textContent = "⛔ Accès réservé aux administrateurs";
   }
 });
 </script>
+
 
 </body>
 </html>
