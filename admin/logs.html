@@ -22,32 +22,9 @@
 
 <main class="container main-layout">
 
-  <!-- 🔍 FILTRES -->
-  <section class="card">
-    <div class="row-actions">
-      <select id="filterAction">
-        <option value="">Toutes actions</option>
-        <option value="activate">Activation</option>
-        <option value="disable">Désactivation</option>
-        <option value="delete">Suppression</option>
-      </select>
-
-      <input
-        type="text"
-        id="filterAdmin"
-        placeholder="Admin (email)…"
-      />
-
-      <input type="date" id="filterDate" />
-
-      <button id="btnFilter" class="btn btn-ok">Filtrer</button>
-      <button id="btnReset" class="btn btn-outline">Réinitialiser</button>
-    </div>
-  </section>
-
   <p id="msg" class="meta">Chargement…</p>
 
-  <section class="card">
+  <section class="card admin-history">
     <table class="table">
       <thead>
         <tr>
@@ -69,6 +46,7 @@
   </div>
 </footer>
 
+<!-- JS HISTORIQUE -->
 <script type="module" src="./logs.js"></script>
 </body>
 </html>
