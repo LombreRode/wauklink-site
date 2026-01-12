@@ -5,27 +5,38 @@ import { onAuthStateChanged } from
 import { doc, getDoc } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-// 🔐 Redirection UNIQUEMENT pour non connecté
+/* =========================
+   CONFIG
+========================= */
+const LOGIN_URL = "/wauklink-site/auth/login.html";
+
+/* =========================
+   HELPERS
+========================= */
 function redirectLogin() {
-  location.replace("../auth/login.html");
+  location.replace(LOGIN_URL);
+}
+
+async function getProfile(user) {
+  const snap = await getDoc(doc(db, "users", user.uid));
+  return snap.exists() ? snap.data() : null;
 }
 
 /* =========================
    USER
 ========================= */
 export function requireUser({ onOk, onDenied } = {}) {
-  onAuthStateChanged(auth, async (user) => {
+  onAuthStateChanged(auth, async user => {
     if (!user) return redirectLogin();
-
     try {
-      const snap = await getDoc(doc(db, "users", user.uid));
-      if (!snap.exists()) {
+      const profile = await getProfile(user);
+      if (!profile) {
         onDenied?.("Profil utilisateur introuvable");
         return;
       }
-      onOk?.(user, snap.data());
+      onOk?.(user, profile);
     } catch (e) {
-      console.error("requireUser error", e);
+      console.error("requireUser error:", e);
       onDenied?.("Erreur de chargement du profil");
     }
   });
@@ -35,18 +46,17 @@ export function requireUser({ onOk, onDenied } = {}) {
    ADMIN
 ========================= */
 export function requireAdmin({ onOk, onDenied } = {}) {
-  onAuthStateChanged(auth, async (user) => {
+  onAuthStateChanged(auth, async user => {
     if (!user) return redirectLogin();
-
     try {
-      const snap = await getDoc(doc(db, "users", user.uid));
-      if (!snap.exists() || snap.data().role !== "admin") {
+      const profile = await getProfile(user);
+      if (!profile || profile.role !== "admin") {
         onDenied?.("Accès réservé aux administrateurs");
         return;
       }
-      onOk?.(user, snap.data());
+      onOk?.(user, profile);
     } catch (e) {
-      console.error("requireAdmin error", e);
+      console.error("requireAdmin error:", e);
       onDenied?.("Erreur d’accès administrateur");
     }
   });
@@ -56,20 +66,21 @@ export function requireAdmin({ onOk, onDenied } = {}) {
    MODERATOR
 ========================= */
 export function requireModerator({ onOk, onDenied } = {}) {
-  onAuthStateChanged(auth, async (user) => {
+  onAuthStateChanged(auth, async user => {
     if (!user) return redirectLogin();
-
     try {
-      const snap = await getDoc(doc(db, "users", user.uid));
-      const role = snap.exists() && snap.data().role;
-
-      if (role === "admin" || role === "moderator") {
-        onOk?.(user, snap.data());
+      const profile = await getProfile(user);
+      if (!profile) {
+        onDenied?.("Profil introuvable");
+        return;
+      }
+      if (profile.role === "admin" || profile.role === "moderator") {
+        onOk?.(user, profile);
       } else {
         onDenied?.("Accès réservé à la modération");
       }
     } catch (e) {
-      console.error("requireModerator error", e);
+      console.error("requireModerator error:", e);
       onDenied?.("Erreur d’accès modération");
     }
   });
