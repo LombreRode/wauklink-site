@@ -21,12 +21,17 @@ const saveBtn = document.getElementById("saveBtn");
 let files = [];
 let annonceData = null;
 
+/* =========================
+   VÉRIFS DE BASE
+========================= */
 if (!annonceId) {
   msg.textContent = "❌ ID annonce manquant";
   saveBtn.disabled = true;
 }
 
-// 📷 Preview
+/* =========================
+   PREVIEW PHOTOS
+========================= */
 input.addEventListener("change", () => {
   files = Array.from(input.files).slice(0, 6);
   preview.innerHTML = "";
@@ -40,7 +45,9 @@ input.addEventListener("change", () => {
   });
 });
 
-// 🔐 Vérification accès
+/* =========================
+   AUTH + ACCÈS ANNONCE
+========================= */
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     location.replace("../auth/login.html");
@@ -61,11 +68,12 @@ onAuthStateChanged(auth, async (user) => {
   if (annonceData.userId !== user.uid) {
     msg.textContent = "⛔ Accès refusé";
     saveBtn.disabled = true;
-    return;
   }
 });
 
-// 💾 Upload photos
+/* =========================
+   UPLOAD PHOTOS
+========================= */
 saveBtn.addEventListener("click", async () => {
   if (!files.length) {
     msg.textContent = "❌ Aucune photo sélectionnée";
@@ -82,11 +90,21 @@ saveBtn.addEventListener("click", async () => {
   msg.textContent = "⏳ Upload en cours…";
 
   try {
+    const userId = auth.currentUser.uid;
+
     for (const file of files) {
-      const fileRef = ref(
-        storage,
-        `annonces/${annonceId}/${Date.now()}_${file.name}`
-      );
+      // 🔒 Sécurité UX (complément règles Storage)
+      if (!file.type.startsWith("image/")) {
+        throw new Error("Seules les images sont autorisées");
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error("Image trop lourde (max 5 MB)");
+      }
+
+      const fileName = `${Date.now()}_${file.name}`;
+      const path = `annonces/${userId}/${annonceId}/${fileName}`;
+
+      const fileRef = ref(storage, path);
 
       await uploadBytes(fileRef, file, {
         contentType: file.type
@@ -107,7 +125,7 @@ saveBtn.addEventListener("click", async () => {
 
   } catch (err) {
     console.error(err);
-    msg.textContent = "❌ Erreur lors de l’upload";
+    msg.textContent = err.message || "❌ Erreur lors de l’upload";
   }
 
   saveBtn.disabled = false;
