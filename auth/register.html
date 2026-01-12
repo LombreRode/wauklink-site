@@ -4,8 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Créer un compte — WAUKLINK</title>
-  <link rel="stylesheet" href="../style.css">
+
+  <!-- STYLE GLOBAL -->
+  <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
+
 <body>
 
 <header class="topbar">
@@ -22,32 +25,38 @@
     <h2>Inscription</h2>
 
     <form id="form">
-
-      <label>Prénom
+      <label>
+        Prénom
         <input type="text" id="firstName" required>
       </label>
 
-      <label>Nom
+      <label>
+        Nom
         <input type="text" id="lastName" required>
       </label>
 
-      <label>Téléphone
+      <label>
+        Téléphone
         <input type="tel" id="phone" required>
       </label>
 
-      <label>Adresse
+      <label>
+        Adresse
         <input type="text" id="address" required>
       </label>
 
-      <label>Email
+      <label>
+        Email
         <input type="email" id="email" required>
       </label>
 
-      <label>Mot de passe
+      <label>
+        Mot de passe
         <input type="password" id="password" required>
       </label>
 
-      <label>Confirmer le mot de passe
+      <label>
+        Confirmer le mot de passe
         <input type="password" id="passwordConfirm" required>
       </label>
 
@@ -83,13 +92,15 @@
 
     <p class="center small mt-xl">
       Déjà un compte ?
-      <a class="link" href="./login.html">Se connecter</a>
+      <a class="link" href="/wauklink-site/auth/login.html">
+        Se connecter
+      </a>
     </p>
   </section>
 </main>
 
 <!-- SCRIPT REGISTER -->
-   <script type="module" src="./register.js"></script>
+<script type="module" src="/wauklink-site/auth/register.js"></script>
 
 </body>
 </html>
