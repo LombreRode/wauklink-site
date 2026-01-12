@@ -5,7 +5,7 @@
   <title>Admin — Utilisateurs</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
 <body>
 
@@ -16,7 +16,7 @@
       <div class="subtitle">Administration — Utilisateurs</div>
     </div>
     <nav class="topbar-nav">
-      <a class="btn" href="./index.html">← Admin</a>
+      <a class="btn" href="/wauklink-site/admin/index.html">← Admin</a>
     </nav>
   </div>
 </header>
@@ -34,8 +34,8 @@
 </footer>
 
 <script type="module">
-import { db } from "../shared/firebase.js";
-import { requireAdmin } from "../shared/guard.js";
+import { db } from "/wauklink-site/shared/firebase.js";
+import { requireAdmin } from "/wauklink-site/shared/guard.js";
 import {
   collection,
   getDocs,
@@ -46,7 +46,7 @@ import {
 const list = document.getElementById("list");
 const msg  = document.getElementById("msg");
 
-function badgeForUser(u) {
+function badge(u) {
   if (u.role === "admin") return "👑 Administrateur";
   if (u.plan === "pro") return "🟢 Professionnel";
   if (u.plan === "particulier") return "🟡 Particulier";
@@ -67,16 +67,18 @@ async function loadUsers() {
   msg.textContent = `${snap.size} utilisateur(s)`;
 
   snap.forEach(d => {
-    const u = d.data();
+    const u   = d.data();
     const uid = d.id;
 
     const card = document.createElement("div");
     card.className = "card";
 
-    let actions = "";
+    let controls = `<div class="meta">${badge(u)}</div>`;
+
+    // ❌ on ne modifie jamais un admin
     if (u.role !== "admin") {
-      actions = `
-        <label class="meta">Plan utilisateur</label>
+      controls += `
+        <label class="meta">Plan</label>
         <select class="planSelect">
           <option value="free">Gratuit</option>
           <option value="particulier">Particulier</option>
@@ -86,11 +88,10 @@ async function loadUsers() {
     }
 
     card.innerHTML = `
-      <strong>${u.firstName || "—"}</strong>
+      <strong>${u.firstName || "—"} ${u.lastName || ""}</strong>
       <div class="meta">${u.email || ""}</div>
-      <div class="meta">${badgeForUser(u)}</div>
       <div class="row-actions" style="margin-top:12px">
-        ${actions}
+        ${controls}
       </div>
     `;
 
@@ -102,7 +103,9 @@ async function loadUsers() {
       select.onchange = async () => {
         const newPlan = select.value;
 
-        if (!confirm(`Changer le plan de cet utilisateur en "${newPlan}" ?`)) {
+        if (!confirm(
+          `Changer le plan de cet utilisateur en "${newPlan}" ?`
+        )) {
           select.value = u.plan || "free";
           return;
         }
@@ -113,9 +116,8 @@ async function loadUsers() {
             isPro: newPlan === "pro"
           });
 
-          alert("✅ Plan utilisateur mis à jour");
+          alert("✅ Plan mis à jour");
           loadUsers();
-
         } catch (err) {
           console.error(err);
           alert("❌ Erreur lors de la mise à jour");
