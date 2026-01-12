@@ -1,5 +1,4 @@
 import { auth, db } from "../shared/firebase.js";
-import { requireUser } from "../shared/guard.js";
 import { onAuthStateChanged } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import {
@@ -11,127 +10,91 @@ import {
 } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-/* 🔐 Sécurité (HTML clean) */
-requireUser();
-
-/* ===== Éléments ===== */
+/* =========================
+   ÉLÉMENTS DOM
+========================= */
 const form = document.getElementById("annonceForm");
 const msg  = document.getElementById("msg");
 const planBlock = document.getElementById("planBlock");
 
-const titleEl = document.getElementById("title");
-const cityEl  = document.getElementById("city");
-const phoneEl = document.getElementById("phone");
-const postalEl = document.getElementById("postalCode");
-const typeEl  = document.getElementById("type");
-const priceEl = document.getElementById("price");
-const descEl  = document.getElementById("description");
+const title = document.getElementById("title");
+const city = document.getElementById("city");
+const phone = document.getElementById("phone");
+const postalCode = document.getElementById("postalCode");
+const type = document.getElementById("type");
+const price = document.getElementById("price");
+const description = document.getElementById("description");
 
-const typeInfo = document.getElementById("typeInfo");
-
-/* ===== Sécurité DOM ===== */
-if (!form) {
-  console.error("❌ Formulaire introuvable");
-  throw new Error("Form missing");
-}
-
-/* ===== Messages par type ===== */
-const typeMessages = {
-  immobilier: "🏠 Immobilier",
-  loisir: "🎯 Loisirs",
-  autres: "📦 Autre location",
-  "services-personne": "🤝 Services à la personne",
-  travaux: "🛠️ Travaux",
-  urgences: "🚨 Urgences"
-};
-
-typeEl.addEventListener("change", () => {
-  if (typeInfo) {
-    typeInfo.textContent = typeMessages[typeEl.value] || "";
-  }
-});
-
-/* ===== Auth + droits ===== */
-let submitInit = false;
+/* =========================
+   AUTH + ACCÈS
+========================= */
+let currentUser = null;
 
 onAuthStateChanged(auth, async (user) => {
-  if (!user) return;
-
-  const snap = await getDoc(doc(db, "users", user.uid));
-  if (!snap.exists()) return;
-
-  const { role, plan } = snap.data();
-
-  // ✅ Admin
-  if (role === "admin") {
-    form.classList.remove("hidden");
-    planBlock.classList.add("hidden");
-    initSubmit(user);
+  if (!user) {
+    location.href = "/wauklink-site/auth/login.html";
     return;
   }
 
-  // ❌ Gratuit
-  if (!plan || plan === "gratuit") {
-    form.classList.add("hidden");
+  currentUser = user;
+
+  // 🔐 Vérifier rôle utilisateur
+  const userSnap = await getDoc(doc(db, "users", user.uid));
+
+  if (!userSnap.exists()) {
+    msg.textContent = "❌ Profil utilisateur introuvable";
+    return;
+  }
+
+  const role = userSnap.data().role;
+
+  if (!["particulier", "professionnel", "admin"].includes(role)) {
     planBlock.classList.remove("hidden");
+    form.classList.add("hidden");
     return;
   }
 
-  // ✅ Particulier / Pro
+  // ✅ Accès autorisé
   form.classList.remove("hidden");
-  planBlock.classList.add("hidden");
-  initSubmit(user);
 });
 
-/* ===== Submit ===== */
-function initSubmit(user) {
-  if (submitInit) return;
-  submitInit = true;
+/* =========================
+   SOUMISSION FORMULAIRE
+========================= */
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    if (msg) msg.textContent = "";
+  msg.textContent = "⏳ Publication en cours…";
 
-    const title = titleEl.value.trim();
-    const city  = cityEl.value.trim();
-    const phone = phoneEl.value.trim();
-    const postalCode = postalEl.value.trim();
-    const description = descEl.value.trim();
-    const type = typeEl.value;
-    const price = priceEl.value ? Number(priceEl.value) : null;
-
-    if (!title || !city || !phone || !postalCode || !description || !type) {
-      if (msg) msg.textContent = "❌ Tous les champs obligatoires doivent être remplis";
+  try {
+    // 🔎 Validation minimale
+    if (!title.value || !city.value || !type.value || !description.value) {
+      msg.textContent = "❌ Champs obligatoires manquants";
       return;
     }
 
-    if (msg) msg.textContent = "⏳ Publication en cours…";
+    // 📦 Création annonce
+    const docRef = await addDoc(collection(db, "annonces"), {
+      title: title.value.trim(),
+      city: city.value.trim(),
+      phone: phone.value.trim(),
+      postalCode: postalCode.value.trim(),
+      type: type.value,
+      price: price.value ? Number(price.value) : null,
+      description: description.value.trim(),
 
-    try {
-      await addDoc(collection(db, "annonces"), {
-        title,
-        city,
-        phone,
-        postalCode,
-        description,
-        type,
-        price,
-        userId: user.uid,   // ✅ COMPATIBLE RULES
-        status: "pending",
-        createdAt: serverTimestamp()
-      });
+      userId: currentUser.uid,
+      status: "pending",           // 🔒 validation admin
+      createdAt: serverTimestamp(),// ⏱️ essentiel
+      photos: []                   // 📷 initial vide
+    });
 
-      if (msg) msg.textContent = "✅ Annonce publiée";
-      form.reset();
-      if (typeInfo) typeInfo.textContent = "";
+    // ➜ REDIRECTION PHOTOS
+    location.href =
+      `/wauklink-site/annonces/photos_edit.html?id=${docRef.id}`;
 
-      setTimeout(() => {
-        location.href = "../dashboard/index.html";
-      }, 800);
-
-    } catch (err) {
-      console.error(err);
-      if (msg) msg.textContent = "❌ Erreur lors de la publication";
-    }
-  });
-}
+  } catch (err) {
+    console.error(err);
+    msg.textContent = "❌ Erreur lors de la publication";
+  }
+});
