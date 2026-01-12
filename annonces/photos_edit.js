@@ -6,23 +6,27 @@ import {
 } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 import {
-  ref, uploadBytes, getDownloadURL, deleteObject
+  ref, refFromURL,
+  uploadBytes, getDownloadURL, deleteObject
 } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
-const params = new URLSearchParams(location.search);
-const annonceId = params.get("id");
+/* ========= PARAMS ========= */
+const annonceId = new URLSearchParams(location.search).get("id");
 
+/* ========= DOM ========= */
 const input   = document.getElementById("photosInput");
 const preview = document.getElementById("preview");
 const msg     = document.getElementById("msg");
 const saveBtn = document.getElementById("saveBtn");
 
+/* ========= STATE ========= */
 let files = [];
 let annonceData = null;
+const MAX = 6;
 
 /* =========================
-   PREVIEW EXISTANTES
+   AFFICHAGE PHOTOS EXISTANTES
 ========================= */
 function renderExistingPhotos() {
   preview.innerHTML = "";
@@ -31,7 +35,7 @@ function renderExistingPhotos() {
     const wrap = document.createElement("div");
     wrap.style.position = "relative";
     wrap.style.display = "inline-block";
-    wrap.style.margin = "5px";
+    wrap.style.margin = "6px";
 
     const img = document.createElement("img");
     img.src = url;
@@ -55,9 +59,9 @@ function renderExistingPhotos() {
 }
 
 /* =========================
-   AUTH + ACCÈS
+   AUTH + CONTRÔLE ACCÈS
 ========================= */
-onAuthStateChanged(auth, async (user) => {
+onAuthStateChanged(auth, async user => {
   if (!user) {
     location.replace("../auth/login.html");
     return;
@@ -84,10 +88,19 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 /* =========================
-   PREVIEW NOUVELLES
+   PREVIEW NOUVELLES PHOTOS
 ========================= */
 input.addEventListener("change", () => {
-  files = Array.from(input.files).slice(0, 6);
+  files = Array.from(input.files || []);
+
+  if ((annonceData.photos?.length || 0) + files.length > MAX) {
+    msg.textContent = `❌ Maximum ${MAX} photos`;
+    input.value = "";
+    files = [];
+    return;
+  }
+
+  msg.textContent = "";
 });
 
 /* =========================
@@ -99,64 +112,56 @@ saveBtn.addEventListener("click", async () => {
     return;
   }
 
-  const existing = (annonceData.photos || []).length;
-  if (existing + files.length > 6) {
-    msg.textContent = "❌ Maximum 6 photos par annonce";
-    return;
-  }
-
   saveBtn.disabled = true;
   msg.textContent = "⏳ Upload en cours…";
 
   try {
-    const userId = auth.currentUser.uid;
-
     for (const file of files) {
       if (!file.type.startsWith("image/")) {
-        throw new Error("Image uniquement");
+        throw new Error("Images uniquement");
       }
       if (file.size > 5 * 1024 * 1024) {
         throw new Error("Image trop lourde (5 MB max)");
       }
 
-      const fileName = `${Date.now()}_${file.name}`;
-      const path = `annonces/${userId}/${annonceId}/${fileName}`;
+      const path =
+        `annonces/${auth.currentUser.uid}/${annonceId}/${Date.now()}_${file.name}`;
 
       const fileRef = ref(storage, path);
+
       await uploadBytes(fileRef, file);
       const url = await getDownloadURL(fileRef);
 
-      await updateDoc(
-        doc(db, "annonces", annonceId),
-        { photos: arrayUnion(url) }
-      );
+      await updateDoc(doc(db, "annonces", annonceId), {
+        photos: arrayUnion(url)
+      });
     }
 
     const snap = await getDoc(doc(db, "annonces", annonceId));
     annonceData = snap.data();
-    renderExistingPhotos();
 
     files = [];
     input.value = "";
+    renderExistingPhotos();
+
     msg.textContent = "✅ Photos mises à jour";
 
   } catch (err) {
     console.error(err);
-    msg.textContent = err.message;
+    msg.textContent = err.message || "❌ Erreur upload";
   }
 
   saveBtn.disabled = false;
 });
 
 /* =========================
-   SUPPRESSION PHOTO
+   SUPPRESSION PHOTO (CORRIGÉE)
 ========================= */
 async function deletePhoto(url) {
   if (!confirm("Supprimer cette photo ?")) return;
 
   try {
-    const fileRef = ref(storage, url);
-
+    const fileRef = refFromURL(url);
     await deleteObject(fileRef);
 
     await updateDoc(
@@ -164,9 +169,10 @@ async function deletePhoto(url) {
       { photos: arrayRemove(url) }
     );
 
-    annonceData.photos = annonceData.photos.filter(p => p !== url);
-    renderExistingPhotos();
+    annonceData.photos =
+      annonceData.photos.filter(p => p !== url);
 
+    renderExistingPhotos();
     msg.textContent = "🗑️ Photo supprimée";
 
   } catch (err) {
