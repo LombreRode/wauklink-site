@@ -264,3 +264,27 @@ input:focus {
     align-items: flex-start;
   }
 }
+
+/* =========================
+   BARRE ADMIN — INDEX
+========================= */
+.admin-bar {
+  display: flex;
+  flex-wrap: wrap;            /* 🔥 empêche la superposition */
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  padding: 14px 16px;
+  margin-top: 32px;
+}
+
+.admin-bar .btn {
+  white-space: nowrap;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .admin-bar {
+    justify-content: flex-start;
+  }
+}
