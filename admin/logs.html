@@ -5,9 +5,15 @@
   <title>Admin — Historique</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/wauklink-site/style.css">
+  <style>
+    .badge{padding:4px 8px;border-radius:10px;font-weight:600}
+    .b-act{background:#1f8f4a;color:#eafff2}
+    .b-dis{background:#c77d00;color:#fff6e6}
+    .b-del{background:#b42318;color:#ffecec}
+    .filters .row-actions > *{margin-right:6px}
+  </style>
 </head>
 <body>
-
 <header class="topbar">
   <div class="container topbar-row">
     <div>
@@ -21,10 +27,25 @@
 </header>
 
 <main class="container main-layout">
+  <!-- 🔍 FILTRES -->
+  <section class="card filters">
+    <div class="row-actions">
+      <select id="fAction">
+        <option value="">Toutes actions</option>
+        <option value="activate">Activation</option>
+        <option value="disable">Désactivation</option>
+        <option value="delete">Suppression</option>
+      </select>
+      <input id="fAdmin" type="text" placeholder="Admin (email)…">
+      <input id="fDate" type="date">
+      <button id="btnFilter" class="btn btn-ok">Filtrer</button>
+      <button id="btnReset" class="btn btn-outline">Réinitialiser</button>
+    </div>
+  </section>
 
   <p id="msg" class="meta">Chargement…</p>
 
-  <section class="card admin-history">
+  <section class="card">
     <table class="table">
       <thead>
         <tr>
@@ -37,7 +58,6 @@
       <tbody id="rows"></tbody>
     </table>
   </section>
-
 </main>
 
 <footer class="footer">
@@ -46,7 +66,6 @@
   </div>
 </footer>
 
-<!-- JS HISTORIQUE -->
 <script type="module" src="./logs.js"></script>
 </body>
 </html>
