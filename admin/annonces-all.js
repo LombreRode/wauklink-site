@@ -1,9 +1,11 @@
 /* ===============================
-   ADMIN — ANNONCES (FINAL SAFE)
+   ADMIN — TOUTES LES ANNONCES
+   (FINAL SAFE – GitHub Pages)
    =============================== */
 
-import { db, auth } from "../shared/firebase.js";
-import { requireAdmin } from "../shared/guard.js";
+import { db, auth } from "/wauklink-site/shared/firebase.js";
+import { requireAdmin } from "/wauklink-site/shared/guard.js";
+
 import {
   collection,
   query,
@@ -44,7 +46,8 @@ let currentSearch = "";
 /* ========= HELPERS ========= */
 const esc = s =>
   String(s ?? "").replace(/[&<>"']/g, m =>
-    ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
+    ({ "&":"&amp;","<":"&lt;",">":"&gt;",
+       '"':"&quot;","'":"&#039;" }[m])
   );
 
 function badge(status) {
@@ -53,7 +56,7 @@ function badge(status) {
   return "🟡 en attente";
 }
 
-/* ========= LOG ADMIN (COMPLET) ========= */
+/* ========= LOG ADMIN ========= */
 async function logAdmin(action, annonceId, extra = {}) {
   try {
     const user = auth.currentUser;
@@ -66,26 +69,29 @@ async function logAdmin(action, annonceId, extra = {}) {
       createdAt: serverTimestamp()
     });
   } catch (e) {
-    console.error("logAdmin error", e);
+    console.error("logAdmin error:", e);
   }
 }
 
 /* ========= QUERY BUILDER ========= */
 function buildQuery({ after = null } = {}) {
-  const c = [];
+  const q = [];
 
   if (currentFilters.type)
-    c.push(where("type", "==", currentFilters.type));
+    q.push(where("type", "==", currentFilters.type));
+
   if (currentFilters.status)
-    c.push(where("status", "==", currentFilters.status));
+    q.push(where("status", "==", currentFilters.status));
+
   if (currentFilters.city)
-    c.push(where("city", "==", currentFilters.city));
+    q.push(where("city", "==", currentFilters.city));
 
-  c.push(orderBy("createdAt", "desc"), limit(PAGE_SIZE));
+  q.push(orderBy("createdAt", "desc"));
+  q.push(limit(PAGE_SIZE));
 
-  if (after) c.push(startAfter(after));
+  if (after) q.push(startAfter(after));
 
-  return query(collection(db, "annonces"), ...c);
+  return query(collection(db, "annonces"), ...q);
 }
 
 /* ========= LOAD PAGE ========= */
@@ -101,35 +107,39 @@ async function loadPage({ reset = false } = {}) {
 
   try {
     const q = buildQuery({ after: lastDoc });
-    const res = await getDocs(q);
+    const snap = await getDocs(q);
 
-    if (res.empty) {
-      rows.innerHTML =
-        `<tr><td colspan="6" class="meta">Aucune annonce</td></tr>`;
+    if (snap.empty) {
+      rows.innerHTML = `
+        <tr>
+          <td colspan="6" class="meta">Aucune annonce</td>
+        </tr>
+      `;
       msg.textContent = "";
       btnNext.disabled = true;
       return;
     }
 
-    lastDoc = res.docs[res.docs.length - 1];
+    lastDoc = snap.docs[snap.docs.length - 1];
     pageInfo.textContent = `Page ${currentPage}`;
-    btnNext.disabled = res.docs.length < PAGE_SIZE;
-    msg.textContent = `${res.size} annonce(s)`;
+    btnNext.disabled = snap.docs.length < PAGE_SIZE;
+    msg.textContent = `${snap.size} annonce(s)`;
 
-    res.forEach(d => {
+    snap.forEach(d => {
       const a = d.data();
 
-      /* 🔍 Recherche titre */
+      // 🔍 Recherche texte (titre)
       if (currentSearch) {
         const t = (a.title || "").toLowerCase();
         if (!t.includes(currentSearch)) return;
       }
 
       const tr = document.createElement("tr");
+
       tr.innerHTML = `
-        <td>${esc(a.title)}</td>
-        <td>${esc(a.city)}</td>
-        <td>${esc(a.type)}</td>
+        <td>${esc(a.title || "—")}</td>
+        <td>${esc(a.city || "—")}</td>
+        <td>${esc(a.type || "—")}</td>
         <td>${a.price ?? "-"}</td>
         <td>${badge(a.status)}</td>
         <td>
@@ -146,27 +156,45 @@ async function loadPage({ reset = false } = {}) {
       const [btnDisable, btnActivate, btnDelete] =
         tr.querySelectorAll("button");
 
+      // 🚫 DÉSACTIVER
       btnDisable.onclick = async () => {
         if (!confirm(`Désactiver : ${a.title} (${a.city}) ?`)) return;
-        await updateDoc(doc(db, "annonces", d.id), { status: "disabled" });
-        await logAdmin("disable", d.id, { title: a.title });
+        await updateDoc(doc(db, "annonces", d.id), {
+          status: "disabled"
+        });
+        await logAdmin("disable", d.id, {
+          title: a.title,
+          city: a.city
+        });
         tr.children[4].textContent = badge("disabled");
       };
 
+      // ✅ ACTIVER
       btnActivate.onclick = async () => {
         if (!confirm(`Activer : ${a.title} (${a.city}) ?`)) return;
-        await updateDoc(doc(db, "annonces", d.id), { status: "active" });
-        await logAdmin("activate", d.id, { title: a.title });
+        await updateDoc(doc(db, "annonces", d.id), {
+          status: "active"
+        });
+        await logAdmin("activate", d.id, {
+          title: a.title,
+          city: a.city
+        });
         tr.children[4].textContent = badge("active");
       };
 
+      // ❌ SUPPRIMER
       btnDelete.onclick = async () => {
         const ok = confirm(
           `⚠️ SUPPRESSION DÉFINITIVE\n\nTitre : ${a.title}\nVille : ${a.city}\n\nConfirmer ?`
         );
         if (!ok) return;
+
         await deleteDoc(doc(db, "annonces", d.id));
-        await logAdmin("delete", d.id, { title: a.title, city: a.city });
+        await logAdmin("delete", d.id, {
+          title: a.title,
+          city: a.city
+        });
+
         tr.remove();
       };
 
@@ -174,7 +202,7 @@ async function loadPage({ reset = false } = {}) {
     });
 
   } catch (e) {
-    console.error(e);
+    console.error("annonces-all error:", e);
     msg.textContent = "❌ Erreur de chargement";
     rows.innerHTML = "";
   }
@@ -187,9 +215,13 @@ btnFilter.onclick = () => {
     status: filterStatus.value || null,
     city: filterCity.value.trim() || null
   };
-  currentSearch = (filterSearch?.value || "").toLowerCase().trim();
+
+  currentSearch =
+    (filterSearch?.value || "").toLowerCase().trim();
+
   btnPrev.disabled = true;
   btnNext.disabled = false;
+
   loadPage({ reset: true });
 };
 
@@ -198,10 +230,13 @@ btnReset.onclick = () => {
   filterStatus.value = "";
   filterCity.value = "";
   if (filterSearch) filterSearch.value = "";
+
   currentFilters = {};
   currentSearch = "";
+
   btnPrev.disabled = true;
   btnNext.disabled = false;
+
   loadPage({ reset: true });
 };
 
