@@ -60,22 +60,28 @@ async function loadAnnonce() {
   title.textContent = a.title || "Annonce";
   meta.textContent  = `${a.type} • ${a.city} • ${a.price ?? "—"} €`;
   desc.textContent  = a.description || "";
-
-  // ✅ CORRECTION : userId (et plus ownerUid)
   userEl.textContent = a.userId || "—";
 
   badge.textContent = statusLabel(a.status);
   badge.className   = `badge ${statusClass(a.status)}`;
 
+  /* 📷 PHOTOS */
   photosEl.innerHTML = "";
-  (a.photos || []).forEach(url => {
-    const img = document.createElement("img");
-    img.src = url;
-    img.style.borderRadius = "8px";
-    photosEl.appendChild(img);
-  });
 
-  // boutons selon statut
+  if (Array.isArray(a.photos) && a.photos.length) {
+    a.photos.forEach(url => {
+      const img = document.createElement("img");
+      img.src = url;
+      img.style.maxWidth = "140px";
+      img.style.borderRadius = "8px";
+      img.style.margin = "6px";
+      photosEl.appendChild(img);
+    });
+  } else {
+    photosEl.innerHTML = `<p class="meta">Aucune photo</p>`;
+  }
+
+  /* 🔘 Boutons */
   btnActivate.classList.toggle("hidden", a.status === "active");
   btnDisable.classList.toggle("hidden", a.status !== "active");
 
@@ -95,26 +101,10 @@ async function loadAnnonce() {
   box.classList.remove("hidden");
 }
 
+/* ===== guard admin ===== */
 requireAdmin({
   onOk: loadAnnonce,
   onDenied: () => {
     msg.textContent = "⛔ Accès refusé";
-    // 📷 PHOTOS
-const photosEl = document.getElementById("photos");
-photosEl.innerHTML = "";
-
-if (Array.isArray(a.photos) && a.photos.length) {
-  a.photos.forEach(url => {
-    const img = document.createElement("img");
-    img.src = url;
-    img.style.maxWidth = "140px";
-    img.style.borderRadius = "8px";
-    img.style.margin = "6px";
-    photosEl.appendChild(img);
-  });
-} else {
-  photosEl.innerHTML =
-    `<p class="meta">Aucune photo</p>`;
-}
   }
 });
