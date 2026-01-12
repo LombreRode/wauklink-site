@@ -7,11 +7,12 @@
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
-      <div class="subtitle">Historique admin</div>
+      <div class="subtitle">Historique des actions admin</div>
     </div>
     <nav class="topbar-nav">
       <a class="btn" href="/wauklink-site/admin/index.html">← Admin</a>
@@ -20,12 +21,38 @@
 </header>
 
 <main class="container main-layout">
+
+  <!-- 🔍 FILTRES -->
+  <section class="card">
+    <div class="row-actions">
+      <select id="filterAction">
+        <option value="">Toutes actions</option>
+        <option value="activate">Activation</option>
+        <option value="disable">Désactivation</option>
+        <option value="delete">Suppression</option>
+      </select>
+
+      <input
+        type="text"
+        id="filterAdmin"
+        placeholder="Admin (email)…"
+      />
+
+      <input type="date" id="filterDate" />
+
+      <button id="btnFilter" class="btn btn-ok">Filtrer</button>
+      <button id="btnReset" class="btn btn-outline">Réinitialiser</button>
+    </div>
+  </section>
+
   <p id="msg" class="meta">Chargement…</p>
+
   <section class="card">
     <table class="table">
       <thead>
         <tr>
           <th>Date</th>
+          <th>Admin</th>
           <th>Action</th>
           <th>Annonce</th>
         </tr>
@@ -33,6 +60,7 @@
       <tbody id="rows"></tbody>
     </table>
   </section>
+
 </main>
 
 <footer class="footer">
