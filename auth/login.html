@@ -10,6 +10,7 @@
 </head>
 
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
     <div>
@@ -52,7 +53,7 @@
     <p id="msg" class="meta" aria-live="polite"></p>
 
     <div style="margin-top:12px">
-      <a class="link" href="./forgot-password.html">
+      <a class="link" href="/wauklink-site/auth/forgot-password.html">
         Mot de passe oublié ?
       </a>
     </div>
@@ -63,21 +64,22 @@
   <div class="container footer-row">
     <span>© WAUKLINK</span>
 
-    <!-- ✅ FOOTER CORRIGÉ -->
     <nav class="footer-nav">
-     <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
-     <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
-     <a class="link" href="/wauklink-site/legal/privacy.html">Confidentialité</a>
-     <a class="link" href="/wauklink-site/legal/mentions-legales.html">Mentions légales</a>
+      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
+      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
+      <a class="link" href="/wauklink-site/legal/privacy.html">Confidentialité</a>
+      <a class="link" href="/wauklink-site/legal/mentions-legales.html">
+        Mentions légales
+      </a>
     </nav>
 
-    <!-- 🔐 LIENS ADMIN -->
+    <!-- 🔐 LIENS ADMIN (cachés par défaut) -->
     <nav class="footer-nav hidden" id="adminLinks">
-      <a class="link" href="../admin/index.html">
+      <a class="link" href="/wauklink-site/admin/index.html">
         Admin
       </a>
       <span class="sep">·</span>
-      <a class="link" href="../dashboard/moderation-location.html">
+      <a class="link" href="/wauklink-site/dashboard/moderation-location.html">
         Modération
       </a>
     </nav>
@@ -86,5 +88,6 @@
 
 <!-- AUTH -->
 <script type="module" src="/wauklink-site/auth/login.js"></script>
+
 </body>
 </html>
