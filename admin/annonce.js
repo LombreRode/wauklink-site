@@ -99,5 +99,22 @@ requireAdmin({
   onOk: loadAnnonce,
   onDenied: () => {
     msg.textContent = "⛔ Accès refusé";
+    // 📷 PHOTOS
+const photosEl = document.getElementById("photos");
+photosEl.innerHTML = "";
+
+if (Array.isArray(a.photos) && a.photos.length) {
+  a.photos.forEach(url => {
+    const img = document.createElement("img");
+    img.src = url;
+    img.style.maxWidth = "140px";
+    img.style.borderRadius = "8px";
+    img.style.margin = "6px";
+    photosEl.appendChild(img);
+  });
+} else {
+  photosEl.innerHTML =
+    `<p class="meta">Aucune photo</p>`;
+}
   }
 });
