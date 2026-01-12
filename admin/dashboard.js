@@ -9,10 +9,13 @@ import {
 
 const $ = id => document.getElementById(id);
 
-let currentRange = 7; // par défaut : 7 jours
+/* =========================
+   ÉTAT GLOBAL
+========================= */
+let currentRange = 1; // Aujourd’hui par défaut
 
 /* =========================
-   OUTILS TEMPS
+   UTILS TEMPS
 ========================= */
 function sinceDays(days) {
   return Date.now() - days * 24 * 60 * 60 * 1000;
@@ -22,9 +25,9 @@ function sinceDays(days) {
    DASHBOARD
 ========================= */
 async function loadDashboard() {
-  /* ---------- ANNONCES ---------- */
-  const annoncesSnap = await getDocs(collection(db, "annonces"));
 
+  /* 📦 ANNONCES */
+  const annoncesSnap = await getDocs(collection(db, "annonces"));
   let total = 0, active = 0, disabled = 0, pending = 0;
 
   annoncesSnap.forEach(d => {
@@ -40,33 +43,27 @@ async function loadDashboard() {
   $("sDisabled").textContent = disabled;
   $("sPending").textContent  = pending;
 
-  await loadAdminActivity();
-
-  /* ---------- LOGS ADMIN ---------- */
-  let currentRange = 1; // par défaut : aujourd’hui
-
-function getRangeLimit(days) {
-  const now = Date.now();
-  return now - days * 24 * 60 * 60 * 1000;
-}
-
-async function loadAdminActivity() {
+  /* 📜 LOGS ADMIN */
   const logsSnap = await getDocs(collection(db, "admin_logs"));
-  const limit = getRangeLimit(currentRange);
+  const limit = sinceDays(currentRange);
+  const now = Date.now();
 
-  let count = 0;
+  let today = 0;
+  let period = 0;
 
   logsSnap.forEach(d => {
-    const t = d.data().createdAt?.seconds * 1000;
-    if (!t) return;
-    if (t >= limit) count++;
+    const ts = d.data().createdAt?.seconds;
+    if (!ts) return;
+    const t = ts * 1000;
+
+    if (now - t < 24 * 60 * 60 * 1000) today++;
+    if (t >= limit) period++;
   });
 
-  $("sToday").textContent = currentRange === 1 ? count : "—";
-  $("sWeek").textContent  = count;
-}
+  $("sToday").textContent = today;
+  $("sWeek").textContent  = period;
 
-  /* ---------- REPORTS ---------- */
+  /* 🚩 REPORTS */
   const reportsQ = query(
     collection(db, "reports"),
     where("status", "==", "pending")
@@ -78,23 +75,19 @@ async function loadAdminActivity() {
 /* =========================
    FILTRES TEMPS
 ========================= */
-function initRangeButtons() {
-  document
-    .querySelectorAll("[data-range]")
-    .forEach(btn => {
-      btn.addEventListener("click", () => {
-        currentRange = Number(btn.dataset.range);
+function initFilters() {
+  document.querySelectorAll("[data-range]").forEach(btn => {
+    btn.onclick = () => {
+      currentRange = Number(btn.dataset.range);
 
-        // UI active
-        document
-          .querySelectorAll("[data-range]")
-          .forEach(b => b.classList.remove("btn-ok"));
+      document
+        .querySelectorAll("[data-range]")
+        .forEach(b => b.classList.remove("btn-ok"));
 
-        btn.classList.add("btn-ok");
-
-        loadDashboard();
-      });
-    });
+      btn.classList.add("btn-ok");
+      loadDashboard();
+    };
+  });
 }
 
 /* =========================
@@ -102,22 +95,8 @@ function initRangeButtons() {
 ========================= */
 requireAdmin({
   onOk: () => {
-    initRangeButtons();
+    initFilters();
     loadDashboard();
   },
-  onDenied: () => {
-    alert("⛔ Accès refusé");
-  }
-});
-
-document.querySelectorAll("[data-range]").forEach(btn => {
-  btn.onclick = () => {
-    document
-      .querySelectorAll("[data-range]")
-      .forEach(b => b.classList.remove("active"));
-
-    btn.classList.add("active");
-    currentRange = Number(btn.dataset.range);
-    loadAdminActivity();
-  };
+  onDenied: () => alert("⛔ Accès refusé")
 });
