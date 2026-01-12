@@ -5,8 +5,11 @@
   <title>WAUKLINK — Tableau de bord</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <link rel="stylesheet" href="../style.css">
+
+  <!-- STYLE GLOBAL -->
+  <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
+
 <body>
 
 <header class="topbar">
@@ -15,8 +18,11 @@
       <h1>WAUKLINK</h1>
       <div class="subtitle">Tableau de bord</div>
     </div>
+
     <nav class="topbar-nav">
-      <a class="btn" href="../index.html">← Accueil</a>
+      <a class="btn" href="/wauklink-site/index.html">
+        ← Accueil
+      </a>
     </nav>
   </div>
 
@@ -34,15 +40,23 @@
         border:1px solid #2ecc71;
       "
     >
-    <a href="./index.html" class="btn btn-outline">📊 Dashboard</a>
-    <a href="../profil/index.html" class="btn btn-outline">👤 Profil</a>
-    <button id="logoutBtn" class="btn btn-danger">Déconnexion</button>
+    <a href="/wauklink-site/dashboard/index.html"
+       class="btn btn-outline">
+      📊 Dashboard
+    </a>
+    <a href="/wauklink-site/profil/index.html"
+       class="btn btn-outline">
+      👤 Profil
+    </a>
+    <button id="logoutBtn" class="btn btn-danger">
+      Déconnexion
+    </button>
   </div>
 
   <!-- 👥 INVITÉ -->
   <div id="guestStatus" class="guest-status hidden">
-    <a href="../auth/login.html">Connexion</a>
-    <a href="../auth/register.html">Inscription</a>
+    <a href="/wauklink-site/auth/login.html">Connexion</a>
+    <a href="/wauklink-site/auth/register.html">Inscription</a>
   </div>
 </header>
 
@@ -53,27 +67,27 @@
   <div id="proStatus" class="meta" style="margin:16px 0"></div>
 
   <div class="grid">
-    <a class="card" href="../deposer/annonce-location.html">
+    <a class="card" href="/wauklink-site/deposer/annonce-location.html">
       <strong>➕ Déposer une annonce</strong>
       <p class="meta">Publier une nouvelle annonce</p>
     </a>
 
-    <a class="card" href="../urgences/index.html">
+    <a class="card" href="/wauklink-site/urgences/index.html">
       <strong>🚨 Urgences</strong>
       <p class="meta">Voir les urgences</p>
     </a>
 
-    <a class="card" href="../travaux/index.html">
+    <a class="card" href="/wauklink-site/travaux/index.html">
       <strong>🛠️ Travaux</strong>
       <p class="meta">Voir les travaux</p>
     </a>
 
-    <a class="card" href="../locations/immobilier.html">
+    <a class="card" href="/wauklink-site/locations/immobilier.html">
       <strong>🏠 Locations</strong>
       <p class="meta">Voir les locations</p>
     </a>
 
-    <a class="card" href="../profil/index.html">
+    <a class="card" href="/wauklink-site/profil/index.html">
       <strong>👤 Mon profil</strong>
       <p class="meta">Gérer mon compte</p>
     </a>
@@ -88,16 +102,20 @@
 
 <!-- 🔐 PROTECTION UTILISATEUR CONNECTÉ -->
 <script type="module">
-  import { requireUser } from "../shared/guard.js";
-  requireUser({ redirectTo: "../auth/login.html" });
+  import { requireUser } from "/wauklink-site/shared/guard.js";
+  requireUser({
+    redirectTo: "/wauklink-site/auth/login.html"
+  });
 </script>
 
 <!-- 👤 NAVBAR (avatar + logout) -->
-<script type="module" src="../shared/user_status.js"></script>
+<script type="module"
+        src="/wauklink-site/shared/user_status.js">
+</script>
 
 <!-- 🟢 STATUT PLAN UTILISATEUR -->
 <script type="module">
-  import { auth, db } from "../shared/firebase.js";
+  import { auth, db } from "/wauklink-site/shared/firebase.js";
   import { onAuthStateChanged } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
   import {
@@ -142,9 +160,11 @@
       where("userId", "==", user.uid),
       where("status", "==", "pending")
     );
+
     const reqSnap = await getDocs(q);
     if (!reqSnap.empty) {
-      proStatus.textContent = "⏳ Demande Professionnel en attente";
+      proStatus.textContent =
+        "⏳ Demande Professionnel en attente";
       return;
     }
 
@@ -152,6 +172,7 @@
     const btn = document.createElement("button");
     btn.className = "btn btn-ok";
     btn.textContent = "🚀 Passer Professionnel";
+
     btn.onclick = async () => {
       btn.disabled = true;
       await addDoc(collection(db, "pro_requests"), {
@@ -159,7 +180,8 @@
         status: "pending",
         createdAt: serverTimestamp()
       });
-      proStatus.textContent = "⏳ Demande Professionnel envoyée";
+      proStatus.textContent =
+        "⏳ Demande Professionnel envoyée";
     };
 
     proStatus.appendChild(btn);
