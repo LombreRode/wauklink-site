@@ -1,3 +1,4 @@
+console.log("ANNONCES JS CHARGÉ");
 import { db, auth } from "../shared/firebase.js";
 import { requireAdmin } from "../shared/guard.js";
 import { logAdminAction } from "../shared/admin_logger.js";
