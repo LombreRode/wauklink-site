@@ -2,11 +2,11 @@ import { auth, db, storage } from "../shared/firebase.js";
 import { onAuthStateChanged } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import {
-  doc, getDoc, updateDoc, arrayUnion
+  doc, getDoc, updateDoc, arrayUnion, arrayRemove
 } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 import {
-  ref, uploadBytes, getDownloadURL
+  ref, uploadBytes, getDownloadURL, deleteObject
 } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
@@ -22,31 +22,40 @@ let files = [];
 let annonceData = null;
 
 /* =========================
-   VÉRIFS DE BASE
+   PREVIEW EXISTANTES
 ========================= */
-if (!annonceId) {
-  msg.textContent = "❌ ID annonce manquant";
-  saveBtn.disabled = true;
+function renderExistingPhotos() {
+  preview.innerHTML = "";
+
+  (annonceData.photos || []).forEach(url => {
+    const wrap = document.createElement("div");
+    wrap.style.position = "relative";
+    wrap.style.display = "inline-block";
+    wrap.style.margin = "5px";
+
+    const img = document.createElement("img");
+    img.src = url;
+    img.style.maxWidth = "120px";
+    img.style.borderRadius = "8px";
+
+    const btn = document.createElement("button");
+    btn.textContent = "✖";
+    btn.className = "btn btn-warning";
+    btn.style.position = "absolute";
+    btn.style.top = "4px";
+    btn.style.right = "4px";
+    btn.style.padding = "4px 6px";
+
+    btn.onclick = () => deletePhoto(url);
+
+    wrap.appendChild(img);
+    wrap.appendChild(btn);
+    preview.appendChild(wrap);
+  });
 }
 
 /* =========================
-   PREVIEW PHOTOS
-========================= */
-input.addEventListener("change", () => {
-  files = Array.from(input.files).slice(0, 6);
-  preview.innerHTML = "";
-
-  files.forEach(file => {
-    const img = document.createElement("img");
-    img.src = URL.createObjectURL(file);
-    img.style.maxWidth = "120px";
-    img.style.margin = "5px";
-    preview.appendChild(img);
-  });
-});
-
-/* =========================
-   AUTH + ACCÈS ANNONCE
+   AUTH + ACCÈS
 ========================= */
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
@@ -68,11 +77,21 @@ onAuthStateChanged(auth, async (user) => {
   if (annonceData.userId !== user.uid) {
     msg.textContent = "⛔ Accès refusé";
     saveBtn.disabled = true;
+    return;
   }
+
+  renderExistingPhotos();
 });
 
 /* =========================
-   UPLOAD PHOTOS
+   PREVIEW NOUVELLES
+========================= */
+input.addEventListener("change", () => {
+  files = Array.from(input.files).slice(0, 6);
+});
+
+/* =========================
+   UPLOAD
 ========================= */
 saveBtn.addEventListener("click", async () => {
   if (!files.length) {
@@ -93,23 +112,18 @@ saveBtn.addEventListener("click", async () => {
     const userId = auth.currentUser.uid;
 
     for (const file of files) {
-      // 🔒 Sécurité UX (complément règles Storage)
       if (!file.type.startsWith("image/")) {
-        throw new Error("Seules les images sont autorisées");
+        throw new Error("Image uniquement");
       }
       if (file.size > 5 * 1024 * 1024) {
-        throw new Error("Image trop lourde (max 5 MB)");
+        throw new Error("Image trop lourde (5 MB max)");
       }
 
       const fileName = `${Date.now()}_${file.name}`;
       const path = `annonces/${userId}/${annonceId}/${fileName}`;
 
       const fileRef = ref(storage, path);
-
-      await uploadBytes(fileRef, file, {
-        contentType: file.type
-      });
-
+      await uploadBytes(fileRef, file);
       const url = await getDownloadURL(fileRef);
 
       await updateDoc(
@@ -118,15 +132,45 @@ saveBtn.addEventListener("click", async () => {
       );
     }
 
-    msg.textContent = "✅ Photos enregistrées";
+    const snap = await getDoc(doc(db, "annonces", annonceId));
+    annonceData = snap.data();
+    renderExistingPhotos();
+
     files = [];
-    preview.innerHTML = "";
     input.value = "";
+    msg.textContent = "✅ Photos mises à jour";
 
   } catch (err) {
     console.error(err);
-    msg.textContent = err.message || "❌ Erreur lors de l’upload";
+    msg.textContent = err.message;
   }
 
   saveBtn.disabled = false;
 });
+
+/* =========================
+   SUPPRESSION PHOTO
+========================= */
+async function deletePhoto(url) {
+  if (!confirm("Supprimer cette photo ?")) return;
+
+  try {
+    const fileRef = ref(storage, url);
+
+    await deleteObject(fileRef);
+
+    await updateDoc(
+      doc(db, "annonces", annonceId),
+      { photos: arrayRemove(url) }
+    );
+
+    annonceData.photos = annonceData.photos.filter(p => p !== url);
+    renderExistingPhotos();
+
+    msg.textContent = "🗑️ Photo supprimée";
+
+  } catch (err) {
+    console.error(err);
+    msg.textContent = "❌ Erreur suppression photo";
+  }
+}
