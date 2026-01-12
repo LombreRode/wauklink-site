@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <title>Admin — Fiche annonce</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
 
@@ -15,8 +17,12 @@
       <h1>WAUKLINK</h1>
       <div class="subtitle">Fiche annonce (Admin)</div>
     </div>
+
     <nav class="topbar-nav">
-      <a class="btn" href="/wauklink-site/admin/annonces.html">← Annonces</a>
+      <a class="btn"
+         href="/wauklink-site/admin/annonces.html">
+        ← Annonces
+      </a>
     </nav>
   </div>
 </header>
@@ -26,7 +32,9 @@
 
   <section id="annonceBox" class="card hidden">
     <h2 id="title"></h2>
+
     <p class="meta" id="meta"></p>
+
     <span id="statusBadge" class="badge"></span>
 
     <p id="description" style="margin-top:12px"></p>
@@ -39,9 +47,20 @@
 
     <h3>Actions admin</h3>
     <div class="row-actions">
-      <button id="btnActivate" class="btn btn-ok hidden">Activer</button>
-      <button id="btnDisable" class="btn btn-warning hidden">Désactiver</button>
-      <button id="btnDelete" class="btn btn-danger">Supprimer</button>
+      <button id="btnActivate"
+              class="btn btn-ok hidden">
+        Activer
+      </button>
+
+      <button id="btnDisable"
+              class="btn btn-warning hidden">
+        Désactiver
+      </button>
+
+      <button id="btnDelete"
+              class="btn btn-danger">
+        Supprimer
+      </button>
     </div>
   </section>
 </main>
@@ -52,8 +71,34 @@
   </div>
 </footer>
 
-<!-- JS FICHE ANNONCE ADMIN -->
-<script type="module" src="./annonce.js"></script>
+<!-- 🔐 PROTECTION ADMIN -->
+<script type="module">
+  import { requireAdmin } from
+    "/wauklink-site/shared/guard.js";
+
+  requireAdmin({
+    onOk: () => {},
+    onDenied: () => {
+      document.body.innerHTML = `
+        <main class="container main-layout">
+          <h2>⛔ Accès refusé</h2>
+          <p class="meta">
+            Page réservée aux administrateurs
+          </p>
+          <a class="btn"
+             href="/wauklink-site/dashboard/index.html">
+            Retour dashboard
+          </a>
+        </main>
+      `;
+    }
+  });
+</script>
+
+<!-- 📄 LOGIQUE FICHE ANNONCE -->
+<script type="module"
+        src="/wauklink-site/admin/annonce.js">
+</script>
 
 </body>
 </html>
