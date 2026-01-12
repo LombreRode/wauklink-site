@@ -40,6 +40,8 @@ async function loadDashboard() {
   $("sDisabled").textContent = disabled;
   $("sPending").textContent  = pending;
 
+  await loadAdminActivity();
+
   /* ---------- LOGS ADMIN ---------- */
   let currentRange = 1; // par défaut : aujourd’hui
 
@@ -106,4 +108,16 @@ requireAdmin({
   onDenied: () => {
     alert("⛔ Accès refusé");
   }
+});
+
+document.querySelectorAll("[data-range]").forEach(btn => {
+  btn.onclick = () => {
+    document
+      .querySelectorAll("[data-range]")
+      .forEach(b => b.classList.remove("active"));
+
+    btn.classList.add("active");
+    currentRange = Number(btn.dataset.range);
+    loadAdminActivity();
+  };
 });
