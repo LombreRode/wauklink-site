@@ -47,6 +47,7 @@
 
 <main class="container main-layout">
 
+  <!-- 🔹 VUE D’ENSEMBLE -->
   <section class="card">
     <h2>Vue d’ensemble</h2>
     <div class="stats">
@@ -69,29 +70,14 @@
     </div>
   </section>
 
-  <section class="card">
-  <h2>Vue d’ensemble</h2>
-  ...
-</section>
-
-<!-- 🔎 FILTRE TEMPS (NOUVEAU) -->
-<div class="row-actions mt">
-  <button class="btn btn-outline" data-range="1">Aujourd’hui</button>
-  <button class="btn btn-outline" data-range="7">7 jours</button>
-  <button class="btn btn-outline" data-range="30">30 jours</button>
-</div>
-
-<section class="card">
-  <h2>Activité admin</h2>
-  ...
-</section>
-
+  <!-- 🔎 FILTRE TEMPS -->
   <div class="row-actions mt">
-  <button class="btn btn-outline active" data-range="1">Aujourd’hui</button>
-  <button class="btn btn-outline" data-range="7">7 jours</button>
-  <button class="btn btn-outline" data-range="30">30 jours</button>
-</div>
+    <button class="btn btn-outline active" data-range="1">Aujourd’hui</button>
+    <button class="btn btn-outline" data-range="7">7 jours</button>
+    <button class="btn btn-outline" data-range="30">30 jours</button>
+  </div>
 
+  <!-- 📊 ACTIVITÉ ADMIN -->
   <section class="card">
     <h2>Activité admin</h2>
     <div class="stats">
@@ -100,7 +86,7 @@
         <div class="v" id="sToday">—</div>
       </div>
       <div class="stat">
-        <h3>Actions 7 jours</h3>
+        <h3>Actions période</h3>
         <div class="v" id="sWeek">—</div>
       </div>
       <div class="stat">
