@@ -4,27 +4,25 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Admin — Demandes PRO</title>
-  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
-
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
-      <div class="subtitle">Admin — Validation PRO</div>
+      <div class="subtitle">Validation des comptes PRO</div>
     </div>
     <nav class="topbar-nav">
-      <a class="btn" href="./index.html">← Dashboard</a>
+      <a class="btn" href="/wauklink-site/admin/index.html">← Admin</a>
     </nav>
   </div>
 </header>
 
 <main class="container main-layout">
   <h2>Demandes PRO en attente</h2>
-  <p id="msg" class="meta" aria-live="polite">
-    Vérification des droits…
-  </p>
+  <p id="msg" class="meta" aria-live="polite">Vérification des droits…</p>
   <section id="list" class="grid"></section>
 </main>
 
@@ -34,107 +32,116 @@
   </div>
 </footer>
 
-<!-- 🔐 Liens admin -->
+<!-- 🔐 MENU ADMIN -->
 <script type="module" src="/wauklink-site/shared/admin_links.js"></script>
 
 <!-- 🔐 LOGIQUE ADMIN PRO -->
 <script type="module">
-  import { db } from "../shared/firebase.js";
-  import { requireAdmin } from "../shared/guard.js";
-  import {
-    collection,
-    getDocs,
-    doc,
-    updateDoc,
-    deleteDoc,
-    serverTimestamp
-  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { db } from "../shared/firebase.js";
+import { requireAdmin } from "../shared/guard.js";
+import {
+  collection, query, where,
+  getDocs, getDoc,
+  doc, updateDoc, deleteDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  const list = document.getElementById("list");
-  const msg  = document.getElementById("msg");
+const list = document.getElementById("list");
+const msg  = document.getElementById("msg");
 
-  async function loadRequests() {
-    list.innerHTML = "";
-    msg.textContent = "⏳ Chargement des demandes PRO…";
+/* =========================
+   CHARGEMENT DEMANDES PRO
+========================= */
+async function loadRequests() {
+  list.innerHTML = "";
+  msg.textContent = "⏳ Chargement des demandes PRO…";
 
-    try {
-      const snap = await getDocs(collection(db, "pro_requests"));
+  try {
+    const q = query(
+      collection(db, "pro_requests"),
+      where("status", "==", "pending")
+    );
 
-      if (snap.empty) {
-        msg.textContent = "✅ Aucune demande PRO en attente.";
-        return;
-      }
+    const snap = await getDocs(q);
 
-      msg.textContent = `📋 ${snap.size} demande(s) PRO`;
-
-      snap.forEach(d => {
-        const u = d.data();
-
-        const card = document.createElement("div");
-        card.className = "card";
-
-        card.innerHTML = `
-          <strong>${u.firstName || ""} ${u.lastName || ""}</strong>
-          <div class="meta">${u.email || ""}</div>
-          <div class="meta">Téléphone : ${u.phone || "—"}</div>
-          <div class="row-actions" style="margin-top:12px">
-            <button class="btn btn-ok">Valider</button>
-            <button class="btn btn-danger">Refuser</button>
-          </div>
-        `;
-
-        const [okBtn, noBtn] = card.querySelectorAll("button");
-
-        // ✅ VALIDER PRO
-        okBtn.onclick = async () => {
-          if (!confirm("Valider ce compte PRO ?")) return;
-
-          okBtn.disabled = true;
-          noBtn.disabled = true;
-
-          await updateDoc(doc(db, "users", u.userId), {
-            isPro: true,
-            "pro.validated": true,
-            "pro.validatedAt": serverTimestamp()
-          });
-
-          // supprimer la demande
-          await deleteDoc(doc(db, "pro_requests", d.id));
-
-          loadRequests();
-        };
-
-        // ❌ REFUSER PRO
-        noBtn.onclick = async () => {
-          if (!confirm("Refuser cette demande PRO ?")) return;
-
-          okBtn.disabled = true;
-          noBtn.disabled = true;
-
-          await updateDoc(doc(db, "users", u.userId), {
-            "pro.requested": false
-          });
-
-          // supprimer la demande
-          await deleteDoc(doc(db, "pro_requests", d.id));
-
-          loadRequests();
-        };
-
-        list.appendChild(card);
-      });
-
-    } catch (err) {
-      console.error(err);
-      msg.textContent = "❌ Accès interdit ou erreur Firestore";
+    if (snap.empty) {
+      msg.textContent = "✅ Aucune demande PRO en attente.";
+      return;
     }
-  }
 
-  // 🔐 ADMIN UNIQUEMENT
-  requireAdmin({
-    redirectTo: "../auth/login.html",
-    onOk: loadRequests
-  });
+    msg.textContent = `📋 ${snap.size} demande(s) PRO`;
+
+    for (const d of snap.docs) {
+      const req = d.data();
+
+      // 🔎 Récupération utilisateur
+      const userSnap = await getDoc(doc(db, "users", req.userId));
+      if (!userSnap.exists()) continue;
+      const u = userSnap.data();
+
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <strong>${u.firstName || ""} ${u.lastName || ""}</strong>
+        <div class="meta">${u.email || "—"}</div>
+        <div class="meta">Téléphone : ${u.phone || "—"}</div>
+        <div class="row-actions" style="margin-top:12px">
+          <button class="btn btn-ok">Valider</button>
+          <button class="btn btn-danger">Refuser</button>
+        </div>
+      `;
+
+      const [btnOk, btnNo] = card.querySelectorAll("button");
+
+      // ✅ VALIDER
+      btnOk.onclick = async () => {
+        if (!confirm("Valider ce compte PRO ?")) return;
+        btnOk.disabled = btnNo.disabled = true;
+
+        await updateDoc(doc(db, "users", req.userId), {
+          isPro: true,
+          plan: "pro",
+          "pro.validated": true,
+          "pro.validatedAt": serverTimestamp()
+        });
+
+        await deleteDoc(doc(db, "pro_requests", d.id));
+        loadRequests();
+      };
+
+      // ❌ REFUSER
+      btnNo.onclick = async () => {
+        if (!confirm("Refuser cette demande PRO ?")) return;
+        btnOk.disabled = btnNo.disabled = true;
+
+        await updateDoc(doc(db, "users", req.userId), {
+          "pro.requested": false
+        });
+
+        await deleteDoc(doc(db, "pro_requests", d.id));
+        loadRequests();
+      };
+
+      list.appendChild(card);
+    }
+
+  } catch (err) {
+    console.error(err);
+    msg.textContent = "❌ Erreur Firestore ou accès refusé";
+  }
+}
+
+/* =========================
+   GUARD ADMIN
+========================= */
+requireAdmin({
+  redirectTo: "/wauklink-site/auth/login.html",
+  onOk: loadRequests,
+  onDenied: () => {
+    msg.textContent = "⛔ Accès réservé aux administrateurs";
+  }
+});
 </script>
+
 </body>
 </html>
