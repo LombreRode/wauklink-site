@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <title>Admin — WAUKLINK</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="../style.css">
+  <!-- ✅ CHEMIN ABSOLU -->
+  <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
 <body>
 
@@ -15,7 +16,10 @@
       <div class="subtitle">Portail administrateur</div>
     </div>
     <nav class="topbar-nav">
-      <a class="btn" href="../index.html">← Accueil</a>
+      <a class="btn" href="/wauklink-site/index.html">← Accueil</a>
+      <a class="btn btn-outline" href="/wauklink-site/dashboard/index.html">
+        Dashboard
+      </a>
     </nav>
   </div>
 </header>
@@ -23,7 +27,7 @@
 <main class="container main-layout">
   <h2>Portail admin</h2>
 
-  <!-- MENU ADMIN (injecté par JS) -->
+  <!-- 🔐 MENU ADMIN (injecté dynamiquement) -->
   <nav id="adminLinks" class="admin-menu hidden"></nav>
 
   <p id="msg" class="meta" aria-live="polite">
@@ -37,27 +41,24 @@
   </div>
 </footer>
 
-<!-- UI admin -->
-<script type="module" src="../shared/admin_links.js"></script>
+<!-- 🔐 LIENS ADMIN (rôles + menu) -->
+<script type="module" src="/wauklink-site/shared/admin_links.js"></script>
 
+<!-- 🔐 GUARD ADMIN -->
 <script type="module">
-import { requireAdmin } from "../shared/guard.js";
+  import { requireAdmin } from "/wauklink-site/shared/guard.js";
 
-document.addEventListener("DOMContentLoaded", () => {
   const msg = document.getElementById("msg");
 
-  if (!msg) {
-    console.error("❌ portal.html : #msg introuvable");
-    return;
-  }
-
   requireAdmin({
-    redirectTo: "../auth/login.html",
+    redirectTo: "/wauklink-site/auth/login.html",
     onOk: () => {
-      msg.textContent = "✅ Accès admin autorisé";
+      msg.textContent = "✅ Accès administrateur autorisé";
+    },
+    onDenied: () => {
+      msg.textContent = "⛔ Accès réservé aux administrateurs";
     }
   });
-});
 </script>
 
 </body>
