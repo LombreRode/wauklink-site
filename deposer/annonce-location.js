@@ -137,8 +137,10 @@ form.addEventListener("submit", async (e) => {
       const url = await getDownloadURL(fileRef);
 
       await updateDoc(doc(db, "annonces", annonceRef.id), {
-        photos: arrayUnion(url)
-      });
+       photos: arrayUnion(url),
+       updatedAt: serverTimestamp()
+     });
+
     }
 
     msg.textContent = "✅ Annonce envoyée en validation";
