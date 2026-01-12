@@ -2,229 +2,72 @@
    WAUKLINK — PROFIL.JS
    VERSION FINALE STABLE — SANS BUG
 ================================================= */
+import { auth, db, storage } from "../shared/firebase.js";
+import { onAuthStateChanged } from
+  "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-import { auth, db, storage } from "/wauklink-site/shared/firebase.js";
-import {
-  onAuthStateChanged,
-  updatePassword,
-  updateEmail
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import {
   doc,
-  getDoc,
-  setDoc,
   updateDoc,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
 import {
   ref,
-  uploadBytes,
-  getDownloadURL,
-  deleteObject
+  uploadBytesResumable,
+  getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
-console.log("✅ PROFIL.JS — VERSION STABLE");
-
-/* =========================
-   DOM
-========================= */
-const avatarImg = document.getElementById("avatarImg");
 const avatarInput = document.getElementById("avatarInput");
-const avatarLoader = document.getElementById("avatarLoader");
-const avatarMsg = document.getElementById("avatarMsg");
+const avatarImg   = document.getElementById("avatarImg");
+const msg         = document.getElementById("msg");
 
-const emailEl = document.getElementById("email");
-const typeEl = document.getElementById("type");
+let currentUser = null;
 
-const firstNameInput = document.getElementById("firstNameInput");
-const phoneInput = document.getElementById("phoneInput");
-const saveBtn = document.getElementById("saveProfileBtn");
-const profileMsg = document.getElementById("profileMsg");
+onAuthStateChanged(auth, user => {
+  if (!user) return;
+  currentUser = user;
+});
 
-const newPassword = document.getElementById("newPassword");
-const passwordMsg = document.getElementById("passwordMsg");
-const changePasswordBtn = document.getElementById("changePasswordBtn");
+avatarInput.addEventListener("change", async () => {
+  const file = avatarInput.files[0];
+  if (!file || !currentUser) return;
 
-const newEmail = document.getElementById("newEmail");
-const emailMsg = document.getElementById("emailMsg");
-const changeEmailBtn = document.getElementById("changeEmailBtn");
-
-/* =========================
-   STATE
-========================= */
-let uploading = false;
-let localAvatarUrl = null;
-
-/* =========================
-   RESIZE IMAGE
-========================= */
-function resizeImage(file, maxSize = 256) {
-  return new Promise(resolve => {
-    const img = new Image();
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const scale = Math.min(maxSize / img.width, maxSize / img.height);
-        canvas.width = img.width * scale;
-        canvas.height = img.height * scale;
-        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob(blob => resolve(blob), "image/jpeg", 0.9);
-      };
-      img.src = reader.result;
-    };
-
-    reader.readAsDataURL(file);
-  });
-}
-
-/* =========================
-   AUTH
-========================= */
-onAuthStateChanged(auth, async user => {
-  if (!user) {
-    location.href = "/wauklink-site/auth/login.html";
+  if (!file.type.startsWith("image/")) {
+    msg.textContent = "❌ Fichier invalide";
     return;
   }
 
-  const userRef = doc(db, "users", user.uid);
-  let snap = await getDoc(userRef);
+  if (file.size > 2 * 1024 * 1024) {
+    msg.textContent = "❌ Image trop lourde (max 2 Mo)";
+    return;
+  }
 
-  if (!snap.exists()) {
-    await setDoc(userRef, {
-      role: "user",
-      isPro: false,
-      firstName: "",
-      phone: "",
-      avatarUrl: null,
-      avatarPath: null,
-      createdAt: serverTimestamp()
+  msg.textContent = "⏳ Upload de l’avatar…";
+
+  try {
+    const path = `avatars/${currentUser.uid}/${Date.now()}_${file.name}`;
+    const fileRef = ref(storage, path);
+
+    const task = uploadBytesResumable(fileRef, file);
+
+    await new Promise((resolve, reject) => {
+      task.on("state_changed", null, reject, resolve);
     });
-    snap = await getDoc(userRef);
-  }
 
-  const data = snap.data();
+    const url = await getDownloadURL(fileRef);
 
-  // 🔒 Protection cache avatar
-  if (localAvatarUrl) {
-    data.avatarUrl = localAvatarUrl;
-  }
-
-  /* =========================
-     INFOS
-  ========================= */
-  emailEl.innerHTML = `<strong>Email :</strong> ${user.email}`;
-  newEmail.value = user.email;
-
-  typeEl.innerHTML = `<strong>Type de compte :</strong> ${
-    data.role === "admin"
-      ? "👑 Administrateur"
-      : data.isPro
-      ? "🟢 PRO"
-      : "⚪ Standard"
-  }`;
-
-  firstNameInput.value = data.firstName || "";
-  phoneInput.value = data.phone || "";
-
-  /* =========================
-     AVATAR AU CHARGEMENT
-  ========================= */
-  if (data.avatarUrl) {
-    avatarLoader.classList.remove("hidden");
-    avatarImg.onload = () => {
-      avatarLoader.classList.add("hidden");
-      avatarImg.classList.remove("hidden");
-    };
-    avatarImg.src = data.avatarUrl;
-  }
-
-  /* =========================
-     SAVE PROFIL
-  ========================= */
-  saveBtn.onclick = async () => {
-    await updateDoc(userRef, {
-      firstName: firstNameInput.value.trim(),
-      phone: phoneInput.value.trim()
+    await updateDoc(doc(db, "users", currentUser.uid), {
+      avatarUrl: url,
+      avatarPath: path,
+      updatedAt: serverTimestamp()
     });
-    profileMsg.textContent = "✅ Profil mis à jour";
-  };
 
-  /* =========================
-     AVATAR UPLOAD — FINAL
-  ========================= */
-  avatarInput.onchange = async e => {
-    if (uploading) return;
-    const file = e.target.files[0];
-    if (!file) return;
+    avatarImg.src = url + "?t=" + Date.now();
+    msg.textContent = "✅ Avatar mis à jour";
 
-    uploading = true;
-    avatarInput.disabled = true;
-    avatarLoader.classList.remove("hidden");
-    avatarImg.classList.add("hidden");
-    avatarMsg.textContent = "⏳ Upload...";
-
-    try {
-      const resized = await resizeImage(file);
-      const path = `avatars/${user.uid}/${Date.now()}.jpg`;
-      const avatarRef = ref(storage, path);
-
-      await uploadBytes(avatarRef, resized, {
-        contentType: "image/jpeg"
-      });
-
-      const url = await getDownloadURL(avatarRef);
-
-      if (data.avatarPath) {
-        await deleteObject(ref(storage, data.avatarPath)).catch(() => {});
-      }
-
-      await updateDoc(userRef, {
-        avatarUrl: url,
-        avatarPath: path,
-        updatedAt: serverTimestamp()
-      });
-
-      // 🔒 Sécurisation locale
-      localAvatarUrl = url;
-      data.avatarUrl = url;
-      data.avatarPath = path;
-
-      avatarImg.src = url + "?t=" + Date.now();
-      avatarImg.classList.remove("hidden");
-      avatarMsg.textContent = "✅ Avatar mis à jour";
-
-    } catch (err) {
-      console.error(err);
-      avatarMsg.textContent = "❌ Erreur upload";
-      avatarImg.classList.remove("hidden");
-    } finally {
-      avatarLoader.classList.add("hidden");
-      avatarInput.disabled = false;
-      avatarInput.value = "";
-      uploading = false;
-    }
-  };
-
-  /* =========================
-     PASSWORD
-  ========================= */
-  changePasswordBtn.onclick = async () => {
-    if (newPassword.value.length < 6) {
-      passwordMsg.textContent = "❌ 6 caractères minimum";
-      return;
-    }
-    await updatePassword(user, newPassword.value);
-    passwordMsg.textContent = "✅ Mot de passe modifié";
-    newPassword.value = "";
-  };
-
-  /* =========================
-     EMAIL
-  ========================= */
-  changeEmailBtn.onclick = async () => {
-    await updateEmail(user, newEmail.value.trim());
-    emailMsg.textContent = "✅ Email modifié";
-  };
+  } catch (e) {
+    console.error(e);
+    msg.textContent = "❌ Erreur upload avatar";
+  }
 });
