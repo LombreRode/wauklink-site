@@ -1,62 +1,79 @@
 import { db } from "../shared/firebase.js";
 import { requireAdmin } from "../shared/guard.js";
 import {
-  collection,
-  query,
-  orderBy,
-  getDocs
+  collection, query, orderBy, getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const rows = document.getElementById("rows");
 const msg  = document.getElementById("msg");
+const fAction = document.getElementById("fAction");
+const fAdmin  = document.getElementById("fAdmin");
+const fDate   = document.getElementById("fDate");
+const btnFilter = document.getElementById("btnFilter");
+const btnReset  = document.getElementById("btnReset");
 
-function fmt(ts) {
-  if (!ts) return "—";
-  return new Date(ts.seconds * 1000).toLocaleString("fr-FR");
+let all = [];
+
+const fmt = ts => ts ? new Date(ts.seconds*1000).toLocaleString("fr-FR") : "—";
+const badge = a =>
+  a==="activate" ? `<span class="badge b-act">🟢 activate</span>` :
+  a==="disable"  ? `<span class="badge b-dis">🟠 disable</span>` :
+  a==="delete"   ? `<span class="badge b-del">🔴 delete</span>` :
+  a;
+
+function applyFilters(){
+  const A = fAction.value;
+  const E = fAdmin.value.trim().toLowerCase();
+  const D = fDate.value; // yyyy-mm-dd
+
+  rows.innerHTML = "";
+  let list = all.filter(l=>{
+    if (A && l.action!==A) return false;
+    if (E && !(l.admin||"").toLowerCase().includes(E)) return false;
+    if (D){
+      const d = new Date(l.createdAt.seconds*1000).toISOString().slice(0,10);
+      if (d!==D) return false;
+    }
+    return true;
+  });
+
+  if (!list.length){
+    rows.innerHTML = `<tr><td colspan="4" class="meta">Aucun historique</td></tr>`;
+    msg.textContent = "";
+    return;
+  }
+
+  msg.textContent = `${list.length} action(s)`;
+  list.forEach(l=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${fmt(l.createdAt)}</td>
+      <td>${l.admin || "—"}</td>
+      <td>${badge(l.action)}</td>
+      <td>${l.annonceTitle || l.annonceId || "—"}</td>
+    `;
+    rows.appendChild(tr);
+  });
 }
 
-async function loadLogs() {
+async function load(){
   rows.innerHTML = "";
   msg.textContent = "Chargement…";
-
-  try {
-    const q = query(
-      collection(db, "admin_logs"),
-      orderBy("createdAt", "desc")
-    );
-
-    const res = await getDocs(q);
-
-    if (res.empty) {
-      rows.innerHTML =
-        `<tr><td colspan="4" class="meta">Aucun historique</td></tr>`;
-      msg.textContent = "";
-      return;
-    }
-
-    msg.textContent = `${res.size} action(s)`;
-
-    res.forEach(d => {
-      const l = d.data();
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${fmt(l.createdAt)}</td>
-        <td>${l.adminEmail || "—"}</td>
-        <td>${l.action}</td>
-        <td>${l.extra?.title || l.annonceId}</td>
-      `;
-      rows.appendChild(tr);
-    });
-
-  } catch (e) {
-    console.error(e);
-    msg.textContent = "❌ Erreur de chargement";
-  }
+  const q = query(collection(db,"admin_logs"), orderBy("createdAt","desc"));
+  const res = await getDocs(q);
+  all = res.docs.map(d=>d.data());
+  applyFilters();
 }
 
+btnFilter.onclick = applyFilters;
+btnReset.onclick = ()=>{
+  fAction.value=""; fAdmin.value=""; fDate.value="";
+  applyFilters();
+};
+
 requireAdmin({
-  onOk: loadLogs,
-  onDenied: () => {
+  onOk: load,
+  onDenied: ()=>{
     msg.textContent = "⛔ Accès refusé";
     rows.innerHTML = "";
   }
