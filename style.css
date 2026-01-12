@@ -288,3 +288,8 @@ input:focus {
     justify-content: flex-start;
   }
 }
+
+/* Séparation élégante zone admin */
+.admin-bar {
+  border-top: 1px solid rgba(255,255,255,.12);
+}
