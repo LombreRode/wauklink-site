@@ -1,7 +1,9 @@
-console.log("ANNONCES JS CHARGÉ");
-import { db, auth } from "../shared/firebase.js";
-import { requireAdmin } from "../shared/guard.js";
-import { logAdminAction } from "../shared/admin_logger.js";
+console.log("✅ admin/annonces.js chargé");
+
+import { db, auth } from "/wauklink-site/shared/firebase.js";
+import { requireAdmin } from "/wauklink-site/shared/guard.js";
+import { logAdminAction } from "/wauklink-site/shared/admin_logger.js";
+
 import {
   collection,
   query,
@@ -14,9 +16,11 @@ import {
 const rows = document.getElementById("rows");
 const msg  = document.getElementById("msg");
 
+// 🔒 échappement HTML
 const esc = s =>
   String(s ?? "").replace(/[&<>"']/g, m =>
-    ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
+    ({ "&":"&amp;","<":"&lt;",">":"&gt;",
+       '"':"&quot;","'":"&#039;" }[m])
   );
 
 async function loadAnnonces() {
@@ -28,11 +32,17 @@ async function loadAnnonces() {
       collection(db, "annonces"),
       where("status", "==", "pending")
     );
+
     const res = await getDocs(q);
 
     if (res.empty) {
-      rows.innerHTML =
-        `<tr><td colspan="7" class="meta">Aucune annonce en attente</td></tr>`;
+      rows.innerHTML = `
+        <tr>
+          <td colspan="7" class="meta">
+            Aucune annonce en attente
+          </td>
+        </tr>
+      `;
       msg.textContent = "";
       return;
     }
@@ -41,15 +51,16 @@ async function loadAnnonces() {
 
     res.forEach(d => {
       const a = d.data();
+
       const tr = document.createElement("tr");
 
       tr.innerHTML = `
-        <td>${esc(a.title)}</td>
-        <td>${esc(a.city)}</td>
-        <td>${esc(a.type)}</td>
+        <td>${esc(a.title || "—")}</td>
+        <td>${esc(a.city || "—")}</td>
+        <td>${esc(a.type || "—")}</td>
         <td>${a.price ?? "-"}</td>
-        <td class="meta">${esc(a.userId ?? "—")}</td>
-        <td>${esc(a.status)}</td>
+        <td class="meta">${esc(a.userId || "—")}</td>
+        <td>${esc(a.status || "—")}</td>
         <td>
           <a class="btn btn-outline"
              href="/wauklink-site/admin/annonce.html?id=${d.id}">
@@ -60,15 +71,17 @@ async function loadAnnonces() {
         </td>
       `;
 
-      const [btnOk, btnDisable] = tr.querySelectorAll("button");
+      const [btnOk, btnDisable] =
+        tr.querySelectorAll("button");
 
       // ✅ VALIDER
       btnOk.onclick = async () => {
         if (!confirm("Valider cette annonce ?")) return;
 
-        await updateDoc(doc(db, "annonces", d.id), {
-          status: "active"
-        });
+        await updateDoc(
+          doc(db, "annonces", d.id),
+          { status: "active" }
+        );
 
         await logAdminAction({
           action: "activate",
@@ -88,9 +101,10 @@ async function loadAnnonces() {
       btnDisable.onclick = async () => {
         if (!confirm("Désactiver cette annonce ?")) return;
 
-        await updateDoc(doc(db, "annonces", d.id), {
-          status: "disabled"
-        });
+        await updateDoc(
+          doc(db, "annonces", d.id),
+          { status: "disabled" }
+        );
 
         await logAdminAction({
           action: "disable",
@@ -110,12 +124,13 @@ async function loadAnnonces() {
     });
 
   } catch (err) {
-    console.error("admin annonces error:", err);
+    console.error("❌ admin annonces error:", err);
     msg.textContent = "❌ Erreur de chargement des annonces";
     rows.innerHTML = "";
   }
 }
 
+// 🔐 PROTECTION ADMIN
 requireAdmin({
   onOk: loadAnnonces,
   onDenied: () => {
