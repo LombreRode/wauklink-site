@@ -6,19 +6,24 @@
   <title>Espace PRO — WAUKLINK</title>
 
   <!-- STYLE GLOBAL -->
-  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
 
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
       <div class="subtitle">Espace Professionnel ⭐⭐⭐</div>
     </div>
+
     <nav class="topbar-nav">
-      <a class="btn" href="../index.html">← Accueil</a>
-      <a class="btn" href="../deposer/annonce-location.html">
+      <a class="btn" href="/wauklink-site/index.html">
+        ← Accueil
+      </a>
+      <a class="btn"
+         href="/wauklink-site/deposer/annonce-location.html">
         ➕ Nouvelle annonce PRO
       </a>
     </nav>
@@ -27,9 +32,7 @@
 
 <main class="container main-layout">
   <h2>Mes annonces PRO</h2>
-
   <p id="msg" class="meta" aria-live="polite"></p>
-
   <section id="grid" class="grid"></section>
 </main>
 
@@ -37,29 +40,35 @@
   <div class="container footer-row">
     <span>© WAUKLINK</span>
     <nav class="footer-nav">
-      <a class="link" href="../pricing.html">Tarifs</a>
-      <a class="link" href="../legal/index.html">CGU</a>
-      <a class="link" href="../legal/privacy.html">Confidentialité</a>
-      <a class="link" href="../legal/mentions-legales.html">
+      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
+      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
+      <a class="link" href="/wauklink-site/legal/privacy.html">
+        Confidentialité
+      </a>
+      <a class="link"
+         href="/wauklink-site/legal/mentions-legales.html">
         Mentions légales
       </a>
     </nav>
   </div>
 </footer>
 
-<!-- 🔐 AUTH -->
-<script type="module" src="../auth/status.js"></script>
+<!-- 👤 NAVBAR / AUTH -->
+<script type="module"
+        src="/wauklink-site/shared/user_status.js">
+</script>
 
 <!-- =========================
-     LOGIQUE PRO
+     LOGIQUE ESPACE PRO
 ========================= -->
 <script type="module">
-  import { auth, db } from "../shared/firebase.js";
+  import { auth, db } from
+    "/wauklink-site/shared/firebase.js";
   import { onAuthStateChanged } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
   import {
     collection, query, where, orderBy,
-    getDocs
+    getDocs, doc, getDoc
   } from
     "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
@@ -68,41 +77,45 @@
 
   const esc = s =>
     String(s ?? "").replace(/[&<>"']/g, m =>
-      ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
+      ({ "&":"&amp;","<":"&lt;",">":"&gt;",
+         '"':"&quot;","'":"&#039;" }[m])
     );
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
-      location.replace("../auth/login.html");
+      location.replace("/wauklink-site/auth/login.html");
       return;
     }
 
-    // 🔐 Vérification rôle PRO
-    const userSnap = await getDocs(
-      query(
-        collection(db, "users"),
-        where("__name__", "==", user.uid)
-      )
+    // 🔐 Vérification rôle PRO / ADMIN
+    const snap = await getDoc(
+      doc(db, "users", user.uid)
     );
 
-   let isAllowed = false;
+    if (!snap.exists()) {
+      msg.textContent = "⛔ Profil introuvable.";
+      return;
+    }
 
-   userSnap.forEach(d => {
-     const data = d.data();
-     isAllowed = data.isPro === true || data.role === "admin";
-   });
+    const data = snap.data();
+    const isAllowed =
+      data.role === "admin" ||
+      data.plan === "pro" ||
+      data.isPro === true;
 
-   if (!isAllowed) {
-     msg.textContent = "⛔ Accès réservé aux comptes PRO.";
-     return;
-   }
+    if (!isAllowed) {
+      msg.textContent =
+        "⛔ Accès réservé aux comptes Professionnels.";
+      return;
+    }
 
     loadProAnnonces(user.uid);
   });
 
   async function loadProAnnonces(uid) {
     grid.innerHTML = "";
-    msg.textContent = "⏳ Chargement de vos annonces PRO…";
+    msg.textContent =
+      "⏳ Chargement de vos annonces PRO…";
 
     const qy = query(
       collection(db, "annonces"),
@@ -119,7 +132,8 @@
       return;
     }
 
-    msg.textContent = `${snap.size} annonce(s) PRO`;
+    msg.textContent =
+      `${snap.size} annonce(s) PRO`;
 
     snap.forEach(d => {
       const a = d.data();
@@ -128,12 +142,12 @@
       card.className = "card";
 
       card.innerHTML = `
-        <strong>${esc(a.titre || "Annonce")}</strong>
+        <strong>${esc(a.title || "Annonce")}</strong>
         <div class="meta">
-          ${esc(a.ville || "—")} • ${esc(a.categorie || "—")}
+          ${esc(a.city || "—")} • ${esc(a.type || "—")}
         </div>
         <div class="meta">
-          ${esc(a.prix ?? "—")} €
+          ${esc(a.price ?? "—")} €
         </div>
         <div class="meta">
           Statut : <b>${esc(a.status || "—")}</b>
