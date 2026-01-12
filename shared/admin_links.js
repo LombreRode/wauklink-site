@@ -9,29 +9,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const adminLinks = document.getElementById("adminLinks");
   if (!adminLinks) return;
 
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      adminLinks.classList.add("hidden");
-      return;
-    }
+  // Par défaut caché
+  adminLinks.classList.add("hidden");
+
+  onAuthStateChanged(auth, async user => {
+    if (!user) return;
 
     try {
       const snap = await getDoc(doc(db, "users", user.uid));
-      if (!snap.exists()) {
-        adminLinks.classList.add("hidden");
-        return;
-      }
+      if (!snap.exists()) return;
 
       const role = snap.data().role;
-      if (role !== "admin" && role !== "moderator") {
-        adminLinks.classList.add("hidden");
-        return;
-      }
+      if (role !== "admin" && role !== "moderator") return;
 
-      // ✅ UTILISATEUR ADMIN → AFFICHER LE MENU
-      adminLinks.classList.remove("hidden");
-
-      // 🔗 MENU ADMIN (UN SEUL TABLEAU, BIEN ALIGNÉ)
+      // ✅ Affichage menu admin
       const links = [
         { href: "/wauklink-site/admin/dashboard.html", label: "Dashboard" },
         { href: "/wauklink-site/admin/users.html", label: "Utilisateurs" },
@@ -42,7 +33,6 @@ document.addEventListener("DOMContentLoaded", () => {
         { href: "/wauklink-site/admin/pro-requests.html", label: "Comptes PRO" }
       ];
 
-      // 🧹 Nettoyage + injection
       adminLinks.innerHTML = "";
       links.forEach(l => {
         const a = document.createElement("a");
@@ -51,6 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
         a.className = "btn btn-outline";
         adminLinks.appendChild(a);
       });
+
+      adminLinks.classList.remove("hidden");
 
     } catch (err) {
       console.error("admin_links error:", err);
