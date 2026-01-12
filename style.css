@@ -306,3 +306,16 @@ input:focus {
   transform: translateY(-1px);
   box-shadow: 0 6px 18px rgba(0,0,0,.35);
 }
+
+.admin-bar::before {
+  content: "Administration";
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  opacity: .6;
+  margin-right: 12px;
+}
+
+.admin-bar {
+  align-items: center;
+}
