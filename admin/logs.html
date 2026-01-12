@@ -4,7 +4,10 @@
   <meta charset="utf-8">
   <title>Admin — Historique</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="/wauklink-site/style.css">
+
   <style>
     .badge{padding:4px 8px;border-radius:10px;font-weight:600}
     .b-act{background:#1f8f4a;color:#eafff2}
@@ -13,7 +16,9 @@
     .filters .row-actions > *{margin-right:6px}
   </style>
 </head>
+
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
     <div>
@@ -21,14 +26,23 @@
       <div class="subtitle">Historique des actions admin</div>
     </div>
     <nav class="topbar-nav">
-      <a class="btn" href="/wauklink-site/admin/index.html">← Admin</a>
+      <a class="btn"
+         href="/wauklink-site/admin/index.html">
+        ← Admin
+      </a>
     </nav>
   </div>
 </header>
 
 <main class="container main-layout">
+
   <!-- 🔍 FILTRES -->
-  <button id="btnCsv" class="btn btn-outline">Exporter CSV</button>
+  <div class="row-actions mb">
+    <button id="btnCsv" class="btn btn-outline">
+      Exporter CSV
+    </button>
+  </div>
+
   <section class="card filters">
     <div class="row-actions">
       <select id="fAction">
@@ -37,10 +51,23 @@
         <option value="disable">Désactivation</option>
         <option value="delete">Suppression</option>
       </select>
-      <input id="fAdmin" type="text" placeholder="Admin (email)…">
-      <input id="fDate" type="date">
-      <button id="btnFilter" class="btn btn-ok">Filtrer</button>
-      <button id="btnReset" class="btn btn-outline">Réinitialiser</button>
+
+      <input id="fAdmin"
+             type="text"
+             placeholder="Admin (email)…">
+
+      <input id="fDate"
+             type="date">
+
+      <button id="btnFilter"
+              class="btn btn-ok">
+        Filtrer
+      </button>
+
+      <button id="btnReset"
+              class="btn btn-outline">
+        Réinitialiser
+      </button>
     </div>
   </section>
 
@@ -59,6 +86,7 @@
       <tbody id="rows"></tbody>
     </table>
   </section>
+
 </main>
 
 <footer class="footer">
@@ -67,6 +95,34 @@
   </div>
 </footer>
 
-<script type="module" src="./logs.js"></script>
+<!-- 🔐 PROTECTION ADMIN -->
+<script type="module">
+  import { requireAdmin } from
+    "/wauklink-site/shared/guard.js";
+
+  requireAdmin({
+    onOk: () => {},
+    onDenied: () => {
+      document.body.innerHTML = `
+        <main class="container main-layout">
+          <h2>⛔ Accès refusé</h2>
+          <p class="meta">
+            Page réservée aux administrateurs
+          </p>
+          <a class="btn"
+             href="/wauklink-site/dashboard/index.html">
+            Retour dashboard
+          </a>
+        </main>
+      `;
+    }
+  });
+</script>
+
+<!-- 📜 LOGIQUE HISTORIQUE ADMIN -->
+<script type="module"
+        src="/wauklink-site/admin/logs.js">
+</script>
+
 </body>
 </html>
