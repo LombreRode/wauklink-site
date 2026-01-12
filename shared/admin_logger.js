@@ -1,4 +1,3 @@
-// shared/admin_logger.js
 import { db } from "./firebase.js";
 import {
   collection,
@@ -23,7 +22,7 @@ export async function logAdminAction({
       adminEmail,
       annonceId,
       extra,
-      createdAt: serverTimestamp() // 🔥 LE POINT CLÉ
+      createdAt: serverTimestamp()
     });
   } catch (err) {
     console.error("admin_logger error:", err);
