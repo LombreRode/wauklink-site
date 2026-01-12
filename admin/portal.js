@@ -1,5 +1,5 @@
 // admin/portal.js
-import { auth, db } from "../shared/firebase.js";
+import { auth } from "../shared/firebase.js";
 import { requireAdmin } from "../shared/guard.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -11,19 +11,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   requireAdmin({
-    redirectTo: "/wauklink-site/auth/login.html",
-
     onOk: (user, profile) => {
-      // ✅ Accès admin validé
-      msg.textContent = `✅ Accès admin autorisé (${profile.role})`;
-
-      // Ici tu pourras charger ensuite :
-      // - stats
-      // - logs
-      // - raccourcis admin
+      msg.textContent =
+        `✅ Accès admin autorisé (${profile.role})`;
       console.log("👑 Admin connecté :", user.uid);
+      // futur :
+      // - stats
+      // - raccourcis
+      // - widgets admin
     },
-
     onDenied: () => {
       msg.textContent = "⛔ Accès refusé (admin requis)";
     }
