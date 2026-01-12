@@ -1,9 +1,9 @@
+// admin/annonces.js
 console.log("✅ admin/annonces.js chargé");
 
 import { db, auth } from "/wauklink-site/shared/firebase.js";
 import { requireAdmin } from "/wauklink-site/shared/guard.js";
 import { logAdminAction } from "/wauklink-site/shared/admin_logger.js";
-
 import {
   collection,
   query,
@@ -32,7 +32,6 @@ async function loadAnnonces() {
       collection(db, "annonces"),
       where("status", "==", "pending")
     );
-
     const res = await getDocs(q);
 
     if (res.empty) {
@@ -51,7 +50,6 @@ async function loadAnnonces() {
 
     res.forEach(d => {
       const a = d.data();
-
       const tr = document.createElement("tr");
 
       tr.innerHTML = `
@@ -71,58 +69,55 @@ async function loadAnnonces() {
         </td>
       `;
 
-      const [btnOk, btnDisable] =
-        tr.querySelectorAll("button");
+      const [btnOk, btnDisable] = tr.querySelectorAll("button");
+
+      const lock = (state) => {
+        btnOk.disabled = state;
+        btnDisable.disabled = state;
+      };
 
       // ✅ VALIDER
       btnOk.onclick = async () => {
         if (!confirm("Valider cette annonce ?")) return;
-
-        await updateDoc(
-          doc(db, "annonces", d.id),
-          { status: "active" }
-        );
-
-        await logAdminAction({
-          action: "activate",
-          adminUid: auth.currentUser.uid,
-          adminEmail: auth.currentUser.email,
-          annonceId: d.id,
-          extra: {
-            title: a.title,
-            city: a.city
-          }
-        });
-
-        tr.remove();
+        lock(true);
+        try {
+          await updateDoc(doc(db, "annonces", d.id), { status: "active" });
+          await logAdminAction({
+            action: "activate",
+            adminUid: auth.currentUser?.uid,
+            adminEmail: auth.currentUser?.email,
+            annonceId: d.id,
+            extra: { title: a.title, city: a.city }
+          });
+          tr.remove();
+        } catch (e) {
+          console.error("activate error:", e);
+          lock(false);
+        }
       };
 
       // 🚫 DÉSACTIVER
       btnDisable.onclick = async () => {
         if (!confirm("Désactiver cette annonce ?")) return;
-
-        await updateDoc(
-          doc(db, "annonces", d.id),
-          { status: "disabled" }
-        );
-
-        await logAdminAction({
-          action: "disable",
-          adminUid: auth.currentUser.uid,
-          adminEmail: auth.currentUser.email,
-          annonceId: d.id,
-          extra: {
-            title: a.title,
-            city: a.city
-          }
-        });
-
-        tr.remove();
+        lock(true);
+        try {
+          await updateDoc(doc(db, "annonces", d.id), { status: "disabled" });
+          await logAdminAction({
+            action: "disable",
+            adminUid: auth.currentUser?.uid,
+            adminEmail: auth.currentUser?.email,
+            annonceId: d.id,
+            extra: { title: a.title, city: a.city }
+          });
+          tr.remove();
+        } catch (e) {
+          console.error("disable error:", e);
+          lock(false);
+        }
       };
 
       rows.appendChild(tr);
     });
-
   } catch (err) {
     console.error("❌ admin annonces error:", err);
     msg.textContent = "❌ Erreur de chargement des annonces";
