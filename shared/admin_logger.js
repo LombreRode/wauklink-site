@@ -1,3 +1,4 @@
+// shared/admin_logger.js
 import { db } from "./firebase.js";
 import {
   collection,
@@ -15,16 +16,23 @@ export async function logAdminAction({
   annonceId,
   extra = {}
 }) {
+  if (!action || !adminUid) {
+    console.warn("logAdminAction: paramètres manquants");
+    return false;
+  }
+
   try {
     await addDoc(collection(db, "admin_logs"), {
       action,
       adminUid,
-      adminEmail,
-      annonceId,
+      adminEmail: adminEmail || null,
+      annonceId: annonceId || null,
       extra,
       createdAt: serverTimestamp()
     });
+    return true;
   } catch (err) {
     console.error("admin_logger error:", err);
+    return false;
   }
 }
