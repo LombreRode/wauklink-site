@@ -7,32 +7,69 @@
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
     <h1>WAUKLINK</h1>
+    <nav class="topbar-nav">
+      <a class="btn" href="/wauklink-site/index.html">← Accueil</a>
+    </nav>
   </div>
 </header>
+
 <main class="container main-layout">
-  <p id="msg" class="meta">Chargement…</p>
+  <p id="msg" class="meta">⏳ Chargement…</p>
+
   <section id="annonce" class="card hidden">
     <h2 id="titre"></h2>
+
     <div id="meta" class="meta"></div>
+
     <p id="description"></p>
+
     <div id="photos" class="grid"></div>
-    <section id="ratingSection" class="hidden">
+
+    <!-- ⭐ NOTATION (uniquement connecté) -->
+    <section id="ratingSection" class="hidden" style="margin-top:20px">
+      <h3>Laisser une note</h3>
+
       <select id="ratingValue">
         <option value="">Note</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
+        <option value="1">⭐ 1</option>
+        <option value="2">⭐⭐ 2</option>
+        <option value="3">⭐⭐⭐ 3</option>
+        <option value="4">⭐⭐⭐⭐ 4</option>
+        <option value="5">⭐⭐⭐⭐⭐ 5</option>
       </select>
-      <button id="rateBtn" class="btn">Noter</button>
+
+      <button id="rateBtn" class="btn btn-ok">
+        Noter
+      </button>
+
+      <p id="rateMsg" class="meta"></p>
     </section>
   </section>
 </main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <span>© WAUKLINK</span>
+    <nav class="footer-nav">
+      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
+      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
+      <a class="link" href="/wauklink-site/legal/privacy.html">Confidentialité</a>
+      <a class="link" href="/wauklink-site/legal/mentions-legales.html">
+        Mentions légales
+      </a>
+    </nav>
+  </div>
+</footer>
+
+<!-- 🔐 Liens admin si autorisé -->
+<script type="module" src="/wauklink-site/shared/admin_links.js"></script>
+
+<!-- 📄 LOGIQUE DÉTAIL ANNONCE -->
 <script type="module" src="./location-detail.js"></script>
+
 </body>
 </html>
-
