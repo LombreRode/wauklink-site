@@ -1,4 +1,8 @@
-import { db } from "../shared/firebase.js";
+/* ===============================
+   ADMIN — ANNONCES (FINAL SAFE)
+   =============================== */
+
+import { db, auth } from "../shared/firebase.js";
 import { requireAdmin } from "../shared/guard.js";
 import {
   collection,
@@ -15,7 +19,7 @@ import {
   startAfter
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-/* DOM */
+/* ========= DOM ========= */
 const rows = document.getElementById("rows");
 const msg  = document.getElementById("msg");
 
@@ -23,55 +27,68 @@ const filterType   = document.getElementById("filterType");
 const filterStatus = document.getElementById("filterStatus");
 const filterCity   = document.getElementById("filterCity");
 const filterSearch = document.getElementById("filterSearch");
-const btnFilter    = document.getElementById("btnFilter");
-const btnReset     = document.getElementById("btnReset");
 
-const btnPrev  = document.getElementById("btnPrev");
-const btnNext  = document.getElementById("btnNext");
-const pageInfo = document.getElementById("pageInfo");
+const btnFilter = document.getElementById("btnFilter");
+const btnReset  = document.getElementById("btnReset");
+const btnPrev   = document.getElementById("btnPrev");
+const btnNext   = document.getElementById("btnNext");
+const pageInfo  = document.getElementById("pageInfo");
 
-/* State */
+/* ========= STATE ========= */
 const PAGE_SIZE = 10;
 let lastDoc = null;
 let currentPage = 1;
 let currentFilters = {};
 let currentSearch = "";
 
-/* Helpers */
+/* ========= HELPERS ========= */
 const esc = s =>
   String(s ?? "").replace(/[&<>"']/g, m =>
     ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
   );
 
 function badge(status) {
-  if (status === "active") return "🟢 active";
+  if (status === "active")   return "🟢 active";
   if (status === "disabled") return "🟠 désactivée";
   return "🟡 en attente";
 }
 
+/* ========= LOG ADMIN (COMPLET) ========= */
 async function logAdmin(action, annonceId, extra = {}) {
   try {
+    const user = auth.currentUser;
     await addDoc(collection(db, "admin_logs"), {
       action,
       annonceId,
+      adminUid: user?.uid || null,
+      adminEmail: user?.email || null,
       extra,
       createdAt: serverTimestamp()
     });
-  } catch {}
+  } catch (e) {
+    console.error("logAdmin error", e);
+  }
 }
 
-/* Query builder */
+/* ========= QUERY BUILDER ========= */
 function buildQuery({ after = null } = {}) {
   const c = [];
-  if (currentFilters.type)   c.push(where("type", "==", currentFilters.type));
-  if (currentFilters.status) c.push(where("status", "==", currentFilters.status));
-  if (currentFilters.city)   c.push(where("city", "==", currentFilters.city));
+
+  if (currentFilters.type)
+    c.push(where("type", "==", currentFilters.type));
+  if (currentFilters.status)
+    c.push(where("status", "==", currentFilters.status));
+  if (currentFilters.city)
+    c.push(where("city", "==", currentFilters.city));
+
   c.push(orderBy("createdAt", "desc"), limit(PAGE_SIZE));
+
   if (after) c.push(startAfter(after));
+
   return query(collection(db, "annonces"), ...c);
 }
 
-/* Load */
+/* ========= LOAD PAGE ========= */
 async function loadPage({ reset = false } = {}) {
   if (reset) {
     lastDoc = null;
@@ -87,7 +104,8 @@ async function loadPage({ reset = false } = {}) {
     const res = await getDocs(q);
 
     if (res.empty) {
-      rows.innerHTML = `<tr><td colspan="6" class="meta">Aucune annonce</td></tr>`;
+      rows.innerHTML =
+        `<tr><td colspan="6" class="meta">Aucune annonce</td></tr>`;
       msg.textContent = "";
       btnNext.disabled = true;
       return;
@@ -101,7 +119,7 @@ async function loadPage({ reset = false } = {}) {
     res.forEach(d => {
       const a = d.data();
 
-      // 🔍 recherche texte (titre)
+      /* 🔍 Recherche titre */
       if (currentSearch) {
         const t = (a.title || "").toLowerCase();
         if (!t.includes(currentSearch)) return;
@@ -125,19 +143,20 @@ async function loadPage({ reset = false } = {}) {
         </td>
       `;
 
-      const [btnDisable, btnActivate, btnDelete] = tr.querySelectorAll("button");
+      const [btnDisable, btnActivate, btnDelete] =
+        tr.querySelectorAll("button");
 
       btnDisable.onclick = async () => {
         if (!confirm(`Désactiver : ${a.title} (${a.city}) ?`)) return;
         await updateDoc(doc(db, "annonces", d.id), { status: "disabled" });
-        await logAdmin("disable", d.id);
+        await logAdmin("disable", d.id, { title: a.title });
         tr.children[4].textContent = badge("disabled");
       };
 
       btnActivate.onclick = async () => {
         if (!confirm(`Activer : ${a.title} (${a.city}) ?`)) return;
         await updateDoc(doc(db, "annonces", d.id), { status: "active" });
-        await logAdmin("activate", d.id);
+        await logAdmin("activate", d.id, { title: a.title });
         tr.children[4].textContent = badge("active");
       };
 
@@ -161,7 +180,7 @@ async function loadPage({ reset = false } = {}) {
   }
 }
 
-/* Actions */
+/* ========= ACTIONS ========= */
 btnFilter.onclick = () => {
   currentFilters = {
     type: filterType.value || null,
@@ -199,6 +218,7 @@ btnPrev.onclick = async () => {
   await loadPage({ reset: true });
 };
 
+/* ========= GUARD ========= */
 requireAdmin({
   onOk: () => loadPage({ reset: true }),
   onDenied: () => {
