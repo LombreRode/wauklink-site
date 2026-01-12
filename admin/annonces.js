@@ -1,7 +1,5 @@
-import { logAdminAction } from "../shared/admin_logger.js";
-import { db } from "../shared/firebase.js";
+import { db, auth } from "../shared/firebase.js";
 import { requireAdmin } from "../shared/guard.js";
-import { auth } from "../shared/firebase.js";
 import { logAdminAction } from "../shared/admin_logger.js";
 import {
   collection,
@@ -29,7 +27,6 @@ async function loadAnnonces() {
       collection(db, "annonces"),
       where("status", "==", "pending")
     );
-
     const res = await getDocs(q);
 
     if (res.empty) {
@@ -68,7 +65,9 @@ async function loadAnnonces() {
       btnOk.onclick = async () => {
         if (!confirm("Valider cette annonce ?")) return;
 
-        await updateDoc(doc(db, "annonces", d.id), { status: "active" });
+        await updateDoc(doc(db, "annonces", d.id), {
+          status: "active"
+        });
 
         await logAdminAction({
           action: "activate",
@@ -78,15 +77,7 @@ async function loadAnnonces() {
           extra: {
             title: a.title,
             city: a.city
-         }
-       });
-
-        // 🔐 LOG ADMIN
-        await logAdminAction({
-          action: "validate",
-          adminUid: auth.currentUser.uid,
-          adminEmail: auth.currentUser.email,
-          annonceId: d.id
+          }
         });
 
         tr.remove();
@@ -96,6 +87,9 @@ async function loadAnnonces() {
       btnDisable.onclick = async () => {
         if (!confirm("Désactiver cette annonce ?")) return;
 
+        await updateDoc(doc(db, "annonces", d.id), {
+          status: "disabled"
+        });
 
         await logAdminAction({
           action: "disable",
@@ -105,15 +99,7 @@ async function loadAnnonces() {
           extra: {
             title: a.title,
             city: a.city
-         }
-       });
-
-        // 🔐 LOG ADMIN
-        await logAdminAction({
-          action: "disable",
-          adminUid: auth.currentUser.uid,
-          adminEmail: auth.currentUser.email,
-          annonceId: d.id
+          }
         });
 
         tr.remove();
