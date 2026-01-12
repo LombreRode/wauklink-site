@@ -1,10 +1,7 @@
-/* ===============================
-   ADMIN / MODÉRATION — SIGNALEMENTS
-   (STABLE – GitHub Pages)
-   =============================== */
-
-import { db } from "/wauklink-site/shared/firebase.js";
+// admin/reports.js
+import { db, auth } from "/wauklink-site/shared/firebase.js";
 import { requireModerator } from "/wauklink-site/shared/guard.js";
+import { logAdminAction } from "/wauklink-site/shared/admin_logger.js";
 import {
   collection,
   query,
@@ -31,7 +28,7 @@ function showEmpty(text) {
   list.innerHTML = "<p class='meta'>Tout est à jour.</p>";
 }
 
-/* ========= LOAD REPORTS ========= */
+/* ========= LOAD ========= */
 async function loadReports() {
   msg.textContent = "⏳ Chargement des signalements…";
   list.innerHTML = "";
@@ -78,19 +75,26 @@ async function loadReports() {
       `;
 
       const btn = card.querySelector("button");
+
       btn.onclick = async () => {
         if (!confirm("Marquer ce signalement comme traité ?")) return;
-
         btn.disabled = true;
         btn.textContent = "Traitement…";
 
         try {
-          await updateDoc(
-            doc(db, "reports", d.id),
-            { status: "closed" }
-          );
-          card.remove();
+          await updateDoc(doc(db, "reports", d.id), {
+            status: "closed"
+          });
 
+          await logAdminAction({
+            action: "report_closed",
+            adminUid: auth.currentUser?.uid,
+            adminEmail: auth.currentUser?.email,
+            annonceId: r.annonceId,
+            extra: { reason: r.reason }
+          });
+
+          card.remove();
           if (!list.children.length) {
             showEmpty("✅ Tous les signalements ont été traités.");
           }
@@ -104,7 +108,6 @@ async function loadReports() {
 
       list.appendChild(card);
     });
-
   } catch (err) {
     console.error("loadReports error:", err);
     msg.textContent = "❌ Erreur de chargement des signalements";
