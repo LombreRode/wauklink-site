@@ -1,3 +1,4 @@
+import { logAdminAction } from "../shared/admin_logger.js";
 import { db } from "../shared/firebase.js";
 import { requireAdmin } from "../shared/guard.js";
 import { auth } from "../shared/firebase.js";
@@ -69,6 +70,17 @@ async function loadAnnonces() {
 
         await updateDoc(doc(db, "annonces", d.id), { status: "active" });
 
+        await logAdminAction({
+          action: "activate",
+          adminUid: auth.currentUser.uid,
+          adminEmail: auth.currentUser.email,
+          annonceId: d.id,
+          extra: {
+            title: a.title,
+            city: a.city
+         }
+       });
+
         // 🔐 LOG ADMIN
         await logAdminAction({
           action: "validate",
@@ -84,7 +96,17 @@ async function loadAnnonces() {
       btnDisable.onclick = async () => {
         if (!confirm("Désactiver cette annonce ?")) return;
 
-        await updateDoc(doc(db, "annonces", d.id), { status: "disabled" });
+
+        await logAdminAction({
+          action: "disable",
+          adminUid: auth.currentUser.uid,
+          adminEmail: auth.currentUser.email,
+          annonceId: d.id,
+          extra: {
+            title: a.title,
+            city: a.city
+         }
+       });
 
         // 🔐 LOG ADMIN
         await logAdminAction({
