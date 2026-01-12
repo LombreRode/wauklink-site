@@ -41,26 +41,28 @@ async function loadDashboard() {
   $("sPending").textContent  = pending;
 
   /* ---------- LOGS ADMIN ---------- */
-  const logsSnap = await getDocs(collection(db, "admin_logs"));
+  let currentRange = 1; // par défaut : aujourd’hui
 
+function getRangeLimit(days) {
   const now = Date.now();
-  const limit = sinceDays(currentRange);
+  return now - days * 24 * 60 * 60 * 1000;
+}
 
-  let today = 0;
-  let period = 0;
+async function loadAdminActivity() {
+  const logsSnap = await getDocs(collection(db, "admin_logs"));
+  const limit = getRangeLimit(currentRange);
+
+  let count = 0;
 
   logsSnap.forEach(d => {
-    const ts = d.data().createdAt?.seconds;
-    if (!ts) return;
-
-    const t = ts * 1000;
-
-    if (now - t < 24 * 60 * 60 * 1000) today++;
-    if (t >= limit) period++;
+    const t = d.data().createdAt?.seconds * 1000;
+    if (!t) return;
+    if (t >= limit) count++;
   });
 
-  $("sToday").textContent = today;
-  $("sWeek").textContent  = period;
+  $("sToday").textContent = currentRange === 1 ? count : "—";
+  $("sWeek").textContent  = count;
+}
 
   /* ---------- REPORTS ---------- */
   const reportsQ = query(
