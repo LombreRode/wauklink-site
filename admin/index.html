@@ -4,20 +4,31 @@
   <meta charset="utf-8">
   <title>WAUKLINK — Admin & Modération</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
 
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
       <div class="subtitle">Espace Admin · Modération</div>
     </div>
+
     <nav class="topbar-nav">
-      <a class="link" href="/wauklink-site/index.html">Accueil</a>
-      <a class="link" href="/wauklink-site/dashboard/index.html">Dashboard</a>
-      <a class="btn btn-outline" href="/wauklink-site/profil/index.html">Profil</a>
+      <a class="link" href="/wauklink-site/index.html">
+        Accueil
+      </a>
+      <a class="link" href="/wauklink-site/dashboard/index.html">
+        Dashboard
+      </a>
+      <a class="btn btn-outline"
+         href="/wauklink-site/profil/index.html">
+        Profil
+      </a>
     </nav>
   </div>
 </header>
@@ -29,11 +40,30 @@
   </section>
 
   <section class="grid">
-    <a class="card" href="/wauklink-site/admin/users.html"><h3>👤 Utilisateurs</h3></a>
-    <a class="card" href="/wauklink-site/admin/annonces.html"><h3>📢 Annonces</h3></a>
-    <a class="card" href="/wauklink-site/dashboard/moderation-location.html"><h3>🛡️ Modération</h3></a>
-    <a class="card" href="/wauklink-site/admin/reports.html"><h3>🚨 Signalements</h3></a>
-    <a class="card" href="/wauklink-site/admin/pro-requests.html"><h3>🛠️ Comptes PRO</h3></a>
+    <a class="card"
+       href="/wauklink-site/admin/users.html">
+      <h3>👤 Utilisateurs</h3>
+    </a>
+
+    <a class="card"
+       href="/wauklink-site/admin/annonces.html">
+      <h3>📢 Annonces</h3>
+    </a>
+
+    <a class="card"
+       href="/wauklink-site/dashboard/moderation-location.html">
+      <h3>🛡️ Modération</h3>
+    </a>
+
+    <a class="card"
+       href="/wauklink-site/admin/reports.html">
+      <h3>🚨 Signalements</h3>
+    </a>
+
+    <a class="card"
+       href="/wauklink-site/admin/pro-requests.html">
+      <h3>🛠️ Comptes PRO</h3>
+    </a>
   </section>
 </main>
 
@@ -43,8 +73,10 @@
   </div>
 </footer>
 
+<!-- 🔐 PROTECTION ADMIN -->
 <script type="module">
-  import { requireAdmin } from "../shared/guard.js";
+  import { requireAdmin } from
+    "/wauklink-site/shared/guard.js";
 
   requireAdmin({
     onOk: () => {},
@@ -52,8 +84,11 @@
       document.body.innerHTML = `
         <main class="container main-layout">
           <h2>⛔ Accès refusé</h2>
-          <p class="meta">Page réservée aux administrateurs</p>
-          <a class="btn" href="/wauklink-site/dashboard/index.html">
+          <p class="meta">
+            Page réservée aux administrateurs
+          </p>
+          <a class="btn"
+             href="/wauklink-site/dashboard/index.html">
             Retour dashboard
           </a>
         </main>
@@ -61,5 +96,6 @@
     }
   });
 </script>
+
 </body>
 </html>
