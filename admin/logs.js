@@ -19,29 +19,39 @@ async function loadLogs() {
   rows.innerHTML = "";
   msg.textContent = "Chargement…";
 
-  const q = query(
-    collection(db, "admin_logs"),
-    orderBy("createdAt", "desc")
-  );
-  const res = await getDocs(q);
+  try {
+    const q = query(
+      collection(db, "admin_logs"),
+      orderBy("createdAt", "desc")
+    );
 
-  if (res.empty) {
-    rows.innerHTML = `<tr><td colspan="3" class="meta">Aucun log</td></tr>`;
-    msg.textContent = "";
-    return;
+    const res = await getDocs(q);
+
+    if (res.empty) {
+      rows.innerHTML =
+        `<tr><td colspan="4" class="meta">Aucun historique</td></tr>`;
+      msg.textContent = "";
+      return;
+    }
+
+    msg.textContent = `${res.size} action(s)`;
+
+    res.forEach(d => {
+      const l = d.data();
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${fmt(l.createdAt)}</td>
+        <td>${l.adminEmail || "—"}</td>
+        <td>${l.action}</td>
+        <td>${l.extra?.title || l.annonceId}</td>
+      `;
+      rows.appendChild(tr);
+    });
+
+  } catch (e) {
+    console.error(e);
+    msg.textContent = "❌ Erreur de chargement";
   }
-
-  msg.textContent = `${res.size} action(s)`;
-  res.forEach(d => {
-    const l = d.data();
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${fmt(l.createdAt)}</td>
-      <td>${l.action}</td>
-      <td>${l.annonceId}</td>
-    `;
-    rows.appendChild(tr);
-  });
 }
 
 requireAdmin({
