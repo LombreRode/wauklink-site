@@ -3,57 +3,63 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>WAUKLINK — Déposer une annonce</title>
-  <link rel="stylesheet" href="../style.css">
+  <title>Détail annonce — WAUKLINK</title>
+  <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
 <body>
 
 <header class="topbar">
   <div class="container topbar-row">
     <h1>WAUKLINK</h1>
-    <div class="subtitle">Déposer une annonce</div>
     <nav class="topbar-nav">
-      <a class="btn" href="../index.html">← Accueil</a>
+      <a class="btn" href="/wauklink-site/index.html">← Accueil</a>
     </nav>
   </div>
 </header>
 
 <main class="container main-layout">
-  <section class="card" style="max-width:700px;margin:auto">
-    <h2>Nouvelle annonce</h2>
+  <p id="msg" class="meta">Chargement…</p>
 
-    <label>Titre</label>
-    <input id="title" type="text" required>
+  <section id="annonce" class="card hidden">
+    <h2 id="titre"></h2>
 
-    <label>Description</label>
-    <textarea id="description" rows="4" required></textarea>
+    <div id="meta" class="meta"></div>
 
-    <label>Ville</label>
-    <input id="city" type="text" required>
+    <p id="description"></p>
 
-    <label>Prix (€)</label>
-    <input id="price" type="number">
+    <!-- 📷 PHOTOS -->
+    <div id="photos" class="grid"></div>
 
-    <!-- ✅ TYPE D’ANNONCE (LA CLÉ) -->
-    <label>Type d’annonce</label>
-    <select id="type" required>
-      <option value="">— Choisir —</option>
-      <option value="immobilier">Immobilier</option>
-      <option value="loisir">Loisir</option>
-      <option value="autres">Autres</option>
-      <option value="service">Service à la personne</option>
-      <option value="travaux">Travaux</option>
-      <option value="urgence">Urgence</option>
-    </select>
+    <!-- ⭐ AVIS / NOTE -->
+    <section id="ratingSection" class="card hidden" style="margin-top:20px">
+      <h3>Donner une note</h3>
 
-    <p id="msg" class="meta"></p>
+      <select id="ratingValue">
+        <option value="">— Note —</option>
+        <option value="1">⭐ 1</option>
+        <option value="2">⭐⭐ 2</option>
+        <option value="3">⭐⭐⭐ 3</option>
+        <option value="4">⭐⭐⭐⭐ 4</option>
+        <option value="5">⭐⭐⭐⭐⭐ 5</option>
+      </select>
 
-    <button id="publishBtn" class="btn btn-ok">
-      Publier l’annonce
-    </button>
+      <button id="rateBtn" class="btn btn-ok">
+        Envoyer la note
+      </button>
+
+      <p id="ratingMsg" class="meta"></p>
+    </section>
   </section>
 </main>
 
-<script type="module" src="./location.js"></script>
+<footer class="footer">
+  <div class="container footer-row">
+    <span>© WAUKLINK</span>
+  </div>
+</footer>
+
+<!-- JS -->
+<script type="module" src="./location-detail.js"></script>
+
 </body>
 </html>
