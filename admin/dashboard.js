@@ -1,3 +1,7 @@
+/* ===============================
+   ADMIN — DASHBOARD (STABLE)
+   =============================== */
+
 import { db } from "../shared/firebase.js";
 import { requireAdmin } from "../shared/guard.js";
 import {
@@ -7,25 +11,20 @@ import {
   where
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
+/* ========= DOM ========= */
 const $ = id => document.getElementById(id);
 
-/* =========================
-   ÉTAT GLOBAL
-========================= */
-let currentRange = 1; // Aujourd’hui par défaut
+/* ========= STATE ========= */
+let currentRange = 1; // 1 = aujourd’hui, 7 = semaine, 30 = mois
 
-/* =========================
-   UTILS TEMPS
-========================= */
+/* ========= UTILS TEMPS ========= */
 function sinceDays(days) {
   return Date.now() - days * 24 * 60 * 60 * 1000;
 }
 
-/* =========================
-   TITRE DYNAMIQUE
-========================= */
+/* ========= TITRE ========= */
 function updateTitle() {
-  const title = document.getElementById("activityTitle");
+  const title = $("activityTitle");
   if (!title) return;
 
   if (currentRange === 1) {
@@ -37,59 +36,61 @@ function updateTitle() {
   }
 }
 
-/* =========================
-   DASHBOARD
-========================= */
+/* ========= DASHBOARD ========= */
 async function loadDashboard() {
-  /* 📦 ANNONCES */
-  const annoncesSnap = await getDocs(collection(db, "annonces"));
-  let total = 0, active = 0, disabled = 0, pending = 0;
+  try {
+    /* 📦 ANNONCES */
+    const annoncesSnap = await getDocs(collection(db, "annonces"));
+    let total = 0, active = 0, disabled = 0, pending = 0;
 
-  annoncesSnap.forEach(d => {
-    total++;
-    const s = d.data().status;
-    if (s === "active") active++;
-    else if (s === "disabled") disabled++;
-    else pending++;
-  });
+    annoncesSnap.forEach(d => {
+      total++;
+      const s = d.data().status;
+      if (s === "active") active++;
+      else if (s === "disabled") disabled++;
+      else pending++;
+    });
 
-  $("sTotal").textContent    = total;
-  $("sActive").textContent   = active;
-  $("sDisabled").textContent = disabled;
-  $("sPending").textContent  = pending;
+    $("sTotal").textContent    = total;
+    $("sActive").textContent   = active;
+    $("sDisabled").textContent = disabled;
+    $("sPending").textContent  = pending;
 
-  /* 📜 LOGS ADMIN */
-  const logsSnap = await getDocs(collection(db, "admin_logs"));
-  const limit = sinceDays(currentRange);
-  const now = Date.now();
+    /* 📜 LOGS ADMIN */
+    const logsSnap = await getDocs(collection(db, "admin_logs"));
+    const limitTs = sinceDays(currentRange);
+    const now = Date.now();
 
-  let today = 0;
-  let period = 0;
+    let today = 0;
+    let period = 0;
 
-  logsSnap.forEach(d => {
-    const ts = d.data().createdAt?.seconds;
-    if (!ts) return;
+    logsSnap.forEach(d => {
+      const ts = d.data().createdAt?.seconds;
+      if (!ts) return;
 
-    const t = ts * 1000;
-    if (now - t < 24 * 60 * 60 * 1000) today++;
-    if (t >= limit) period++;
-  });
+      const t = ts * 1000;
+      if (now - t < 24 * 60 * 60 * 1000) today++;
+      if (t >= limitTs) period++;
+    });
 
-  $("sToday").textContent = today;
-  $("sWeek").textContent  = period;
+    $("sToday").textContent = today;
+    $("sWeek").textContent  = period;
 
-  /* 🚩 REPORTS */
-  const reportsQ = query(
-    collection(db, "reports"),
-    where("status", "==", "pending")
-  );
-  const reportsSnap = await getDocs(reportsQ);
-  $("sReports").textContent = reportsSnap.size;
+    /* 🚩 REPORTS */
+    const reportsQ = query(
+      collection(db, "reports"),
+      where("status", "==", "pending")
+    );
+    const reportsSnap = await getDocs(reportsQ);
+    $("sReports").textContent = reportsSnap.size;
+
+  } catch (err) {
+    console.error("❌ Dashboard error:", err);
+    alert("Erreur lors du chargement du dashboard admin");
+  }
 }
 
-/* =========================
-   FILTRES TEMPS
-========================= */
+/* ========= FILTRES TEMPS ========= */
 function initFilters() {
   document.querySelectorAll("[data-range]").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -101,7 +102,7 @@ function initFilters() {
         .forEach(b => b.classList.remove("btn-ok"));
       btn.classList.add("btn-ok");
 
-      // feedback visuel
+      // reset affichage
       $("sToday").textContent = "—";
       $("sWeek").textContent  = "—";
 
@@ -111,14 +112,20 @@ function initFilters() {
   });
 }
 
-/* =========================
-   GUARD ADMIN
-========================= */
+/* ========= GUARD ADMIN ========= */
 requireAdmin({
   onOk: () => {
     initFilters();
     updateTitle();
     loadDashboard();
   },
-  onDenied: () => alert("⛔ Accès refusé")
+  onDenied: () => {
+    document.body.innerHTML = `
+      <main class="container main-layout">
+        <h2>⛔ Accès refusé</h2>
+        <p class="meta">Page réservée aux administrateurs</p>
+        <a class="btn" href="/wauklink-site/index.html">Accueil</a>
+      </main>
+    `;
+  }
 });
