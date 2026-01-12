@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Admin — Signalements</title>
-  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
-
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
     <div>
@@ -15,7 +15,7 @@
       <div class="subtitle">Signalements utilisateurs</div>
     </div>
     <nav class="topbar-nav">
-      <a class="btn" href="./index.html">← Dashboard</a>
+      <a class="btn" href="/wauklink-site/admin/index.html">← Admin</a>
     </nav>
   </div>
 </header>
@@ -34,12 +34,13 @@
   </div>
 </footer>
 
-<!-- Liens admin -->
-<script type="module" src="../shared/admin_links.js"></script>
+<!-- 🔐 LIENS ADMIN -->
+<script type="module" src="/wauklink-site/shared/admin_links.js"></script>
 
+<!-- 🔐 LOGIQUE MODÉRATION -->
 <script type="module">
-import { requireModerator } from "../shared/guard.js";
-import { db } from "../shared/firebase.js";
+import { requireModerator } from "/wauklink-site/shared/guard.js";
+import { db } from "/wauklink-site/shared/firebase.js";
 import {
   collection,
   getDocs,
@@ -93,9 +94,11 @@ async function loadReports() {
 
         <div class="meta">
           Annonce :
-          <a href="/wauklink-site/admin/annonce.html?id=${esc(r.annonceId)}"
-             class="link"
-             target="_blank">
+          <a
+            href="/wauklink-site/admin/annonce.html?id=${esc(r.annonceId)}"
+            class="link"
+            target="_blank"
+          >
             ${esc(r.annonceId)}
           </a>
         </div>
@@ -120,6 +123,7 @@ async function loadReports() {
             doc(db, "reports", d.id),
             { status: "closed" }
           );
+
           card.remove();
 
           if (!list.children.length) {
@@ -143,7 +147,7 @@ async function loadReports() {
   }
 }
 
-// 🔐 ADMIN + MODÉRATION
+/* 🔐 MODÉRATEUR OU ADMIN */
 requireModerator({
   onOk: loadReports,
   onDenied: () => {
@@ -152,5 +156,6 @@ requireModerator({
   }
 });
 </script>
+
 </body>
 </html>
