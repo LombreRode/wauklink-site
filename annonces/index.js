@@ -7,8 +7,8 @@ import {
   getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-const list = document.getElementById("list");
-const msg  = document.getElementById("msg");
+const list  = document.getElementById("list");
+const msg   = document.getElementById("msg");
 const title = document.getElementById("pageTitle");
 
 /* ========= helpers ========= */
@@ -42,26 +42,32 @@ async function loadAnnonces() {
     }
 
     msg.textContent = `${snap.size} annonce(s)`;
+
     snap.forEach(d => {
       const a = d.data();
+      const shortDesc =
+        (a.description || "").slice(0, 120);
 
       const card = document.createElement("div");
       card.className = "card";
-
       card.innerHTML = `
         <strong>${esc(a.title || "Annonce")}</strong>
+
         <div class="meta">
           ${esc(a.city || "—")} • ${esc(a.type || "—")}
         </div>
+
         <div class="meta">
           ${a.price ?? "—"} €
         </div>
+
         <p class="meta" style="margin-top:8px">
-          ${esc(a.description || "").slice(0, 120)}…
+          ${esc(shortDesc)}…
         </p>
+
         <div class="row-actions" style="margin-top:10px">
           <a class="btn btn-outline"
-             href="/wauklink-site/annonces/view.html?id=${d.id}">
+             href="/wauklink-site/annonces/location-detail.html?id=${d.id}">
             Voir l’annonce
           </a>
         </div>
