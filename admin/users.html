@@ -1,41 +1,7 @@
-<!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8">
-  <title>Admin — Utilisateurs</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex, nofollow">
-  <link rel="stylesheet" href="/wauklink-site/style.css">
-</head>
-<body>
-
-<header class="topbar">
-  <div class="container topbar-row">
-    <div>
-      <h1>WAUKLINK</h1>
-      <div class="subtitle">Administration — Utilisateurs</div>
-    </div>
-    <nav class="topbar-nav">
-      <a class="btn" href="/wauklink-site/admin/index.html">← Admin</a>
-    </nav>
-  </div>
-</header>
-
-<main class="container main-layout">
-  <h2>👥 Tous les utilisateurs</h2>
-  <p id="msg" class="meta">Chargement…</p>
-  <section id="list" class="grid"></section>
-</main>
-
-<footer class="footer">
-  <div class="container footer-row">
-    <span>© WAUKLINK</span>
-  </div>
-</footer>
-
 <script type="module">
-import { db } from "/wauklink-site/shared/firebase.js";
+import { db, auth } from "/wauklink-site/shared/firebase.js";
 import { requireAdmin } from "/wauklink-site/shared/guard.js";
+import { logAdminAction } from "/wauklink-site/shared/admin_logger.js";
 import {
   collection,
   getDocs,
@@ -45,6 +11,12 @@ import {
 
 const list = document.getElementById("list");
 const msg  = document.getElementById("msg");
+
+const esc = s =>
+  String(s ?? "").replace(/[&<>"']/g, m =>
+    ({ "&":"&amp;","<":"&lt;",">":"&gt;",
+       '"':"&quot;","'":"&#039;" }[m])
+  );
 
 function badge(u) {
   if (u.role === "admin") return "👑 Administrateur";
@@ -75,7 +47,6 @@ async function loadUsers() {
 
     let controls = `<div class="meta">${badge(u)}</div>`;
 
-    // ❌ on ne modifie jamais un admin
     if (u.role !== "admin") {
       controls += `
         <label class="meta">Plan</label>
@@ -88,8 +59,8 @@ async function loadUsers() {
     }
 
     card.innerHTML = `
-      <strong>${u.firstName || "—"} ${u.lastName || ""}</strong>
-      <div class="meta">${u.email || ""}</div>
+      <strong>${esc(u.firstName)} ${esc(u.lastName)}</strong>
+      <div class="meta">${esc(u.email)}</div>
       <div class="row-actions" style="margin-top:12px">
         ${controls}
       </div>
@@ -116,6 +87,16 @@ async function loadUsers() {
             isPro: newPlan === "pro"
           });
 
+          await logAdminAction({
+            action: "user_plan_change",
+            adminUid: auth.currentUser?.uid,
+            adminEmail: auth.currentUser?.email,
+            extra: {
+              userId: uid,
+              newPlan
+            }
+          });
+
           alert("✅ Plan mis à jour");
           loadUsers();
         } catch (err) {
@@ -138,6 +119,3 @@ requireAdmin({
   }
 });
 </script>
-
-</body>
-</html>
