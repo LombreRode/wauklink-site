@@ -19,7 +19,7 @@ import {
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
 /* =========================
-   ÉLÉMENTS DOM
+   DOM
 ========================= */
 const form = document.getElementById("annonceForm");
 const msg  = document.getElementById("msg");
@@ -33,7 +33,6 @@ const type = document.getElementById("type");
 const price = document.getElementById("price");
 const description = document.getElementById("description");
 
-// 📷 PHOTOS
 const photosInput = document.getElementById("photosInput");
 const preview = document.getElementById("preview");
 
@@ -43,7 +42,7 @@ let files = [];
 /* =========================
    PREVIEW PHOTOS
 ========================= */
-photosInput?.addEventListener("change", () => {
+photosInput.addEventListener("change", () => {
   files = Array.from(photosInput.files).slice(0, 6);
   preview.innerHTML = "";
 
@@ -68,13 +67,13 @@ onAuthStateChanged(auth, async (user) => {
 
   currentUser = user;
 
-  const userSnap = await getDoc(doc(db, "users", user.uid));
-  if (!userSnap.exists()) {
+  const snap = await getDoc(doc(db, "users", user.uid));
+  if (!snap.exists()) {
     msg.textContent = "❌ Profil utilisateur introuvable";
     return;
   }
 
-  const role = userSnap.data().role;
+  const role = snap.data().role;
   if (!["particulier", "professionnel", "admin"].includes(role)) {
     planBlock.classList.remove("hidden");
     form.classList.add("hidden");
@@ -85,7 +84,7 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 /* =========================
-   SOUMISSION FORMULAIRE
+   SUBMIT
 ========================= */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -134,7 +133,6 @@ form.addEventListener("submit", async (e) => {
     }
 
     msg.textContent = "✅ Annonce publiée avec photos";
-
     form.reset();
     preview.innerHTML = "";
     files = [];
