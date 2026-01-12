@@ -32,10 +32,17 @@ document.addEventListener("DOMContentLoaded", () => {
       adminLinks.classList.remove("hidden");
 
       // 🔗 LIENS ADMIN (MENU COMPLET)
-      const links = [
-        { href: "/wauklink-site/admin/users.html", label: "Utilisateurs" },
-        { href: "/wauklink-site/admin/annonces.html", label: "Annonces (en attente)" },
-        { href: "/wauklink-site/admin/annonces-all.html", label: "Toutes les annonces" },
+     const links = [
+  // ⭐ DASHBOARD (À AJOUTER)
+  { href: "/wauklink-site/admin/dashboard.html", label: "Dashboard" },
+
+  { href: "/wauklink-site/admin/users.html", label: "Utilisateurs" },
+  { href: "/wauklink-site/admin/annonces.html", label: "Annonces (en attente)" },
+  { href: "/wauklink-site/admin/annonces-all.html", label: "Toutes les annonces" },
+  { href: "/wauklink-site/admin/logs.html", label: "Historique admin" },
+  { href: "/wauklink-site/admin/reports.html", label: "Signalements" },
+  { href: "/wauklink-site/admin/pro-requests.html", label: "Comptes PRO" }
+];
 
         // ⭐ HISTORIQUE ADMIN (CE QUI MANQUAIT)
         { href: "/wauklink-site/admin/logs.html", label: "Historique admin" },
