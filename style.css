@@ -93,6 +93,27 @@ body {
   align-items: center;
 }
 
+/* SAFE UI ADMIN */
+.card {
+  padding: 18px;
+}
+
+.table th,
+.table td {
+  padding: 12px 14px;
+}
+
+.row-actions input,
+.row-actions select {
+  min-height: 40px;
+  font-size: 14px;
+}
+
+.btn {
+  padding: 8px 14px;
+  font-size: 14px;
+}
+
 /* =========================
    BUTTONS
 ========================= */
