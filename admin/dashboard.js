@@ -22,10 +22,25 @@ function sinceDays(days) {
 }
 
 /* =========================
+   TITRE DYNAMIQUE
+========================= */
+function updateTitle() {
+  const title = document.getElementById("activityTitle");
+  if (!title) return;
+
+  if (currentRange === 1) {
+    title.textContent = "Activité admin — Aujourd’hui";
+  } else if (currentRange === 7) {
+    title.textContent = "Activité admin — 7 jours";
+  } else {
+    title.textContent = "Activité admin — 30 jours";
+  }
+}
+
+/* =========================
    DASHBOARD
 ========================= */
 async function loadDashboard() {
-
   /* 📦 ANNONCES */
   const annoncesSnap = await getDocs(collection(db, "annonces"));
   let total = 0, active = 0, disabled = 0, pending = 0;
@@ -54,8 +69,8 @@ async function loadDashboard() {
   logsSnap.forEach(d => {
     const ts = d.data().createdAt?.seconds;
     if (!ts) return;
-    const t = ts * 1000;
 
+    const t = ts * 1000;
     if (now - t < 24 * 60 * 60 * 1000) today++;
     if (t >= limit) period++;
   });
@@ -84,10 +99,13 @@ function initFilters() {
       document
         .querySelectorAll("[data-range]")
         .forEach(b => b.classList.remove("btn-ok"));
-
       btn.classList.add("btn-ok");
 
-      // 🔁 recalcul immédiat
+      // feedback visuel
+      $("sToday").textContent = "—";
+      $("sWeek").textContent  = "—";
+
+      updateTitle();
       loadDashboard();
     });
   });
@@ -99,6 +117,7 @@ function initFilters() {
 requireAdmin({
   onOk: () => {
     initFilters();
+    updateTitle();
     loadDashboard();
   },
   onDenied: () => alert("⛔ Accès refusé")
