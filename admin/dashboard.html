@@ -4,7 +4,10 @@
   <meta charset="utf-8">
   <title>Admin — Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="/wauklink-site/style.css">
+
   <style>
     .stats {
       display: grid;
@@ -37,6 +40,7 @@
 </head>
 
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
     <div>
@@ -44,7 +48,10 @@
       <div class="subtitle">Dashboard administrateur</div>
     </div>
     <nav class="topbar-nav">
-      <a class="btn" href="/wauklink-site/admin/index.html">← Admin</a>
+      <a class="btn"
+         href="/wauklink-site/admin/index.html">
+        ← Admin
+      </a>
     </nav>
   </div>
 </header>
@@ -54,19 +61,23 @@
   <!-- 🔹 VUE D’ENSEMBLE -->
   <section class="card">
     <h2>Vue d’ensemble</h2>
+
     <div class="stats">
       <div class="stat">
         <h3>Total annonces</h3>
         <div class="v" id="sTotal">—</div>
       </div>
+
       <div class="stat">
         <h3>Actives</h3>
         <div class="v ok" id="sActive">—</div>
       </div>
+
       <div class="stat">
         <h3>Désactivées</h3>
         <div class="v warn" id="sDisabled">—</div>
       </div>
+
       <div class="stat">
         <h3>En attente</h3>
         <div class="v" id="sPending">—</div>
@@ -76,23 +87,40 @@
 
   <!-- 🔎 FILTRE TEMPS -->
   <div class="row-actions mt">
-  <button type="button" class="btn btn-outline btn-ok" data-range="1">Aujourd’hui</button>
-  <button type="button" class="btn btn-outline" data-range="7">7 jours</button>
-  <button type="button" class="btn btn-outline" data-range="30">30 jours</button>
-</div>
+    <button type="button"
+            class="btn btn-outline btn-ok"
+            data-range="1">
+      Aujourd’hui
+    </button>
+    <button type="button"
+            class="btn btn-outline"
+            data-range="7">
+      7 jours
+    </button>
+    <button type="button"
+            class="btn btn-outline"
+            data-range="30">
+      30 jours
+    </button>
+  </div>
 
   <!-- 📊 ACTIVITÉ ADMIN -->
   <section class="card">
-    <h2 id="activityTitle">Activité admin — Aujourd’hui</h2>
+    <h2 id="activityTitle">
+      Activité admin — Aujourd’hui
+    </h2>
+
     <div class="stats">
       <div class="stat">
         <h3>Actions aujourd’hui</h3>
         <div class="v" id="sToday">—</div>
       </div>
+
       <div class="stat">
         <h3>Actions période</h3>
-        <div class="v" id="sWeek">—</div>
+        <div class="v" id="sPeriod">—</div>
       </div>
+
       <div class="stat">
         <h3>Signalements en attente</h3>
         <div class="v bad" id="sReports">—</div>
@@ -108,6 +136,34 @@
   </div>
 </footer>
 
-<script type="module" src="./dashboard.js"></script>
+<!-- 🔐 PROTECTION ADMIN -->
+<script type="module">
+  import { requireAdmin } from
+    "/wauklink-site/shared/guard.js";
+
+  requireAdmin({
+    onOk: () => {},
+    onDenied: () => {
+      document.body.innerHTML = `
+        <main class="container main-layout">
+          <h2>⛔ Accès refusé</h2>
+          <p class="meta">
+            Page réservée aux administrateurs
+          </p>
+          <a class="btn"
+             href="/wauklink-site/dashboard/index.html">
+            Retour dashboard
+          </a>
+        </main>
+      `;
+    }
+  });
+</script>
+
+<!-- 📊 LOGIQUE DASHBOARD ADMIN -->
+<script type="module"
+        src="/wauklink-site/admin/dashboard.js">
+</script>
+
 </body>
 </html>
