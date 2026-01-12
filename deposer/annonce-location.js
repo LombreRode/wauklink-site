@@ -21,20 +21,20 @@ import {
 /* =========================
    DOM
 ========================= */
-const form = document.getElementById("annonceForm");
-const msg  = document.getElementById("msg");
-const planBlock = document.getElementById("planBlock");
+const form        = document.getElementById("annonceForm");
+const msg         = document.getElementById("msg");
+const planBlock   = document.getElementById("planBlock");
 
-const title = document.getElementById("title");
-const city = document.getElementById("city");
-const phone = document.getElementById("phone");
-const postalCode = document.getElementById("postalCode");
-const type = document.getElementById("type");
-const price = document.getElementById("price");
-const description = document.getElementById("description");
+const titleEl     = document.getElementById("title");
+const cityEl      = document.getElementById("city");
+const phoneEl     = document.getElementById("phone");
+const postalEl    = document.getElementById("postalCode");
+const typeEl      = document.getElementById("type");
+const priceEl     = document.getElementById("price");
+const descEl      = document.getElementById("description");
 
 const photosInput = document.getElementById("photosInput");
-const preview = document.getElementById("preview");
+const preview     = document.getElementById("preview");
 
 let currentUser = null;
 let files = [];
@@ -47,6 +47,8 @@ photosInput.addEventListener("change", () => {
   preview.innerHTML = "";
 
   files.forEach(file => {
+    if (!file.type.startsWith("image/")) return;
+
     const img = document.createElement("img");
     img.src = URL.createObjectURL(file);
     img.style.maxWidth = "120px";
@@ -57,11 +59,11 @@ photosInput.addEventListener("change", () => {
 });
 
 /* =========================
-   AUTH + ACCÈS
+   AUTH + DROITS
 ========================= */
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    location.href = "/wauklink-site/auth/login.html";
+    location.replace("/wauklink-site/auth/login.html");
     return;
   }
 
@@ -74,6 +76,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   const role = snap.data().role;
+
   if (!["particulier", "professionnel", "admin"].includes(role)) {
     planBlock.classList.remove("hidden");
     form.classList.add("hidden");
@@ -91,7 +94,12 @@ form.addEventListener("submit", async (e) => {
   msg.textContent = "⏳ Publication en cours…";
 
   try {
-    if (!title.value || !city.value || !type.value || !description.value) {
+    if (
+      !titleEl.value.trim() ||
+      !cityEl.value.trim() ||
+      !typeEl.value ||
+      !descEl.value.trim()
+    ) {
       msg.textContent = "❌ Champs obligatoires manquants";
       return;
     }
@@ -101,39 +109,39 @@ form.addEventListener("submit", async (e) => {
       return;
     }
 
-    // 1️⃣ Création annonce
-    const docRef = await addDoc(collection(db, "annonces"), {
-      title: title.value.trim(),
-      city: city.value.trim(),
-      phone: phone.value.trim(),
-      postalCode: postalCode.value.trim(),
-      type: type.value,
-      price: price.value ? Number(price.value) : null,
-      description: description.value.trim(),
+    /* 1️⃣ CRÉATION ANNONCE */
+    const annonceRef = await addDoc(collection(db, "annonces"), {
+      title: titleEl.value.trim(),
+      city: cityEl.value.trim(),
+      phone: phoneEl.value.trim(),
+      postalCode: postalEl.value.trim(),
+      type: typeEl.value,
+      price: priceEl.value ? Number(priceEl.value) : null,
+      description: descEl.value.trim(),
       userId: currentUser.uid,
       status: "pending",
-      createdAt: serverTimestamp(),
-      photos: []
+      photos: [],
+      createdAt: serverTimestamp()
     });
 
-    // 2️⃣ Upload photos
+    /* 2️⃣ UPLOAD PHOTOS */
     for (const file of files) {
       if (!file.type.startsWith("image/")) continue;
       if (file.size > 5 * 1024 * 1024) continue;
 
       const path =
-        `annonces/${currentUser.uid}/${docRef.id}/${Date.now()}_${file.name}`;
-      const fileRef = ref(storage, path);
+        `annonces/${currentUser.uid}/${annonceRef.id}/${Date.now()}_${file.name}`;
 
+      const fileRef = ref(storage, path);
       await uploadBytes(fileRef, file);
       const url = await getDownloadURL(fileRef);
 
-      await updateDoc(doc(db, "annonces", docRef.id), {
+      await updateDoc(doc(db, "annonces", annonceRef.id), {
         photos: arrayUnion(url)
       });
     }
 
-    msg.textContent = "✅ Annonce publiée avec photos";
+    msg.textContent = "✅ Annonce envoyée en validation";
     form.reset();
     preview.innerHTML = "";
     files = [];
