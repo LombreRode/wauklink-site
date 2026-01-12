@@ -8,6 +8,7 @@ import {
 } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
+/* ========= DOM ========= */
 const titleEl = document.getElementById("title");
 const descEl  = document.getElementById("description");
 const cityEl  = document.getElementById("city");
@@ -18,6 +19,7 @@ const btn     = document.getElementById("publishBtn");
 
 let currentUser = null;
 
+/* ========= AUTH ========= */
 onAuthStateChanged(auth, user => {
   if (!user) {
     location.href = "../auth/login.html";
@@ -26,6 +28,7 @@ onAuthStateChanged(auth, user => {
   currentUser = user;
 });
 
+/* ========= PUBLISH ========= */
 btn.onclick = async () => {
   const title = titleEl.value.trim();
   const description = descEl.value.trim();
@@ -47,19 +50,19 @@ btn.onclick = async () => {
       description,
       city,
       price,
-      type,                // ✅ LA VENTILATION
-      status: "active",
+      type,                 // 🔑 clé principale (filtres / admin)
+      status: "pending",    // ✅ PAS active direct (modération)
       userId: currentUser.uid,
       createdAt: serverTimestamp()
     });
 
-    msgEl.textContent = "✅ Annonce publiée";
+    msgEl.textContent = "✅ Annonce envoyée pour validation";
     setTimeout(() => {
       location.href = "../dashboard/index.html";
-    }, 800);
+    }, 900);
 
-  } catch (e) {
-    console.error(e);
+  } catch (err) {
+    console.error(err);
     msgEl.textContent = "❌ Erreur lors de la publication";
     btn.disabled = false;
   }
