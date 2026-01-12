@@ -7,6 +7,9 @@ import {
   getDoc,
   collection,
   addDoc,
+  query,
+  where,
+  getDocs,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
@@ -21,15 +24,8 @@ const ratingSection = document.getElementById("ratingSection");
 const ratingValue = document.getElementById("ratingValue");
 const rateBtn = document.getElementById("rateBtn");
 
-/* ========= HELPERS ========= */
-const esc = s =>
-  String(s ?? "").replace(/[&<>"']/g, m =>
-    ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
-  );
-
 /* ========= PARAM ========= */
 const annonceId = new URLSearchParams(location.search).get("id");
-
 if (!annonceId) {
   msg.textContent = "❌ Annonce introuvable";
   throw new Error("ID annonce manquant");
@@ -38,7 +34,6 @@ if (!annonceId) {
 /* ========= LOAD ANNONCE ========= */
 async function loadAnnonce() {
   msg.textContent = "⏳ Chargement…";
-
   try {
     const ref = doc(db, "annonces", annonceId);
     const snap = await getDoc(ref);
@@ -50,11 +45,16 @@ async function loadAnnonce() {
 
     const a = snap.data();
 
+    if (a.status !== "active") {
+      msg.textContent = "⛔ Cette annonce n’est plus disponible";
+      return;
+    }
+
     titre.textContent = a.title || "Annonce";
-    meta.textContent = `${a.city || "—"} • ${a.type || "—"} • ${a.price ?? "—"} €`;
+    meta.textContent =
+      `${a.city || "—"} • ${a.type || "—"} • ${a.price ?? "—"} €`;
     description.textContent = a.description || "";
 
-    // 📷 Photos
     photos.innerHTML = "";
     if (Array.isArray(a.photos) && a.photos.length) {
       a.photos.forEach(url => {
@@ -68,9 +68,8 @@ async function loadAnnonce() {
       photos.innerHTML = `<p class="meta">Aucune photo</p>`;
     }
 
-    msg.textContent = "";
     box.classList.remove("hidden");
-
+    msg.textContent = "";
   } catch (err) {
     console.error(err);
     msg.textContent = "❌ Erreur de chargement";
@@ -78,9 +77,23 @@ async function loadAnnonce() {
 }
 
 /* ========= RATING ========= */
-onAuthStateChanged(auth, user => {
+onAuthStateChanged(auth, async (user) => {
   if (!user) {
     ratingSection.classList.add("hidden");
+    return;
+  }
+
+  // 🔍 Vérifier si déjà noté
+  const q = query(
+    collection(db, "ratings"),
+    where("annonceId", "==", annonceId),
+    where("userId", "==", user.uid)
+  );
+
+  const snap = await getDocs(q);
+  if (!snap.empty) {
+    ratingSection.innerHTML =
+      `<p class="meta">⭐ Vous avez déjà noté cette annonce</p>`;
     return;
   }
 
@@ -88,8 +101,7 @@ onAuthStateChanged(auth, user => {
 
   rateBtn.onclick = async () => {
     const rating = Number(ratingValue.value);
-
-    if (!rating || rating < 1 || rating > 5) {
+    if (rating < 1 || rating > 5) {
       alert("❌ Note invalide");
       return;
     }
@@ -105,9 +117,8 @@ onAuthStateChanged(auth, user => {
         createdAt: serverTimestamp()
       });
 
-      alert("✅ Merci pour votre note !");
-      ratingSection.classList.add("hidden");
-
+      ratingSection.innerHTML =
+        `<p class="meta">✅ Merci pour votre note !</p>`;
     } catch (err) {
       console.error(err);
       alert("❌ Erreur lors de l’envoi");
