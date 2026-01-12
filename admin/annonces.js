@@ -1,5 +1,7 @@
 import { db } from "../shared/firebase.js";
 import { requireAdmin } from "../shared/guard.js";
+import { auth } from "../shared/firebase.js";
+import { logAdminAction } from "../shared/admin_logger.js";
 import {
   collection,
   query,
@@ -61,15 +63,37 @@ async function loadAnnonces() {
 
       const [btnOk, btnDisable] = tr.querySelectorAll("button");
 
+      // ✅ VALIDER
       btnOk.onclick = async () => {
         if (!confirm("Valider cette annonce ?")) return;
+
         await updateDoc(doc(db, "annonces", d.id), { status: "active" });
+
+        // 🔐 LOG ADMIN
+        await logAdminAction({
+          action: "validate",
+          adminUid: auth.currentUser.uid,
+          adminEmail: auth.currentUser.email,
+          annonceId: d.id
+        });
+
         tr.remove();
       };
 
+      // 🚫 DÉSACTIVER
       btnDisable.onclick = async () => {
         if (!confirm("Désactiver cette annonce ?")) return;
+
         await updateDoc(doc(db, "annonces", d.id), { status: "disabled" });
+
+        // 🔐 LOG ADMIN
+        await logAdminAction({
+          action: "disable",
+          adminUid: auth.currentUser.uid,
+          adminEmail: auth.currentUser.email,
+          annonceId: d.id
+        });
+
         tr.remove();
       };
 
