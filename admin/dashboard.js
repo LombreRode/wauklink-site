@@ -77,16 +77,19 @@ async function loadDashboard() {
 ========================= */
 function initFilters() {
   document.querySelectorAll("[data-range]").forEach(btn => {
-    btn.onclick = () => {
+    btn.addEventListener("click", () => {
       currentRange = Number(btn.dataset.range);
 
+      // UI active
       document
         .querySelectorAll("[data-range]")
         .forEach(b => b.classList.remove("btn-ok"));
 
       btn.classList.add("btn-ok");
+
+      // 🔁 recalcul immédiat
       loadDashboard();
-    };
+    });
   });
 }
 
