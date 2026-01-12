@@ -7,13 +7,13 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 /**
- * Log une action admin dans Firestore
+ * Enregistre une action admin dans admin_logs
  */
 export async function logAdminAction({
   action,
   adminUid,
   adminEmail,
-  annonceId = null,
+  annonceId,
   extra = {}
 }) {
   try {
@@ -23,9 +23,9 @@ export async function logAdminAction({
       adminEmail,
       annonceId,
       extra,
-      createdAt: serverTimestamp() // ✅ Timestamp Firestore PRO
+      createdAt: serverTimestamp() // 🔥 LE POINT CLÉ
     });
   } catch (err) {
-    console.error("admin log error:", err);
+    console.error("admin_logger error:", err);
   }
 }
