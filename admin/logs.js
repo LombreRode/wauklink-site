@@ -78,3 +78,51 @@ requireAdmin({
     rows.innerHTML = "";
   }
 });
+
+const btnCsv = document.getElementById("btnCsv");
+
+function exportCSV() {
+  if (!all.length) return alert("Aucune donnée à exporter");
+
+  const headers = ["Date", "Admin", "Action", "Annonce"];
+  const rows = [];
+
+  // on réutilise EXACTEMENT les filtres actifs
+  const A = fAction.value;
+  const E = fAdmin.value.trim().toLowerCase();
+  const D = fDate.value;
+
+  all.forEach(l => {
+    if (A && l.action !== A) return;
+    if (E && !(l.admin || "").toLowerCase().includes(E)) return;
+    if (D) {
+      const d = new Date(l.createdAt.seconds * 1000)
+        .toISOString().slice(0,10);
+      if (d !== D) return;
+    }
+
+    rows.push([
+      new Date(l.createdAt.seconds * 1000).toLocaleString("fr-FR"),
+      l.admin || "",
+      l.action,
+      l.annonceTitle || l.annonceId || ""
+    ]);
+  });
+
+  let csv = headers.join(";") + "\n";
+  rows.forEach(r => {
+    csv += r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(";") + "\n";
+  });
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "historique-admin.csv";
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+btnCsv.onclick = exportCSV;
