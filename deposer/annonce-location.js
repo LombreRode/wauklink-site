@@ -1,6 +1,11 @@
+/* =================================================
+   DÉPOSER UNE ANNONCE — VERSION STABLE (OK PROD)
+   ================================================= */
+
 import { auth, db, storage } from "../shared/firebase.js";
 import { onAuthStateChanged } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
 import {
   collection,
   addDoc,
@@ -11,6 +16,7 @@ import {
   getDoc
 } from
   "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
 import {
   ref,
   uploadBytesResumable,
@@ -24,6 +30,7 @@ import {
 const form        = document.getElementById("annonceForm");
 const msg         = document.getElementById("msg");
 const planBlock   = document.getElementById("planBlock");
+
 const titleEl     = document.getElementById("title");
 const cityEl      = document.getElementById("city");
 const phoneEl     = document.getElementById("phone");
@@ -31,14 +38,18 @@ const postalEl    = document.getElementById("postalCode");
 const typeEl      = document.getElementById("type");
 const priceEl     = document.getElementById("price");
 const descEl      = document.getElementById("description");
+
 const photosInput = document.getElementById("photosInput");
 const preview     = document.getElementById("preview");
 
+/* =========================
+   STATE
+========================= */
 let currentUser = null;
 let files = [];
 
 /* =========================
-   PREVIEW PHOTOS
+   PRÉVISUALISATION PHOTOS
 ========================= */
 photosInput.addEventListener("change", () => {
   files = Array.from(photosInput.files).slice(0, 6);
@@ -46,11 +57,13 @@ photosInput.addEventListener("change", () => {
 
   files.forEach(file => {
     if (!file.type.startsWith("image/")) return;
+
     const img = document.createElement("img");
     img.src = URL.createObjectURL(file);
     img.style.maxWidth = "120px";
     img.style.margin = "6px";
     img.style.borderRadius = "8px";
+
     preview.appendChild(img);
   });
 });
@@ -69,10 +82,12 @@ onAuthStateChanged(auth, async (user) => {
   const snap = await getDoc(doc(db, "users", user.uid));
   if (!snap.exists()) {
     msg.textContent = "❌ Profil utilisateur introuvable";
+    form.classList.add("hidden");
     return;
   }
 
   const role = snap.data().role;
+
   if (!["particulier", "professionnel", "admin"].includes(role)) {
     planBlock.classList.remove("hidden");
     form.classList.add("hidden");
@@ -83,13 +98,14 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 /* =========================
-   SUBMIT
+   SUBMIT FORM
 ========================= */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   msg.textContent = "⏳ Publication en cours…";
 
   try {
+    /* -------- VALIDATION -------- */
     if (
       !titleEl.value.trim() ||
       !cityEl.value.trim() ||
@@ -105,9 +121,7 @@ form.addEventListener("submit", async (e) => {
       return;
     }
 
-    /* =========================
-       1️⃣ CRÉATION DE L’ANNONCE
-    ========================= */
+    /* -------- 1️⃣ CRÉATION ANNONCE -------- */
     const annonceRef = await addDoc(collection(db, "annonces"), {
       title: titleEl.value.trim(),
       city: cityEl.value.trim(),
@@ -119,12 +133,11 @@ form.addEventListener("submit", async (e) => {
       userId: currentUser.uid,
       status: "pending",
       photos: [],
-      createdAt: serverTimestamp()
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
     });
 
-    /* =========================
-       2️⃣ UPLOAD DES PHOTOS
-    ========================= */
+    /* -------- 2️⃣ UPLOAD PHOTOS -------- */
     for (const file of files) {
       if (!file.type.startsWith("image/")) continue;
       if (file.size > 5 * 1024 * 1024) continue;
@@ -148,13 +161,14 @@ form.addEventListener("submit", async (e) => {
       });
     }
 
+    /* -------- FIN -------- */
     msg.textContent = "✅ Annonce envoyée en validation";
     form.reset();
     preview.innerHTML = "";
     files = [];
 
   } catch (err) {
-    console.error(err);
+    console.error("❌ publication error:", err);
     msg.textContent = "❌ Erreur lors de la publication";
   }
 });
