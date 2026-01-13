@@ -115,7 +115,15 @@ async function loadUsers() {
               adminEmail: auth.currentUser?.email,
               extra: { targetId: uid }
             });
-
+            
+          // À ajouter dans la logique de changement de plan
+            await logAdminAction({
+              action: "user_plan_change",
+              adminUid: auth.currentUser?.uid,
+              adminEmail: auth.currentUser?.email,
+              extra: { targetId: uid, newPlan: newPlan }
+            });
+            
             loadUsers(); // Recharge la liste
           } catch (err) {
             alert("❌ Erreur lors de l'action");
