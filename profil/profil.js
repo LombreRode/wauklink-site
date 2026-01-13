@@ -20,10 +20,9 @@ import {
 
 const avatarInput = document.getElementById("avatarInput");
 const avatarImg   = document.getElementById("avatarImg");
-const msg         = document.getElementById("msg");
+
 
 let currentUser = null;
-
 onAuthStateChanged(auth, user => {
   if (!user) return;
   currentUser = user;
