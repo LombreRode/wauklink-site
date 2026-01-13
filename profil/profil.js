@@ -1,6 +1,6 @@
 import { db, auth, storage } from "/wauklink-site/shared/firebase.js";
 import { 
-  doc, getDoc, updateDoc, setDoc, serverTimestamp 
+  doc, getDoc, updateDoc, setDoc, serverTimestamp, collection, query, where, getDocs, orderBy 
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 import { 
   ref, uploadBytesResumable, getDownloadURL, uploadBytes 
@@ -18,15 +18,17 @@ const progressBar = document.getElementById("progressBar");
 const progressContainer = document.getElementById("progressContainer");
 const avatarMsg = document.getElementById("avatarMsg");
 
-// --- ÉLÉMENTS PRO ---
+// --- ÉLÉMENTS PRO & AVIS ---
 const proSection = document.getElementById("proSection");
 const proForm = document.getElementById("proForm");
 const proPending = document.getElementById("proPending");
 const btnSendPro = document.getElementById("btnSendPro");
-const proDocInput = document.getElementById("proDocInput"); // Le nouveau champ fichier
+const proDocInput = document.getElementById("proDocInput");
+const reviewsContainer = document.getElementById("reviewsContainer");
+const averageRatingDiv = document.getElementById("averageRating");
 
 /* ==========================================
-   1. CHARGEMENT DU PROFIL
+   1. CHARGEMENT DU PROFIL & AVIS
 ========================================== */
 onAuthStateChanged(auth, async (user) => {
   if (user) {
@@ -34,7 +36,7 @@ onAuthStateChanged(auth, async (user) => {
     if (userDoc.exists()) {
       const data = userDoc.data();
 
-      // Affichage des infos
+      // Affichage des infos de base
       emailDisplay.textContent = data.email || user.email;
       typeDisplay.textContent = data.plan === "pro" ? "🚀 Professionnel" : "👤 Particulier";
       firstNameInput.value = data.firstName || "";
@@ -46,13 +48,15 @@ onAuthStateChanged(auth, async (user) => {
         proSection.classList.add("hidden"); 
       } else {
         proSection.classList.remove("hidden");
-        // Vérifier si une demande est déjà en attente
         const reqSnap = await getDoc(doc(db, "pro_requests", user.uid));
         if (reqSnap.exists()) {
           proForm.classList.add("hidden");
           proPending.classList.remove("hidden");
         }
       }
+
+      // --- CHARGEMENT DES AVIS ---
+      loadUserReviews(user.uid);
     }
   } else {
     window.location.href = "/wauklink-site/auth/login.html";
@@ -60,7 +64,55 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 /* ==========================================
-   2. GESTION DE L'AVATAR (STORAGE)
+   2. FONCTION POUR CHARGER LES AVIS
+========================================== */
+async function loadUserReviews(targetId) {
+  try {
+    const q = query(
+      collection(db, "reviews"), 
+      where("targetId", "==", targetId),
+      orderBy("createdAt", "desc")
+    );
+
+    const querySnapshot = await getDocs(q);
+    
+    if (querySnapshot.empty) {
+      reviewsContainer.innerHTML = "<p class='meta'>Aucun avis pour le moment.</p>";
+      averageRatingDiv.innerHTML = "⭐⭐⭐⭐⭐ (0 avis)";
+      return;
+    }
+
+    let totalScore = 0;
+    let count = 0;
+    reviewsContainer.innerHTML = "";
+
+    querySnapshot.forEach((doc) => {
+      const rev = doc.data();
+      totalScore += rev.rating;
+      count++;
+
+      const reviewHtml = `
+        <div class="review-item" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding: 10px 0;">
+          <div style="color: #f1c40f;">${"⭐".repeat(rev.rating)}</div>
+          <p style="margin: 5px 0; font-size: 14px;">${rev.comment}</p>
+          <div class="review-meta">Le ${rev.createdAt?.toDate().toLocaleDateString()}</div>
+        </div>
+      `;
+      reviewsContainer.insertAdjacentHTML("beforeend", reviewHtml);
+    });
+
+    // Calcul de la moyenne
+    const avg = (totalScore / count).toFixed(1);
+    averageRatingDiv.innerHTML = `${"⭐".repeat(Math.round(avg))} <strong>${avg} / 5</strong> (${count} avis)`;
+
+  } catch (err) {
+    console.error("Erreur avis:", err);
+    reviewsContainer.innerHTML = "<p class='meta'>Impossible de charger les avis.</p>";
+  }
+}
+
+/* ==========================================
+   3. GESTION DE L'AVATAR
 ========================================== */
 avatarInput.onchange = (e) => {
   const file = e.target.files[0];
@@ -73,7 +125,6 @@ avatarInput.onchange = (e) => {
 
   const storageRef = ref(storage, `avatars/${auth.currentUser.uid}`);
   const uploadTask = uploadBytesResumable(storageRef, file);
-
   progressContainer.style.display = "block";
 
   uploadTask.on('state_changed', 
@@ -93,7 +144,7 @@ avatarInput.onchange = (e) => {
 };
 
 /* ==========================================
-   3. ENREGISTRER LES INFOS TEXTUELLES
+   4. SAUVEGARDE INFOS
 ========================================== */
 document.getElementById("saveProfileBtn").onclick = async () => {
   const btn = document.getElementById("saveProfileBtn");
@@ -107,7 +158,7 @@ document.getElementById("saveProfileBtn").onclick = async () => {
       updatedAt: serverTimestamp()
     });
     msg.style.color = "#22c55e";
-    msg.textContent = "✅ Profil enregistré avec succès !";
+    msg.textContent = "✅ Profil enregistré !";
   } catch (err) {
     msg.style.color = "#ef4444";
     msg.textContent = "❌ Erreur de sauvegarde.";
@@ -117,29 +168,22 @@ document.getElementById("saveProfileBtn").onclick = async () => {
 };
 
 /* ==========================================
-   4. ENVOYER DEMANDE PRO AVEC JUSTIFICATIF
+   5. ENVOYER DEMANDE PRO
 ========================================== */
 btnSendPro.onclick = async () => {
   const bName = document.getElementById("businessName").value.trim();
   const siret = document.getElementById("siret").value.trim();
   const docFile = proDocInput.files[0];
 
-  // Validation
-  if (!bName || siret.length < 14) {
-    alert("Veuillez entrer le nom de l'entreprise et un SIRET valide (14 chiffres).");
-    return;
-  }
-  if (!docFile) {
-    alert("Veuillez ajouter un justificatif officiel (PDF ou Image).");
+  if (!bName || siret.length < 14 || !docFile) {
+    alert("Merci de remplir tous les champs et d'ajouter un justificatif.");
     return;
   }
 
   try {
     btnSendPro.disabled = true;
-    btnSendPro.textContent = "⏳ Téléchargement du dossier...";
+    btnSendPro.textContent = "⏳ Envoi du dossier...";
 
-    // 1. Upload du justificatif vers Storage
-    // On renomme le fichier avec l'UID pour éviter les doublons
     const fileExt = docFile.name.split('.').pop();
     const docPath = `pro_documents/${auth.currentUser.uid}_justificatif.${fileExt}`;
     const docRef = ref(storage, docPath);
@@ -147,23 +191,20 @@ btnSendPro.onclick = async () => {
     await uploadBytes(docRef, docFile);
     const docUrl = await getDownloadURL(docRef);
 
-    // 2. Création de la demande dans Firestore avec le lien du document
     await setDoc(doc(db, "pro_requests", auth.currentUser.uid), {
       userId: auth.currentUser.uid,
       userEmail: auth.currentUser.email,
       businessName: bName,
       siret: siret,
-      documentUrl: docUrl, // Le lien vers ton Kbis/Carte Pro
+      documentUrl: docUrl,
       status: "pending",
       createdAt: serverTimestamp()
     });
 
-    alert("✅ Dossier envoyé avec succès ! Nos administrateurs vont l'étudier.");
+    alert("✅ Dossier envoyé avec succès !");
     location.reload(); 
   } catch (e) {
-    console.error("Erreur demande PRO:", e);
-    alert("Erreur lors de l'envoi du dossier.");
+    alert("Erreur lors de l'envoi.");
     btnSendPro.disabled = false;
-    btnSendPro.textContent = "🚀 Envoyer mon dossier PRO";
   }
 };
