@@ -12,7 +12,7 @@
   <div class="container topbar-row">
     <div>
       <h1>WAUKLINK</h1>
-      <div class="subtitle">Signalements utilisateurs</div>
+      <div class="subtitle">Modération des signalements</div>
     </div>
     <nav class="topbar-nav">
       <a class="btn" href="/wauklink-site/admin/index.html">← Admin</a>
@@ -21,32 +21,30 @@
 </header>
 
 <main class="container main-layout">
-  <h2>Signalements</h2>
-  <p id="msg" class="meta" aria-live="polite">
-    Vérification des droits…
-  </p>
-  <section id="list" class="grid"></section>
+  <div class="card">
+    <h2>Gestion des Signalements</h2>
+    <p id="msg" class="meta" aria-live="polite">Vérification des droits d'accès...</p>
+  </div>
+
+  <section id="list" class="grid" style="margin-top: 20px;"></section>
 </main>
 
 <footer class="footer">
   <div class="container footer-row">
-    <span>© WAUKLINK</span>
+    <span>© 2026 WAUKLINK</span>
   </div>
 </footer>
 
-<!-- 🔐 LIENS ADMIN -->
-<script type="module" src="/wauklink-site/shared/admin_links.js"></script>
-
-<!-- 🔐 LOGIQUE MODÉRATION -->
 <script type="module">
+import { db, auth } from "/wauklink-site/shared/firebase.js";
 import { requireModerator } from "/wauklink-site/shared/guard.js";
-import { db } from "/wauklink-site/shared/firebase.js";
+import { logAdminAction } from "/wauklink-site/shared/admin_logger.js";
 import {
   collection,
-  getDocs,
   query,
   where,
   orderBy,
+  getDocs,
   doc,
   updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
@@ -54,21 +52,26 @@ import {
 const list = document.getElementById("list");
 const msg  = document.getElementById("msg");
 
-const esc = s =>
-  String(s ?? "").replace(/[&<>"']/g, m =>
-    ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
-  );
+// Sécurisation de l'affichage du texte (Anti-XSS)
+const esc = s => String(s ?? "").replace(/[&<>"']/g, m => ({
+  "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
+}[m]));
 
 function showEmpty(text) {
   msg.textContent = text;
-  list.innerHTML = "<p class='meta'>Tout est à jour.</p>";
+  list.innerHTML = `
+    <div class="card" style="text-align:center; padding: 40px;">
+      <p class="meta">Aucun signalement à traiter pour le moment.</p>
+    </div>`;
 }
 
+/* ========= CHARGEMENT DES SIGNALEMENTS ========= */
 async function loadReports() {
-  msg.textContent = "⏳ Chargement des signalements…";
+  msg.textContent = "⏳ Chargement des signalements en cours...";
   list.innerHTML = "";
 
   try {
+    // REQUÊTE : Nécessite un index Firestore (voir console F12 si erreur)
     const q = query(
       collection(db, "reports"),
       where("status", "==", "open"),
@@ -78,62 +81,79 @@ async function loadReports() {
     const snap = await getDocs(q);
 
     if (snap.empty) {
-      showEmpty("✅ Aucun signalement ouvert.");
+      showEmpty("✅ Tout est en ordre.");
       return;
     }
 
-    msg.textContent = `📋 ${snap.size} signalement(s) ouverts`;
+    msg.textContent = `📋 ${snap.size} signalement(s) ouvert(s)`;
 
     snap.forEach(d => {
       const r = d.data();
-
       const card = document.createElement("div");
       card.className = "card";
-      card.innerHTML = `
-        <strong>${esc(r.reason || "Signalement utilisateur")}</strong>
 
-        <div class="meta">
-          Annonce :
-          <a
-            href="/wauklink-site/admin/annonce.html?id=${esc(r.annonceId)}"
-            class="link"
-            target="_blank"
-          >
-            ${esc(r.annonceId)}
+      card.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div>
+            <span class="badge badge-warning" style="margin-bottom:8px; display:inline-block;">OUVERT</span>
+            <h3 style="margin:0;">${esc(r.reason || "Signalement sans motif")}</h3>
+          </div>
+        </div>
+        
+        <div class="meta" style="margin-top:12px;">
+          <strong>Annonce ciblée :</strong><br>
+          <a class="link" href="/wauklink-site/admin/annonce.html?id=${esc(r.annonceId)}" target="_blank">
+            ID: ${esc(r.annonceId)} ↗
           </a>
         </div>
 
-        <div class="row-actions" style="margin-top:12px">
-          <button class="btn btn-ok">
-            Marquer comme traité
+        <div class="meta" style="margin-top:8px;">
+          <strong>Signalé par :</strong> ${esc(r.reporterEmail || "Utilisateur anonyme")}
+        </div>
+
+        <div class="row-actions" style="margin-top:20px; border-top:1px solid var(--border); padding-top:15px;">
+          <button class="btn btn-ok" id="btn-${d.id}">
+            ✅ Marquer comme traité
           </button>
         </div>
       `;
 
-      const btn = card.querySelector("button");
+      const btn = card.querySelector(`#btn-${d.id}`);
 
       btn.onclick = async () => {
-        if (!confirm("Marquer ce signalement comme traité ?")) return;
-
+        if (!confirm("Voulez-vous clôturer ce signalement ?")) return;
+        
         btn.disabled = true;
-        btn.textContent = "Traitement…";
+        btn.textContent = "Traitement...";
 
         try {
-          await updateDoc(
-            doc(db, "reports", d.id),
-            { status: "closed" }
-          );
+          // 1. Mettre à jour le statut du signalement
+          await updateDoc(doc(db, "reports", d.id), { 
+            status: "closed",
+            updatedAt: new Date().toISOString()
+          });
 
-          card.remove();
+          // 2. Logger l'action de l'admin
+          await logAdminAction({
+            action: "report_closed",
+            adminUid: auth.currentUser?.uid,
+            adminEmail: auth.currentUser?.email,
+            annonceId: r.annonceId,
+            extra: { reason: r.reason, reportId: d.id }
+          });
 
-          if (!list.children.length) {
-            showEmpty("✅ Tous les signalements ont été traités.");
-          }
+          // 3. Animation de suppression fluide
+          card.style.opacity = "0";
+          setTimeout(() => {
+            card.remove();
+            if (!list.children.length) showEmpty("✅ Tous les signalements ont été traités.");
+          }, 300);
+
         } catch (err) {
-          console.error("report update error:", err);
+          console.error("Erreur mise à jour report:", err);
+          alert("❌ Erreur : permissions insuffisantes.");
           btn.disabled = false;
           btn.textContent = "Marquer comme traité";
-          alert("❌ Erreur lors du traitement du signalement");
         }
       };
 
@@ -141,17 +161,22 @@ async function loadReports() {
     });
 
   } catch (err) {
-    console.error("load reports error:", err);
-    msg.textContent = "❌ Erreur de chargement des signalements";
-    list.innerHTML = "";
+    console.error("loadReports error:", err);
+    // C'est ici que le lien de l'index apparaîtra dans la console F12
+    msg.textContent = "❌ Erreur de chargement. Vérifiez l'index Firestore.";
+    list.innerHTML = `
+      <div class="card" style="border: 1px solid var(--error);">
+        <p style="color:var(--error)">Une erreur est survenue. Si c'est la première fois, 
+        ouvrez la console (F12) et cliquez sur le lien Firebase pour créer l'index nécessaire.</p>
+      </div>`;
   }
 }
 
-/* 🔐 MODÉRATEUR OU ADMIN */
+/* ========= SÉCURITÉ ========= */
 requireModerator({
   onOk: loadReports,
   onDenied: () => {
-    msg.textContent = "⛔ Accès refusé";
+    msg.textContent = "⛔ Accès interdit. Vous devez être modérateur ou admin.";
     list.innerHTML = "";
   }
 });
