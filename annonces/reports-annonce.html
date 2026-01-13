@@ -1,188 +1,53 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WAUKLINK — Signalements</title>
-
-  <!-- STYLE GLOBAL -->
-  <link rel="stylesheet" href="../style.css" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Signaler une annonce — WAUKLINK</title>
+  <link rel="stylesheet" href="../style.css">
 </head>
-
 <body>
+
 <header class="topbar">
   <div class="container topbar-row">
-    <div>
-      <h1>WAUKLINK</h1>
-      <div class="subtitle">
-        Annonces signalées par les utilisateurs
-      </div>
-    </div>
-
-    <!-- NAV ALIGNÉE -->
+    <h1>🚩 Signalement</h1>
     <nav class="topbar-nav">
-      <a class="btn" href="../index.html">← Accueil</a>
+      <a class="btn" href="javascript:history.back()">← Retour</a>
     </nav>
   </div>
 </header>
 
 <main class="container main-layout">
-  <h2>Signalements</h2>
+  <div class="card" style="max-width: 500px; margin: 40px auto;">
+    <h2>Signaler l'annonce</h2>
+    <p class="meta">Aidez-nous à protéger la communauté en expliquant le problème.</p>
+    
+    <form id="reportForm" style="margin-top: 20px;">
+      <div class="form-group">
+        <label for="reason" style="display:block; margin-bottom:8px;">Motif du signalement :</label>
+        <select id="reason" class="input" required style="width:100%; padding:10px;">
+          <option value="">-- Choisissez une raison --</option>
+          <option value="Arnaque / Fraude">Arnaque / Fraude</option>
+          <option value="Contenu inapproprié">Contenu inapproprié / Offensant</option>
+          <option value="Annonce périmée">Annonce déjà louée ou vendue</option>
+          <option value="Autre">Autre raison</option>
+        </select>
+      </div>
 
-  <!-- MESSAGE VIDE -->
-  <p id="empty" class="muted hidden">
-    Aucun signalement pour le moment.
-  </p>
+      <div class="form-group" style="margin-top: 20px;">
+        <label for="details" style="display:block; margin-bottom:8px;">Détails supplémentaires (facultatif) :</label>
+        <textarea id="details" class="input" rows="4" style="width:100%; padding:10px;" placeholder="Plus d'informations..."></textarea>
+      </div>
 
-  <!-- LISTE -->
-  <section id="list" class="grid"></section>
+      <div style="margin-top: 30px;">
+        <button type="submit" id="btnSubmit" class="btn btn-danger" style="width:100%; background-color:#ff4444; border:none; padding:12px; color:white; font-weight:bold; cursor:pointer;">
+          🚀 Envoyer le signalement
+        </button>
+      </div>
+    </form>
+  </div>
 </main>
 
-<footer class="footer">
-  <div class="container footer-row">
-    <span>© WAUKLINK</span>
-
-    <nav class="footer-nav">
-      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
-      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
-      <a class="link" href="/wauklink-site/legal/privacy.html">
-        Confidentialité
-      </a>
-      <a class="link" href="/wauklink-site/legal/mentions-legales.html">
-        Mentions légales
-      </a>
-    </nav>
-
-    <!-- 🔐 LIENS ADMIN (CACHÉS PAR DÉFAUT) -->
-    <nav class="footer-nav hidden" id="adminLinks">
-      <a class="link" href="/wauklink-site/admin/index.html">
-        Admin
-      </a>
-      <span class="sep">·</span>
-      <a class="link" href="/wauklink-site/dashboard/moderation-location.html">
-        Modération
-      </a>
-    </nav>
-  </div>
-</footer>
-
-<!-- 🔐 SCRIPT ADMIN -->
-<script type="module" src="/wauklink-site/shared/admin_links.js"></script>
-
-
-<script type="module">
-  import { db } from "../shared/firebase.js";
-  import { requireModerator } from "../shared/guard.js";
-  import {
-    collection,
-    getDocs,
-    query,
-    where,
-    orderBy,
-    doc,
-    updateDoc
-  } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
-  const list  = document.getElementById("list");
-  const empty = document.getElementById("empty");
-
-  const esc = s =>
-    String(s ?? "").replace(/[&<>"']/g, m =>
-      ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
-    );
-
-  function showEmpty(text) {
-    empty.textContent = text;
-    empty.classList.remove("hidden");
-    list.innerHTML = "";
-  }
-
-  async function loadReports() {
-    list.innerHTML = "";
-    empty.classList.add("hidden");
-
-    const q = query(
-      collection(db, "reports"),
-      where("status", "==", "open"),        // ✅ uniquement ouverts
-      orderBy("createdAt", "desc")
-    );
-
-    const snap = await getDocs(q);
-
-    if (snap.empty) {
-      showEmpty("✅ Aucun signalement en attente.");
-      return;
-    }
-
-    snap.forEach(d => {
-      const r = d.data();
-
-      const card = document.createElement("div");
-      card.className = "card";
-
-      card.innerHTML = `
-        <strong>Annonce</strong>
-        <div class="meta">
-          <a class="link"
-             href="/wauklink-site/admin/annonce.html?id=${esc(r.annonceId)}"
-             target="_blank">
-            ${esc(r.annonceId)}
-          </a>
-        </div>
-
-        <strong>Motif</strong>
-        <div class="meta">${esc(r.reason || "—")}</div>
-
-        <div class="meta">
-          Signalé par ${esc(r.reporterEmail || "inconnu")}
-        </div>
-
-        <div class="row-actions" style="margin-top:12px">
-          <button class="btn btn-ok">
-            Marquer comme traité
-          </button>
-        </div>
-      `;
-
-      const btn = card.querySelector("button");
-
-      btn.onclick = async () => {
-        if (!confirm("Marquer ce signalement comme traité ?")) return;
-
-        btn.disabled = true;
-        btn.textContent = "Traitement…";
-
-        try {
-          await updateDoc(
-            doc(db, "reports", d.id),
-            { status: "closed" }
-          );
-
-          card.remove();
-
-          if (!list.children.length) {
-            showEmpty("✅ Tous les signalements ont été traités.");
-          }
-        } catch (err) {
-          console.error(err);
-          btn.disabled = false;
-          btn.textContent = "Marquer comme traité";
-          alert("❌ Erreur lors du traitement");
-        }
-      };
-
-      list.appendChild(card);
-    });
-  }
-
-  // 🔐 ADMIN + MODÉRATION
-  requireModerator({
-    redirectTo: "../auth/login.html",
-    onOk: loadReports
-  });
-</script>
-
-
+<script type="module" src="reports-annonce.js"></script>
 </body>
 </html>
