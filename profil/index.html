@@ -11,6 +11,9 @@
     .progress-bar { width: 0%; height: 100%; background: #27ae60; transition: width 0.3s ease; }
     .mt { margin-top: 15px; }
     
+    /* Utitaire pour cacher les éléments */
+    .hidden { display: none !important; }
+    
     /* Style spécifique pour la section PRO */
     .pro-badge-info { color: #f59e0b; font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
   </style>
@@ -35,7 +38,7 @@
   <div class="card">
     <div class="profile-row" style="display: flex; gap: 20px; align-items: center;">
       <div class="avatar-wrapper">
-        <img id="avatarImg" alt="Avatar" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid #27ae60;">
+        <img id="avatarImg" src="/wauklink-site/assets/avatar-default.png" alt="Avatar" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid #27ae60;">
       </div>
 
       <div>
@@ -93,6 +96,15 @@
   </div>
 </main>
 
+<footer class="footer">
+  <div class="container footer-row">
+    <span>© WAUKLINK</span>
+  </div>
+</footer>
+
 <script type="module" src="/wauklink-site/shared/notifier.js"></script>
+
+<script type="module" src="./profil.js"></script>
+
 </body>
 </html>
