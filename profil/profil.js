@@ -31,15 +31,12 @@ onAuthStateChanged(auth, user => {
 
 avatarInput.addEventListener("change", async () => {
   const msg = document.getElementById("avatarMsg");
-  
-  // 1. On récupère d'abord le fichier
+
+  // 1️⃣ D'abord, on définit ce qu'est "file"
   const file = avatarInput.files[0];
 
-  // 2. Maintenant on peut vérifier s'il existe !
+  // 2️⃣ Ensuite, on vérifie s'il existe (la ligne 34)
   if (!file || !currentUser) return;
-  if (!file.type.startsWith("image/")) {
-    msg.textContent = "❌ Fichier invalide";
-    return;
   }
 
   if (file.size > 2 * 1024 * 1024) {
