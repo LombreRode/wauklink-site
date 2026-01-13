@@ -3,7 +3,7 @@ import {
   doc, getDoc, updateDoc, setDoc, serverTimestamp 
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 import { 
-  ref, uploadBytesResumable, getDownloadURL 
+  ref, uploadBytesResumable, getDownloadURL, uploadBytes 
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
@@ -23,6 +23,7 @@ const proSection = document.getElementById("proSection");
 const proForm = document.getElementById("proForm");
 const proPending = document.getElementById("proPending");
 const btnSendPro = document.getElementById("btnSendPro");
+const proDocInput = document.getElementById("proDocInput"); // Le nouveau champ fichier
 
 /* ==========================================
    1. CHARGEMENT DU PROFIL
@@ -38,11 +39,11 @@ onAuthStateChanged(auth, async (user) => {
       typeDisplay.textContent = data.plan === "pro" ? "🚀 Professionnel" : "👤 Particulier";
       firstNameInput.value = data.firstName || "";
       phoneInput.value = data.phone || "";
-      avatarImg.src = data.avatarUrl || "/wauklink-site/assets/default-avatar.png";
+      avatarImg.src = data.avatarUrl || "/wauklink-site/assets/avatar-default.png";
 
       // --- LOGIQUE INTERFACE PRO ---
       if (data.plan === "pro") {
-        proSection.style.display = "none"; // Déjà pro, on cache la section
+        proSection.classList.add("hidden"); 
       } else {
         proSection.classList.remove("hidden");
         // Vérifier si une demande est déjà en attente
@@ -80,13 +81,13 @@ avatarInput.onchange = (e) => {
       const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
       progressBar.style.width = progress + "%";
     }, 
-    (error) => { alert("Erreur upload"); }, 
+    (error) => { alert("Erreur upload avatar"); }, 
     async () => {
       const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
       await updateDoc(doc(db, "users", auth.currentUser.uid), { avatarUrl: downloadURL });
       avatarImg.src = downloadURL;
       avatarMsg.textContent = "✅ Avatar mis à jour !";
-      progressContainer.style.display = "none";
+      setTimeout(() => { progressContainer.style.display = "none"; }, 1000);
     }
   );
 };
@@ -105,7 +106,7 @@ document.getElementById("saveProfileBtn").onclick = async () => {
       phone: phoneInput.value.trim(),
       updatedAt: serverTimestamp()
     });
-    msg.style.color = "#27ae60";
+    msg.style.color = "#22c55e";
     msg.textContent = "✅ Profil enregistré avec succès !";
   } catch (err) {
     msg.style.color = "#ef4444";
@@ -116,35 +117,53 @@ document.getElementById("saveProfileBtn").onclick = async () => {
 };
 
 /* ==========================================
-   4. ENVOYER DEMANDE PRO
+   4. ENVOYER DEMANDE PRO AVEC JUSTIFICATIF
 ========================================== */
 btnSendPro.onclick = async () => {
   const bName = document.getElementById("businessName").value.trim();
   const siret = document.getElementById("siret").value.trim();
+  const docFile = proDocInput.files[0];
 
+  // Validation
   if (!bName || siret.length < 14) {
     alert("Veuillez entrer le nom de l'entreprise et un SIRET valide (14 chiffres).");
+    return;
+  }
+  if (!docFile) {
+    alert("Veuillez ajouter un justificatif officiel (PDF ou Image).");
     return;
   }
 
   try {
     btnSendPro.disabled = true;
-    btnSendPro.textContent = "Envoi en cours...";
+    btnSendPro.textContent = "⏳ Téléchargement du dossier...";
 
+    // 1. Upload du justificatif vers Storage
+    // On renomme le fichier avec l'UID pour éviter les doublons
+    const fileExt = docFile.name.split('.').pop();
+    const docPath = `pro_documents/${auth.currentUser.uid}_justificatif.${fileExt}`;
+    const docRef = ref(storage, docPath);
+    
+    await uploadBytes(docRef, docFile);
+    const docUrl = await getDownloadURL(docRef);
+
+    // 2. Création de la demande dans Firestore avec le lien du document
     await setDoc(doc(db, "pro_requests", auth.currentUser.uid), {
       userId: auth.currentUser.uid,
       userEmail: auth.currentUser.email,
       businessName: bName,
       siret: siret,
+      documentUrl: docUrl, // Le lien vers ton Kbis/Carte Pro
       status: "pending",
       createdAt: serverTimestamp()
     });
 
-    alert("✅ Demande envoyée !");
+    alert("✅ Dossier envoyé avec succès ! Nos administrateurs vont l'étudier.");
     location.reload(); 
   } catch (e) {
-    alert("Erreur lors de l'envoi de la demande.");
+    console.error("Erreur demande PRO:", e);
+    alert("Erreur lors de l'envoi du dossier.");
     btnSendPro.disabled = false;
-    btnSendPro.textContent = "🚀 Envoyer ma demande PRO";
+    btnSendPro.textContent = "🚀 Envoyer mon dossier PRO";
   }
 };
