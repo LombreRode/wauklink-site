@@ -3,7 +3,7 @@ import { requireAdmin } from "/wauklink-site/shared/guard.js";
 import { logAdminAction } from "/wauklink-site/shared/admin_logger.js";
 import {
   collection, query, where,
-  getDocs, getDoc,
+  getDocs, getDoc, setDoc,
   doc, updateDoc, deleteDoc,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
@@ -13,6 +13,24 @@ const msg  = document.getElementById("msg");
 
 /* ========= HELPERS ========= */
 const esc = s => String(s ?? "").replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
+
+/* ========= FONCTION NOTIFICATION ========= */
+async function sendNotification(userId, title, message, type = "info") {
+  try {
+    // On crée un ID unique pour la notification
+    const notifRef = doc(collection(db, "notifications"));
+    await setDoc(notifRef, {
+      userId: userId,
+      title: title,
+      message: message,
+      type: type,
+      read: false,
+      createdAt: serverTimestamp()
+    });
+  } catch (err) {
+    console.error("Erreur notification:", err);
+  }
+}
 
 /* ========= LOAD PRO REQUESTS ========= */
 async function loadRequests() {
@@ -36,6 +54,7 @@ async function loadRequests() {
 
     for (const d of snap.docs) {
       const req = d.data();
+      const rid = d.id;
       const userSnap = await getDoc(doc(db, "users", req.userId));
       
       if (!userSnap.exists()) continue;
@@ -69,6 +88,7 @@ async function loadRequests() {
         btnOk.disabled = btnNo.disabled = true;
 
         try {
+          // 1. Update utilisateur
           await updateDoc(doc(db, "users", req.userId), {
             isPro: true,
             plan: "pro",
@@ -76,6 +96,15 @@ async function loadRequests() {
             "pro.validatedAt": serverTimestamp()
           });
 
+          // 2. Envoyer notification à l'utilisateur
+          await sendNotification(
+            req.userId, 
+            "Félicitations ! 🚀", 
+            `Votre demande pour ${req.businessName} a été validée. Vous êtes désormais membre PRO !`,
+            "success"
+          );
+
+          // 3. Logger l'action admin
           await logAdminAction({
             action: "pro_validate",
             adminUid: auth.currentUser?.uid,
@@ -83,8 +112,10 @@ async function loadRequests() {
             extra: { targetEmail: u.email, userId: req.userId }
           });
 
-          await deleteDoc(doc(db, "pro_requests", d.id));
-          loadRequests(); // Rafraîchir la liste
+          // 4. Nettoyer la demande
+          await deleteDoc(doc(db, "pro_requests", rid));
+          loadRequests(); 
+          
         } catch (err) {
           alert("Erreur lors de la validation : " + err.message);
           btnOk.disabled = btnNo.disabled = false;
@@ -93,22 +124,37 @@ async function loadRequests() {
 
       // ❌ ACTIONS : REFUSER
       btnNo.onclick = async () => {
-        if (!confirm("Refuser cette demande PRO ?")) return;
+        const raison = prompt("Raison du refus (optionnel) :");
+        if (raison === null) { // Si on clique sur "Annuler"
+          return; 
+        }
+        
         btnOk.disabled = btnNo.disabled = true;
 
         try {
+          // 1. Update utilisateur (on reset sa demande)
           await updateDoc(doc(db, "users", req.userId), {
             "pro.requested": false
           });
 
+          // 2. Notification de refus
+          await sendNotification(
+            req.userId, 
+            "Demande PRO refusée ❌", 
+            `Votre demande a été refusée. Motif : ${raison || "Dossier incomplet"}.`,
+            "danger"
+          );
+
+          // 3. Logger l'action
           await logAdminAction({
             action: "pro_refuse",
             adminUid: auth.currentUser?.uid,
             adminEmail: auth.currentUser?.email,
-            extra: { targetEmail: u.email, userId: req.userId }
+            extra: { targetEmail: u.email, userId: req.userId, raison }
           });
 
-          await deleteDoc(doc(db, "pro_requests", d.id));
+          // 4. Supprimer la demande
+          await deleteDoc(doc(db, "pro_requests", rid));
           loadRequests();
         } catch (err) {
           alert("Erreur lors du refus : " + err.message);
