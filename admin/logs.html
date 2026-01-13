@@ -2,18 +2,24 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Admin — Historique</title>
+  <title>Admin — Historique WAUKLINK</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="/wauklink-site/style.css">
 
   <style>
-    .badge{padding:4px 8px;border-radius:10px;font-weight:600}
-    .b-act{background:#1f8f4a;color:#eafff2}
-    .b-dis{background:#c77d00;color:#fff6e6}
-    .b-del{background:#b42318;color:#ffecec}
-    .filters .row-actions > *{margin-right:6px}
+    .badge { padding: 4px 8px; border-radius: 10px; font-weight: 600; font-size: 11px; }
+    /* Vert : Activations / Débannissements */
+    .b-act { background: #1f8f4a; color: #eafff2; }
+    /* Orange : Plans / Modifications */
+    .b-dis { background: #c77d00; color: #fff6e6; }
+    /* Rouge : Bannissements / Suppressions */
+    .b-del { background: #b42318; color: #ffecec; }
+    
+    .filters .row-actions > * { margin-right: 6px; }
+    .table th { text-align: left; padding: 12px; border-bottom: 2px solid #eee; }
+    .table td { padding: 12px; border-bottom: 1px solid #eee; vertical-align: middle; }
+    .mb { margin-bottom: 20px; }
   </style>
 </head>
 
@@ -26,9 +32,8 @@
       <div class="subtitle">Historique des actions admin</div>
     </div>
     <nav class="topbar-nav">
-      <a class="btn"
-         href="/wauklink-site/admin/index.html">
-        ← Admin
+      <a class="btn" href="/wauklink-site/admin/dashboard.html">
+        ← Dashboard
       </a>
     </nav>
   </div>
@@ -36,54 +41,43 @@
 
 <main class="container main-layout">
 
-  <!-- 🔍 FILTRES -->
   <div class="row-actions mb">
     <button id="btnCsv" class="btn btn-outline">
-      Exporter CSV
+      📊 Exporter CSV
     </button>
   </div>
 
-  <section class="card filters">
+  <section class="card filters mb">
     <div class="row-actions">
       <select id="fAction">
         <option value="">Toutes actions</option>
-        <option value="activate">Activation</option>
-        <option value="disable">Désactivation</option>
-        <option value="delete">Suppression</option>
+        <option value="user_banned">🚫 Bannissement</option>
+        <option value="user_unbanned">✅ Débannissement</option>
+        <option value="user_plan_change">💎 Changement Plan</option>
+        <option value="report_closed">📁 Signalement traité</option>
       </select>
 
-      <input id="fAdmin"
-             type="text"
-             placeholder="Admin (email)…">
+      <input id="fAdmin" type="text" placeholder="Email de l'admin...">
 
-      <input id="fDate"
-             type="date">
-
-      <button id="btnFilter"
-              class="btn btn-ok">
-        Filtrer
-      </button>
-
-      <button id="btnReset"
-              class="btn btn-outline">
-        Réinitialiser
-      </button>
+      <button id="btnFilter" class="btn btn-ok">Filtrer</button>
+      <button id="btnReset" class="btn btn-outline">Réinitialiser</button>
     </div>
   </section>
 
-  <p id="msg" class="meta">Chargement…</p>
+  <p id="msg" class="meta">⏳ Chargement de l'historique...</p>
 
   <section class="card">
-    <table class="table">
+    <table class="table" style="width: 100%; border-collapse: collapse;">
       <thead>
         <tr>
           <th>Date</th>
           <th>Admin</th>
           <th>Action</th>
-          <th>Annonce</th>
+          <th>Cible / Détails</th>
         </tr>
       </thead>
-      <tbody id="rows"></tbody>
+      <tbody id="rows">
+        </tbody>
     </table>
   </section>
 
@@ -91,38 +85,29 @@
 
 <footer class="footer">
   <div class="container footer-row">
-    <span>© WAUKLINK</span>
+    <span>© WAUKLINK — Système de Modération</span>
   </div>
 </footer>
 
-<!-- 🔐 PROTECTION ADMIN -->
 <script type="module">
-  import { requireAdmin } from
-    "/wauklink-site/shared/guard.js";
+  import { requireAdmin } from "/wauklink-site/shared/guard.js";
 
+  // Protection de la page
   requireAdmin({
-    onOk: () => {},
+    onOk: () => { console.log("Accès Admin autorisé"); },
     onDenied: () => {
       document.body.innerHTML = `
-        <main class="container main-layout">
+        <main class="container main-layout" style="text-align:center; padding-top:100px;">
           <h2>⛔ Accès refusé</h2>
-          <p class="meta">
-            Page réservée aux administrateurs
-          </p>
-          <a class="btn"
-             href="/wauklink-site/dashboard/index.html">
-            Retour dashboard
-          </a>
+          <p class="meta">Cette page est réservée aux administrateurs de WAUKLINK.</p>
+          <a class="btn" href="/wauklink-site/index.html">Retour à l'accueil</a>
         </main>
       `;
     }
   });
 </script>
 
-<!-- 📜 LOGIQUE HISTORIQUE ADMIN -->
-<script type="module"
-        src="/wauklink-site/admin/logs.js">
-</script>
+<script type="module" src="/wauklink-site/admin/logs.js"></script>
 
 </body>
 </html>
