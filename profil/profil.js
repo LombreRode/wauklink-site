@@ -29,22 +29,25 @@ onAuthStateChanged(auth, async (user) => {
     }
     currentUser = user;
     
-    // Correction ici : utiliser les IDs exacts du HTML
+    // IDs mis à jour pour correspondre à votre HTML propre
     const emailElem = document.getElementById("emailDisplay");
     const typeElem = document.getElementById("typeDisplay");
     
-    if (emailElem) emailElem.querySelector("span").textContent = user.email;
+    if (emailElem && emailElem.querySelector("span")) {
+        emailElem.querySelector("span").textContent = user.email;
+    }
 
-    try {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists()) {
-            const data = userDoc.data();
-            if (data.avatarUrl) avatarImg.src = data.avatarUrl;
-            if (data.firstName) firstNameInput.value = data.firstName;
-            if (data.phone) phoneInput.value = data.phone;
-            if (data.role && typeElem) typeElem.querySelector("span").textContent = data.role;
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+    if (userDoc.exists()) {
+        const data = userDoc.data();
+        if (data.avatarUrl) avatarImg.src = data.avatarUrl;
+        if (data.firstName) firstNameInput.value = data.firstName;
+        if (data.phone) phoneInput.value = data.phone;
+        // Mise à jour du rôle (admin/moderateur)
+        if (data.role && typeElem && typeElem.querySelector("span")) {
+            typeElem.querySelector("span").textContent = data.role;
         }
-    } catch (e) { console.error("Erreur de chargement:", e); }
+    }
 });
 
 // Gestion de l'upload de l'avatar
