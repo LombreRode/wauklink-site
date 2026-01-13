@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
 
-  <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
 
@@ -26,34 +25,16 @@
     </nav>
   </div>
 
-  <!-- 👤 UTILISATEUR CONNECTÉ -->
   <div id="userNav" class="user-nav hidden">
-    <img
-      id="navAvatar"
-      src="/wauklink-site/assets/avatar-default.png"
-      alt="Avatar"
-      style="
-        width:36px;
-        height:36px;
-        border-radius:50%;
-        object-fit:cover;
-        border:1px solid #2ecc71;
-      "
-    >
-    <a href="/wauklink-site/dashboard/index.html"
-       class="btn btn-outline">
-      📊 Dashboard
-    </a>
-    <a href="/wauklink-site/profil/index.html"
-       class="btn btn-outline">
-      👤 Profil
-    </a>
-    <button id="logoutBtn" class="btn btn-danger">
-      Déconnexion
-    </button>
+    <img id="navAvatar" src="/wauklink-site/assets/avatar-default.png" alt="Avatar" 
+         style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:1px solid #2ecc71;">
+    
+    <a href="/wauklink-site/dashboard/index.html" class="btn btn-outline">📊 Dashboard</a>
+    <a href="/wauklink-site/profil/index.html" class="btn btn-outline">👤 Profil</a>
+    
+    <button id="logoutBtn" class="btn btn-danger">Déconnexion</button>
   </div>
 
-  <!-- 👥 INVITÉ -->
   <div id="guestStatus" class="guest-status hidden">
     <a href="/wauklink-site/auth/login.html">Connexion</a>
     <a href="/wauklink-site/auth/register.html">Inscription</a>
@@ -61,10 +42,9 @@
 </header>
 
 <main class="container main-layout">
-  <h2>Mon tableau de bord</h2>
+  <h2>Bienvenue sur votre espace</h2>
 
-  <!-- 🔰 STATUT UTILISATEUR -->
-  <div id="proStatus" class="meta" style="margin:16px 0"></div>
+  <div id="proStatus" style="margin:20px 0; min-height: 40px;"></div>
 
   <div class="grid">
     <a class="card" href="/wauklink-site/deposer/annonce-location.html">
@@ -89,7 +69,7 @@
 
     <a class="card" href="/wauklink-site/profil/index.html">
       <strong>👤 Mon profil</strong>
-      <p class="meta">Gérer mon compte</p>
+      <p class="meta">Gérer mes informations personnelles</p>
     </a>
   </div>
 </main>
@@ -100,94 +80,66 @@
   </div>
 </footer>
 
-<!-- 🔐 PROTECTION UTILISATEUR CONNECTÉ -->
 <script type="module">
   import { requireUser } from "/wauklink-site/shared/guard.js";
-  requireUser({
-    redirectTo: "/wauklink-site/auth/login.html"
-  });
+  requireUser({ redirectTo: "/wauklink-site/auth/login.html" });
 </script>
 
-<!-- 👤 NAVBAR (avatar + logout) -->
-<script type="module"
-        src="/wauklink-site/shared/user_status.js">
-</script>
+<script type="module" src="/wauklink-site/shared/user_status.js"></script>
 
-<!-- 🟢 STATUT PLAN UTILISATEUR -->
 <script type="module">
   import { auth, db } from "/wauklink-site/shared/firebase.js";
-  import { onAuthStateChanged } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-  import {
-    doc, getDoc,
-    collection, query, where, getDocs,
-    addDoc, serverTimestamp
-  } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
   const proStatus = document.getElementById("proStatus");
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) return;
 
-    const snap = await getDoc(doc(db, "users", user.uid));
-    if (!snap.exists()) return;
+    try {
+      const snap = await getDoc(doc(db, "users", user.uid));
+      if (!snap.exists()) return;
 
-    const data = snap.data();
-    proStatus.innerHTML = "";
+      const data = snap.data();
+      proStatus.innerHTML = "";
 
-    // 👑 ADMIN
-    if (data.role === "admin") {
-      proStatus.textContent = "👑 Administrateur";
-      return;
+      // Priorité 1 : Admin
+      if (data.role === "admin") {
+        proStatus.innerHTML = "<span style='color:#f1c40f; font-weight:bold;'>👑 Administrateur</span>";
+        return;
+      }
+
+      // Priorité 2 : Déjà PRO
+      if (data.plan === "pro") {
+        proStatus.innerHTML = "<span style='color:#2ecc71; font-weight:bold;'>🟢 Compte Professionnel Validé</span>";
+        return;
+      }
+
+      // Priorité 3 : Demande déjà envoyée
+      const reqSnap = await getDoc(doc(db, "pro_requests", user.uid));
+      if (reqSnap.exists()) {
+        proStatus.innerHTML = "<span class='meta'>⏳ Demande PRO en cours d'examen...</span>";
+        return;
+      }
+
+      // Priorité 4 : Proposer de devenir PRO (renvoie vers le formulaire du profil)
+      const btn = document.createElement("button");
+      btn.className = "btn btn-ok";
+      btn.style.width = "100%";
+      btn.textContent = "🚀 Passer Professionnel (Vérification gratuite)";
+      btn.onclick = () => {
+        window.location.href = "/wauklink-site/profil/index.html";
+      };
+      proStatus.appendChild(btn);
+
+    } catch (err) {
+      console.error("Erreur Dashboard Status:", err);
     }
-
-    // 🟢 PRO
-    if (data.plan === "pro") {
-      proStatus.textContent = "🟢 Compte Professionnel";
-      return;
-    }
-
-    // 🟡 PARTICULIER
-    if (data.plan === "particulier") {
-      proStatus.textContent = "🟡 Compte Particulier";
-      return;
-    }
-
-    // ⏳ DEMANDE PRO EN COURS
-    const q = query(
-      collection(db, "pro_requests"),
-      where("userId", "==", user.uid),
-      where("status", "==", "pending")
-    );
-
-    const reqSnap = await getDocs(q);
-    if (!reqSnap.empty) {
-      proStatus.textContent =
-        "⏳ Demande Professionnel en attente";
-      return;
-    }
-
-    // 🔘 GRATUIT → DEMANDE PRO
-    const btn = document.createElement("button");
-    btn.className = "btn btn-ok";
-    btn.textContent = "🚀 Passer Professionnel";
-
-    btn.onclick = async () => {
-      btn.disabled = true;
-      await addDoc(collection(db, "pro_requests"), {
-        userId: user.uid,
-        status: "pending",
-        createdAt: serverTimestamp()
-      });
-      proStatus.textContent =
-        "⏳ Demande Professionnel envoyée";
-    };
-
-    proStatus.appendChild(btn);
   });
 </script>
 
- <script type="module" src="/wauklink-site/shared/notifier.js"></script> 
+<script type="module" src="/wauklink-site/shared/notifier.js"></script> 
+
 </body>
 </html>
