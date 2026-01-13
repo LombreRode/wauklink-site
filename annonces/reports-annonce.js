@@ -1,109 +1,57 @@
-import { db } from "../shared/firebase.js";
-import { requireModerator } from "../shared/guard.js";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-  orderBy,
-  doc,
-  updateDoc
+import { db, auth } from "../shared/firebase.js";
+import { 
+  collection, 
+  addDoc, 
+  serverTimestamp 
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-const list  = document.getElementById("list");
-const empty = document.getElementById("empty");
+const reportForm = document.getElementById("reportForm");
+const btnSubmit  = document.getElementById("btnSubmit");
 
-const esc = s =>
-  String(s ?? "").replace(/[&<>"']/g, m =>
-    ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
-  );
+// Récupération de l'ID de l'annonce depuis l'URL
+const params = new URLSearchParams(window.location.search);
+const annonceId = params.get("id");
 
-function showEmpty(text) {
-  empty.textContent = text;
-  empty.classList.remove("hidden");
-  list.innerHTML = "";
+if (!annonceId) {
+    alert("❌ Erreur : Aucune annonce n'est sélectionnée.");
+    window.location.href = "location.html";
 }
 
-async function loadReports() {
-  list.innerHTML = "";
-  empty.classList.add("hidden");
+reportForm.onsubmit = async (e) => {
+    e.preventDefault();
 
-  const q = query(
-    collection(db, "reports"),
-    where("status", "==", "open"), // ✅ uniquement ouverts
-    orderBy("createdAt", "desc")
-  );
+    // L'utilisateur doit être connecté
+    const user = auth.currentUser;
+    if (!user) {
+        alert("⚠️ Connectez-vous pour signaler cette annonce.");
+        return;
+    }
 
-  const snap = await getDocs(q);
+    const reason = document.getElementById("reason").value;
+    const details = document.getElementById("details").value;
 
-  if (snap.empty) {
-    showEmpty("✅ Aucun signalement en attente.");
-    return;
-  }
+    btnSubmit.disabled = true;
+    btnSubmit.textContent = "⌛ Envoi...";
 
-  snap.forEach(d => {
-    const r = d.data();
+    try {
+        // AJOUT du document dans Firestore
+        await addDoc(collection(db, "reports"), {
+            annonceId: annonceId,
+            reporterUid: user.uid,
+            reporterEmail: user.email,
+            reason: reason,
+            details: details,
+            status: "open", // Status pour l'admin
+            createdAt: serverTimestamp()
+        });
 
-    const card = document.createElement("div");
-    card.className = "card";
+        alert("✅ Signalement transmis. Merci !");
+        window.location.href = `location-detail.html?id=${annonceId}`;
 
-    card.innerHTML = `
-      <div><strong>Annonce :</strong></div>
-      <div class="meta">
-        <a class="link"
-           href="/wauklink-site/admin/annonce.html?id=${esc(r.annonceId)}"
-           target="_blank">
-          ${esc(r.annonceId)}
-        </a>
-      </div>
-
-      <div><strong>Motif :</strong></div>
-      <div class="meta">${esc(r.reason || "—")}</div>
-
-      <div class="meta">
-        Signalé par ${esc(r.reporterEmail || "inconnu")}
-      </div>
-
-      <div class="row-actions" style="margin-top:12px">
-        <button class="btn btn-ok">
-          Marquer comme traité
-        </button>
-      </div>
-    `;
-
-    const btn = card.querySelector("button");
-
-    btn.onclick = async () => {
-      if (!confirm("Marquer ce signalement comme traité ?")) return;
-
-      btn.disabled = true;
-      btn.textContent = "Traitement…";
-
-      try {
-        await updateDoc(
-          doc(db, "reports", d.id),
-          { status: "closed" }
-        );
-
-        card.remove();
-
-        if (!list.children.length) {
-          showEmpty("✅ Tous les signalements ont été traités.");
-        }
-      } catch (err) {
-        console.error(err);
-        btn.disabled = false;
-        btn.textContent = "Marquer comme traité";
-        alert("❌ Erreur lors du traitement");
-      }
-    };
-
-    list.appendChild(card);
-  });
-}
-
-// 🔒 MODÉRATEUR / ADMIN UNIQUEMENT
-requireModerator({
-  redirectTo: "../auth/login.html",
-  onOk: loadReports
-});
+    } catch (error) {
+        console.error("Erreur d'envoi :", error);
+        alert("❌ Impossible d'envoyer le signalement.");
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = "Envoyer le signalement";
+    }
+};
