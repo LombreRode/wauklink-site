@@ -9,31 +9,37 @@ import {
   orderBy,
   getDocs,
   doc,
-  updateDoc
+  updateDoc,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 /* ========= DOM ========= */
 const list = document.getElementById("list");
 const msg  = document.getElementById("msg");
 
-/* ========= HELPERS ========= */
+/* ========= HELPERS (Sécurité & UI) ========= */
+// Empêche l'injection de code malveillant dans le HTML
 const esc = s =>
   String(s ?? "").replace(/[&<>"']/g, m =>
-    ({ "&":"&amp;","<":"&lt;",">":"&gt;",
-       '"':"&quot;","'":"&#039;" }[m])
+    ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
   );
 
 function showEmpty(text) {
   msg.textContent = text;
-  list.innerHTML = "<p class='meta'>Tout est à jour.</p>";
+  list.innerHTML = `
+    <div class="card" style="text-align:center; grid-column: 1 / -1; padding: 2rem;">
+      <p class="meta">Aucun signalement en attente. Beau travail !</p>
+    </div>`;
 }
 
-/* ========= LOAD ========= */
+/* ========= CHARGEMENT DES DONNÉES ========= */
 async function loadReports() {
   msg.textContent = "⏳ Chargement des signalements…";
   list.innerHTML = "";
 
   try {
+    // ⚠️ Cette requête nécessite un index Firestore. 
+    // Si elle échoue, vérifie le lien dans la console F12.
     const q = query(
       collection(db, "reports"),
       where("status", "==", "open"),
@@ -47,7 +53,7 @@ async function loadReports() {
       return;
     }
 
-    msg.textContent = `📋 ${snap.size} signalement(s) ouvert(s)`;
+    msg.textContent = `📋 ${snap.size} signalement(s) à traiter`;
 
     snap.forEach(d => {
       const r = d.data();
@@ -55,71 +61,103 @@ async function loadReports() {
       card.className = "card";
 
       card.innerHTML = `
-        <strong>${esc(r.reason || "Signalement")}</strong>
-        <div class="meta">
-          Annonce :
-          <a class="link"
-             href="/wauklink-site/admin/annonce.html?id=${esc(r.annonceId)}"
-             target="_blank">
-            ${esc(r.annonceId)}
-          </a>
+        <div style="margin-bottom: 10px;">
+            <span class="badge badge-warning">Signalement</span>
         </div>
-        <div class="meta">
-          Signalé par ${esc(r.reporterEmail || "inconnu")}
+        <strong style="font-size: 1.1rem; display: block; margin-bottom: 10px;">
+            ${esc(r.reason || "Motif non précisé")}
+        </strong>
+        
+        <div class="meta" style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; margin-bottom: 15px;">
+          <div style="margin-bottom: 5px;">
+            <strong>Annonce :</strong> 
+            <a class="link" href="/wauklink-site/admin/annonce.html?id=${esc(r.annonceId)}" target="_blank">
+              ${esc(r.annonceId)} ↗
+            </a>
+          </div>
+          <div>
+            <strong>Par :</strong> ${esc(r.reporterEmail || "Anonyme")}
+          </div>
         </div>
-        <div class="row-actions" style="margin-top:12px">
-          <button class="btn btn-ok">
+
+        <div class="row-actions">
+          <button class="btn btn-ok" id="btn-close-${d.id}" style="width: 100%;">
             Marquer comme traité
           </button>
         </div>
       `;
 
-      const btn = card.querySelector("button");
+      const btn = card.querySelector(`#btn-close-${d.id}`);
 
       btn.onclick = async () => {
-        if (!confirm("Marquer ce signalement comme traité ?")) return;
+        if (!confirm("Voulez-vous clôturer ce signalement ?")) return;
+        
         btn.disabled = true;
-        btn.textContent = "Traitement…";
+        btn.textContent = "Clôture en cours…";
 
         try {
+          // 1. Mise à jour dans Firestore
           await updateDoc(doc(db, "reports", d.id), {
-            status: "closed"
+            status: "closed",
+            closedAt: serverTimestamp(),
+            closedBy: auth.currentUser?.email
           });
 
+          // 2. Enregistrement dans les logs admin
           await logAdminAction({
             action: "report_closed",
             adminUid: auth.currentUser?.uid,
             adminEmail: auth.currentUser?.email,
             annonceId: r.annonceId,
-            extra: { reason: r.reason }
+            extra: { reason: r.reason, reportId: d.id }
           });
 
-          card.remove();
-          if (!list.children.length) {
-            showEmpty("✅ Tous les signalements ont été traités.");
-          }
+          // 3. UI Update
+          card.style.transform = "scale(0.95)";
+          card.style.opacity = "0";
+          
+          setTimeout(() => {
+            card.remove();
+            if (!list.children.length) {
+              showEmpty("✅ Tous les signalements ont été traités.");
+            } else {
+              msg.textContent = `📋 ${list.children.length} signalement(s) restants`;
+            }
+          }, 300);
+
         } catch (err) {
-          console.error("report update error:", err);
+          console.error("Erreur clôture signalement:", err);
           btn.disabled = false;
           btn.textContent = "Marquer comme traité";
-          alert("❌ Erreur lors du traitement");
+          alert("❌ Erreur : permissions insuffisantes ou problème réseau.");
         }
       };
 
       list.appendChild(card);
     });
+
   } catch (err) {
     console.error("loadReports error:", err);
-    msg.textContent = "❌ Erreur de chargement des signalements";
-    list.innerHTML = "";
+    msg.textContent = "❌ Problème de chargement.";
+    
+    // Message spécifique pour l'index manquant
+    if (err.message.includes("index")) {
+        list.innerHTML = `
+        <div class="card" style="border: 1px solid #ff4444; grid-column: 1/-1;">
+            <p style="color: #ff4444; font-weight: bold;">Index Firestore manquant</p>
+            <p class="meta">Ouvre la console (F12) et clique sur le lien généré par Firebase pour activer cette vue.</p>
+        </div>`;
+    }
   }
 }
 
-/* ========= GUARD ========= */
+/* ========= SÉCURITÉ (GUARD) ========= */
 requireModerator({
   onOk: loadReports,
   onDenied: () => {
-    msg.textContent = "⛔ Accès refusé";
+    msg.textContent = "⛔ Accès refusé : Droits modérateur requis.";
     list.innerHTML = "";
+    // Optionnel : redirection automatique
+    // setTimeout(() => window.location.href = "/wauklink-site/", 2000);
   }
 });
