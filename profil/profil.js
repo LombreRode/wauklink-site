@@ -1,9 +1,9 @@
 import { auth, db, storage } from "../shared/firebase.js";
-import { onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 import { ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
-// Éléments DOM
+// Sélection des éléments
 const avatarImg = document.getElementById("avatarImg");
 const avatarInput = document.getElementById("avatarInput");
 const avatarMsg = document.getElementById("avatarMsg");
@@ -15,45 +15,39 @@ const phoneInput = document.getElementById("phoneInput");
 const saveProfileBtn = document.getElementById("saveProfileBtn");
 const profileMsg = document.getElementById("profileMsg");
 
-const newPassword = document.getElementById("newPassword");
-const changePasswordBtn = document.getElementById("changePasswordBtn");
-const passwordMsg = document.getElementById("passwordMsg");
-
 let currentUser = null;
 
-// 1. CHARGEMENT DU PROFIL
+// Chargement des données au démarrage
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
         window.location.href = "../auth/login.html";
         return;
     }
     currentUser = user;
-    document.getElementById("email").querySelector("span").textContent = user.email;
+    document.getElementById("emailDisplay").querySelector("span").textContent = user.email;
 
-    // Charger données Firestore
-    try {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists()) {
-            const data = userDoc.data();
-            if (data.avatarUrl) avatarImg.src = data.avatarUrl;
-            if (data.firstName) firstNameInput.value = data.firstName;
-            if (data.phone) phoneInput.value = data.phone;
-            if (data.role) document.getElementById("type").querySelector("span").textContent = data.role;
-        }
-    } catch (e) { console.error("Erreur chargement:", e); }
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+    if (userDoc.exists()) {
+        const data = userDoc.data();
+        if (data.avatarUrl) avatarImg.src = data.avatarUrl;
+        if (data.firstName) firstNameInput.value = data.firstName;
+        if (data.phone) phoneInput.value = data.phone;
+        if (data.role) document.getElementById("typeDisplay").querySelector("span").textContent = data.role;
+    }
 });
 
-// 2. GESTION DE L'AVATAR (MAX 6 MO)
+// Gestion de l'upload (6 Mo)
 avatarInput.addEventListener("change", async () => {
     const file = avatarInput.files[0];
     if (!file || !currentUser) return;
 
+    // Validation 6 Mo
     if (file.size > 6 * 1024 * 1024) {
         avatarMsg.textContent = "❌ Image trop lourde (max 6 Mo)";
         return;
     }
 
-    avatarMsg.textContent = "⏳ Préparation...";
+    avatarMsg.textContent = "⏳ Initialisation de l'envoi...";
     progressContainer.style.display = "block";
     progressBar.style.width = "0%";
 
@@ -63,12 +57,12 @@ avatarInput.addEventListener("change", async () => {
         const task = uploadBytesResumable(fileRef, file);
 
         task.on('state_changed', 
-            (snap) => {
-                const prog = (snap.bytesTransferred / snap.totalBytes) * 100;
-                progressBar.style.width = prog + "%";
-                avatarMsg.textContent = `⏳ Upload : ${Math.round(prog)}%`;
-            },
-            (err) => { throw err; },
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                progressBar.style.width = progress + "%";
+                avatarMsg.textContent = `⏳ Upload : ${Math.round(progress)}%`;
+            }, 
+            (error) => { throw error; }, 
             async () => {
                 const url = await getDownloadURL(fileRef);
                 await updateDoc(doc(db, "users", currentUser.uid), {
@@ -81,41 +75,24 @@ avatarInput.addEventListener("change", async () => {
             }
         );
     } catch (e) {
-        console.error(e);
-        avatarMsg.textContent = "❌ Erreur upload (Vérifiez CORS)";
+        console.error("Erreur Storage:", e);
+        avatarMsg.textContent = "❌ Erreur : Vérifiez votre connexion ou CORS";
         progressContainer.style.display = "none";
     }
 });
 
-// 3. MODIFIER INFOS (Prénom / Tél)
+// Enregistrement des informations textuelles
 saveProfileBtn.addEventListener("click", async () => {
     if (!currentUser) return;
-    profileMsg.textContent = "⏳ Enregistrement...";
+    profileMsg.textContent = "⏳ Sauvegarde...";
     try {
         await updateDoc(doc(db, "users", currentUser.uid), {
             firstName: firstNameInput.value,
             phone: phoneInput.value,
             updatedAt: serverTimestamp()
         });
-        profileMsg.textContent = "✅ Informations enregistrées !";
+        profileMsg.textContent = "✅ Profil mis à jour !";
     } catch (e) {
         profileMsg.textContent = "❌ Erreur de sauvegarde";
-    }
-});
-
-// 4. CHANGER MOT DE PASSE
-changePasswordBtn.addEventListener("click", async () => {
-    const pass = newPassword.value;
-    if (pass.length < 6) {
-        passwordMsg.textContent = "❌ 6 caractères minimum";
-        return;
-    }
-    passwordMsg.textContent = "⏳ Modification...";
-    try {
-        await updatePassword(currentUser, pass);
-        passwordMsg.textContent = "✅ Mot de passe changé !";
-        newPassword.value = "";
-    } catch (e) {
-        passwordMsg.textContent = "❌ Déconnectez-vous et reconnectez-vous pour cette action";
     }
 });
