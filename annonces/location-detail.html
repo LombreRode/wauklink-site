@@ -29,11 +29,9 @@
 
     <div id="photos" class="grid"></div>
 
-    <!-- ⭐ NOTATION (uniquement connecté) -->
-    <section id="ratingSection" class="hidden" style="margin-top:20px">
+    <section id="ratingSection" class="hidden" style="margin-top:20px; padding-top:20px; border-top: 1px solid var(--border);">
       <h3>Laisser une note</h3>
-
-      <select id="ratingValue">
+      <select id="ratingValue" class="input">
         <option value="">Note</option>
         <option value="1">⭐ 1</option>
         <option value="2">⭐⭐ 2</option>
@@ -42,12 +40,16 @@
         <option value="5">⭐⭐⭐⭐⭐ 5</option>
       </select>
 
-      <button id="rateBtn" class="btn btn-ok">
-        Noter
-      </button>
-
+      <button id="rateBtn" class="btn btn-ok">Noter</button>
       <p id="rateMsg" class="meta"></p>
     </section>
+
+    <section id="reportSection" class="hidden" style="margin-top:20px; text-align: right;">
+      <a id="reportLink" href="#" style="color: var(--error); text-decoration: none; font-size: 0.9rem; font-weight: bold;">
+        🚩 Signaler un problème avec cette annonce
+      </a>
+    </section>
+
   </section>
 </main>
 
@@ -58,17 +60,12 @@
       <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
       <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
       <a class="link" href="/wauklink-site/legal/privacy.html">Confidentialité</a>
-      <a class="link" href="/wauklink-site/legal/mentions-legales.html">
-        Mentions légales
-      </a>
+      <a class="link" href="/wauklink-site/legal/mentions-legales.html">Mentions légales</a>
     </nav>
   </div>
 </footer>
 
-<!-- 🔐 Liens admin si autorisé -->
 <script type="module" src="/wauklink-site/shared/admin_links.js"></script>
-
-<!-- 📄 LOGIQUE DÉTAIL ANNONCE -->
 <script type="module" src="./location-detail.js"></script>
 
 </body>
