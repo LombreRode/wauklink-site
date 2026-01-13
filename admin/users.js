@@ -11,7 +11,7 @@ import {
 const list = document.getElementById("list");
 const msg  = document.getElementById("msg");
 
-/* ========= HELPERS (Sécurité affichage) ========= */
+/* ========= HELPERS ========= */
 const esc = s => String(s ?? "").replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
 
 function badge(u) {
@@ -43,44 +43,54 @@ async function loadUsers() {
 
       const card = document.createElement("div");
       card.className = "card";
-      if (u.isBanned) card.style.opacity = "0.6";
+      // Si banni, on met un style visuel différent
+      if (u.isBanned) {
+        card.style.borderLeft = "5px solid #ef4444";
+        card.style.opacity = "0.8";
+      }
 
-      let controls = `<div class="meta">${badge(u)}</div>`;
+      let controls = `<div class="meta" style="margin-bottom:8px;">${badge(u)}</div>`;
 
-      // Seuls les non-admins peuvent être modifiés ou bannis
       if (u.role !== "admin") {
         controls += `
           <div style="margin-top:10px;">
-            <label class="meta">Plan :</label>
-            <select class="planSelect input" style="width:100%">
+            <label class="meta">Changer le Plan :</label>
+            <select class="planSelect" style="width:100%">
               <option value="free">Gratuit</option>
               <option value="particulier">Particulier</option>
               <option value="pro">Professionnel</option>
             </select>
           </div>
-          <div style="margin-top:10px;">
-            <button class="btn btn-danger btnBan" style="width:100%; padding:5px;">
-              ${u.isBanned ? "✅ Débannir" : "🚫 Bannir"}
+          <div style="margin-top:12px;">
+            <button class="btn ${u.isBanned ? 'btn-ok' : 'btn-danger'} btnBan" style="width:100%; padding:8px;">
+              ${u.isBanned ? "✅ Débannir l'utilisateur" : "🚫 Bannir l'utilisateur"}
             </button>
           </div>
         `;
+      } else {
+        controls += `<p class="meta" style="font-style:italic; margin-top:10px;">Actions impossibles sur un admin</p>`;
       }
 
       card.innerHTML = `
-        <strong>${esc(u.firstName)} ${esc(u.lastName)}</strong>
-        <div class="meta">${esc(u.email)}</div>
-        <div class="row-actions">
+        <div style="display:flex; justify-content:space-between; align-items:start;">
+           <div>
+              <strong style="font-size:1.1em;">${esc(u.firstName || "Sans")} ${esc(u.lastName || "Nom")}</strong>
+              <div class="meta">${esc(u.email)}</div>
+           </div>
+        </div>
+        <hr style="margin:12px 0; opacity:0.1; border:none; border-top:1px solid white;">
+        <div class="row-actions" style="display:block;">
           ${controls}
         </div>
       `;
 
-      // --- 1. LOGIQUE CHANGEMENT DE PLAN ---
+      // --- 1. LOGIQUE PLAN ---
       const select = card.querySelector(".planSelect");
       if (select) {
         select.value = u.plan || "free";
         select.onchange = async () => {
           const newPlan = select.value;
-          if (!confirm(`Changer le plan de ${u.email} en "${newPlan}" ?`)) {
+          if (!confirm(`Passer ${u.email} au plan ${newPlan} ?`)) {
             select.value = u.plan || "free";
             return;
           }
@@ -89,19 +99,16 @@ async function loadUsers() {
               plan: newPlan,
               isPro: newPlan === "pro"
             });
-
-            // Log spécifique au plan
             await logAdminAction({
               action: "user_plan_change",
               adminUid: auth.currentUser?.uid,
               adminEmail: auth.currentUser?.email,
-              extra: { targetId: uid, targetEmail: u.email, newPlan: newPlan }
+              extra: { targetId: uid, targetEmail: u.email, newPlan }
             });
-
-            alert("✅ Plan mis à jour");
+            alert("✅ Plan mis à jour !");
+            loadUsers(); // Rafraîchir pour voir le badge changer
           } catch (err) {
-            console.error(err);
-            alert("❌ Erreur lors du changement de plan");
+            alert("❌ Erreur : " + err.message);
           }
         };
       }
@@ -111,23 +118,19 @@ async function loadUsers() {
       if (btnBan) {
         btnBan.onclick = async () => {
           const newState = !u.isBanned;
-          if (!confirm(`${newState ? "Bannir" : "Débannir"} ${u.email} ?`)) return;
+          if (!confirm(`${newState ? "Bannir" : "Débannir"} définitivement ${u.email} ?`)) return;
 
           try {
             await updateDoc(doc(db, "users", uid), { isBanned: newState });
-            
-            // Log spécifique au bannissement
             await logAdminAction({
               action: newState ? "user_banned" : "user_unbanned",
               adminUid: auth.currentUser?.uid,
               adminEmail: auth.currentUser?.email,
               extra: { targetId: uid, targetEmail: u.email }
             });
-
-            loadUsers(); // Recharge la liste pour mettre à jour l'affichage
+            loadUsers(); 
           } catch (err) {
-            console.error(err);
-            alert("❌ Erreur lors de l'action de bannissement");
+            alert("❌ Erreur : " + err.message);
           }
         };
       }
@@ -136,7 +139,7 @@ async function loadUsers() {
     });
   } catch (err) {
     console.error(err);
-    msg.textContent = "❌ Erreur critique de chargement";
+    msg.textContent = "❌ Erreur de chargement des données";
   }
 }
 
@@ -144,7 +147,7 @@ async function loadUsers() {
 requireAdmin({
   onOk: loadUsers,
   onDenied: () => {
-    msg.innerHTML = "⛔ <strong>Accès refusé</strong><br>Vous n'êtes pas Administrateur.";
+    msg.innerHTML = "⛔ <strong>Accès refusé</strong><br>Espace réservé à la direction.";
     list.innerHTML = "";
   }
 });
