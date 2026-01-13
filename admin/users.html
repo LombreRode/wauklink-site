@@ -1,7 +1,42 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Admin — Gestion Utilisateurs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <link rel="stylesheet" href="/wauklink-site/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container topbar-row">
+    <div>
+      <h1>WAUKLINK</h1>
+      <div class="subtitle">Administration — Gestion des comptes</div>
+    </div>
+    <nav class="topbar-nav">
+      <a class="btn" href="/wauklink-site/admin/dashboard.html">← Dashboard</a>
+    </nav>
+  </div>
+</header>
+
 <main class="container main-layout">
-  <h2>Gestion des Utilisateurs</h2>
-  <p id="msg" class="meta">Chargement…</p>
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <h2>Gestion des Utilisateurs</h2>
+    <p id="msg" class="meta">Chargement…</p>
+  </div>
+
   <section id="list" class="grid"></section>
 </main>
 
+<footer class="footer">
+  <div class="container footer-row">
+    <span>© WAUKLINK — Espace Modérateur</span>
+  </div>
+</footer>
+
 <script type="module" src="users.js"></script>
+
+</body>
+</html>
