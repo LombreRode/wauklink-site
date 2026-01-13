@@ -27,26 +27,40 @@
 
     <p id="description"></p>
 
-    <div id="photos" class="grid"></div>
+    <div id="photos" class="grid" style="margin-bottom: 20px;"></div>
 
     <section id="ratingSection" class="hidden" style="margin-top:20px; padding-top:20px; border-top: 1px solid var(--border);">
-      <h3>Laisser une note</h3>
-      <select id="ratingValue" class="input">
-        <option value="">Note</option>
-        <option value="1">⭐ 1</option>
-        <option value="2">⭐⭐ 2</option>
-        <option value="3">⭐⭐⭐ 3</option>
-        <option value="4">⭐⭐⭐⭐ 4</option>
-        <option value="5">⭐⭐⭐⭐⭐ 5</option>
-      </select>
+      <h3>Laisser un avis</h3>
+      
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+        <select id="ratingValue" class="input" style="width: 100%;">
+          <option value="">Choisir une note</option>
+          <option value="5">⭐⭐⭐⭐⭐ 5 - Excellent</option>
+          <option value="4">⭐⭐⭐⭐ 4 - Très bien</option>
+          <option value="3">⭐⭐⭐ 3 - Moyen</option>
+          <option value="2">⭐⭐ 2 - Décevant</option>
+          <option value="1">⭐ 1 - À éviter</option>
+        </select>
 
-      <button id="rateBtn" class="btn btn-ok">Noter</button>
+        <textarea id="ratingComment" class="input" placeholder="Partagez votre expérience avec ce prestataire..." style="width: 100%; min-height: 80px;"></textarea>
+
+        <button id="rateBtn" class="btn btn-ok" style="width: 100%;">🌟 Publier mon avis</button>
+      </div>
       <p id="rateMsg" class="meta"></p>
     </section>
 
-    <section id="reportSection" class="hidden" style="margin-top:20px; text-align: right;">
-      <a id="reportLink" href="#" style="color: var(--error); text-decoration: none; font-size: 0.9rem; font-weight: bold;">
-        🚩 Signaler un problème avec cette annonce
+    <hr style="margin: 30px 0; opacity: 0.1;">
+
+    <section id="reviewsContainer" style="margin-top:20px;">
+      <h3>Avis des clients</h3>
+      <div id="reviewsList" class="mt">
+        <p class="meta">Chargement des avis...</p>
+      </div>
+    </section>
+
+    <section id="reportSection" class="hidden" style="margin-top:40px; text-align: right; border-top: 1px dashed var(--border); padding-top: 10px;">
+      <a id="reportLink" href="#" style="color: var(--error); text-decoration: none; font-size: 0.85rem; font-weight: bold;">
+        🚩 Signaler un problème
       </a>
     </section>
 
