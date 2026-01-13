@@ -14,48 +14,38 @@ const guestNav  = document.getElementById("guestStatus");
 const navAvatar = document.getElementById("navAvatar");
 const logoutBtn = document.getElementById("logoutBtn");
 
-if (!userNav && !guestNav) {
-  console.warn("ℹ️ user_status.js ignoré sur cette page");
-} else {
-  onAuthStateChanged(auth, async user => {
-    // 👥 INVITÉ
-    if (!user) {
-      userNav?.classList.add("hidden");
-      guestNav?.classList.remove("hidden");
-      return;
-    }
-
-    // 👤 CONNECTÉ
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    // 👤 MODE CONNECTÉ
     guestNav?.classList.add("hidden");
     userNav?.classList.remove("hidden");
 
-    // 🖼️ AVATAR
     if (navAvatar) {
       try {
         const snap = await getDoc(doc(db, "users", user.uid));
-        if (snap.exists() && snap.data().avatarUrl) {
-          navAvatar.src =
-            snap.data().avatarUrl + "?t=" + Date.now();
+        const data = snap.exists() ? snap.data() : null;
+
+        if (data && data.avatarUrl) {
+          // Affiche la photo de profil (ex: Giorno ou le verre de vin)
+          navAvatar.src = data.avatarUrl + "?t=" + Date.now();
         } else {
-          navAvatar.src =
-            "/wauklink-site/assets/avatar-default.png";
+          // Affiche ton nouveau fichier dans le dossier assets
+          navAvatar.src = "/wauklink-site/assets/avatar-default.png";
         }
       } catch (e) {
-        console.error("avatar load error:", e);
-        navAvatar.src =
-          "/wauklink-site/assets/avatar-default.png";
+        console.error("Erreur avatar:", e);
+        navAvatar.src = "/wauklink-site/assets/avatar-default.png";
       }
     }
-  });
+  } else {
+    // 👥 MODE INVITÉ
+    userNav?.classList.add("hidden");
+    guestNav?.classList.remove("hidden");
+  }
+});
 
-  // 🔓 Déconnexion
-  logoutBtn?.addEventListener("click", async () => {
-    try {
-      await signOut(auth);
-    } catch (err) {
-      console.error("logout error:", err);
-    } finally {
-      location.href = "/wauklink-site/auth/login.html";
-    }
-  });
-}
+// 🔓 Gestion de la déconnexion
+logoutBtn?.addEventListener("click", async () => {
+  await signOut(auth);
+  window.location.href = "/wauklink-site/auth/login.html";
+});
