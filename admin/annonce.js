@@ -1,5 +1,5 @@
 // admin/annonce.js
-import { db, auth } from "/wauklink-site/shared/firebase.js";
+import { db, auth, storage } from "/wauklink-site/shared/firebase.js"; // Ajout de storage ici
 import { requireAdmin } from "/wauklink-site/shared/guard.js";
 import { logAdminAction } from "/wauklink-site/shared/admin_logger.js";
 import {
@@ -8,10 +8,12 @@ import {
   updateDoc,
   deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+// Ajout de ref et deleteObject pour nettoyer les photos
+import { ref, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
 /* ========= DOM ========= */
-const msg   = document.getElementById("msg");
-const box   = document.getElementById("annonceBox");
+const msg    = document.getElementById("msg");
+const box    = document.getElementById("annonceBox");
 const titleEl = document.getElementById("title");
 const metaEl  = document.getElementById("meta");
 const descEl  = document.getElementById("description");
@@ -27,6 +29,8 @@ const annonceId = new URLSearchParams(location.search).get("id");
 if (!annonceId) {
   msg.textContent = "❌ ID annonce manquant";
 }
+
+let photoUrls = []; // On va stocker les URLs ici pour la suppression
 
 /* ========= HELPERS ========= */
 const lockButtons = (v) => {
@@ -58,8 +62,10 @@ async function setStatus(ref, status, label) {
       annonceId
     });
     await loadAnnonce();
+    alert("✅ Statut mis à jour");
   } catch (e) {
     console.error("status update error:", e);
+    alert("❌ Erreur : vérifiez vos règles Firestore Admin");
     lockButtons(false);
   }
 }
@@ -70,14 +76,15 @@ async function loadAnnonce() {
   box.classList.add("hidden");
 
   try {
-    const ref = doc(db, "annonces", annonceId);
-    const snap = await getDoc(ref);
+    const annonceRef = doc(db, "annonces", annonceId);
+    const snap = await getDoc(annonceRef);
     if (!snap.exists()) {
       msg.textContent = "❌ Annonce introuvable";
       return;
     }
 
     const a = snap.data();
+    photoUrls = a.photos || []; // On récupère les photos pour plus tard
 
     titleEl.textContent = a.title || "Annonce";
     metaEl.textContent =
@@ -89,11 +96,10 @@ async function loadAnnonce() {
     badgeEl.className = `badge ${statusClass(a.status)}`;
 
     photosEl.innerHTML = "";
-    if (Array.isArray(a.photos) && a.photos.length) {
-      a.photos.forEach(url => {
+    if (photoUrls.length) {
+      photoUrls.forEach(url => {
         const img = document.createElement("img");
         img.src = url;
-        img.alt = "Photo annonce";
         img.style.maxWidth = "140px";
         img.style.borderRadius = "8px";
         img.style.margin = "6px";
@@ -106,42 +112,23 @@ async function loadAnnonce() {
     btnActivate.classList.toggle("hidden", a.status === "active");
     btnDisable.classList.toggle("hidden", a.status !== "active");
 
-    btnActivate.onclick = () =>
-      setStatus(ref, "active", "Activer l’annonce");
-    btnDisable.onclick = () =>
-      setStatus(ref, "disabled", "Désactiver l’annonce");
+    btnActivate.onclick = () => setStatus(annonceRef, "active", "Activer l’annonce");
+    btnDisable.onclick = () => setStatus(annonceRef, "disabled", "Désactiver l’annonce");
 
+    /* ========= SUPPRESSION TOTALE ========= */
     btnDelete.onclick = async () => {
-      if (!confirm("⚠️ SUPPRESSION DÉFINITIVE\n\nConfirmer ?")) return;
+      if (!confirm("⚠️ SUPPRESSION DÉFINITIVE (Photos + Annonce)\n\nConfirmer ?")) return;
       lockButtons(true);
+      
       try {
-        await deleteDoc(ref);
-        await logAdminAction({
-          action: "delete",
-          adminUid: auth.currentUser?.uid,
-          adminEmail: auth.currentUser?.email,
-          annonceId
-        });
-        location.href = "/wauklink-site/admin/annonces.html";
-      } catch (e) {
-        console.error("delete error:", e);
-        lockButtons(false);
-      }
-    };
+        // 1. Supprimer les fichiers dans Storage
+        for (const url of photoUrls) {
+          try {
+            const fileRef = ref(storage, url);
+            await deleteObject(fileRef);
+          } catch (err) {
+            console.warn("Fichier Storage introuvable ou déjà supprimé");
+          }
+        }
 
-    msg.textContent = "";
-    box.classList.remove("hidden");
-  } catch (e) {
-    console.error("annonce admin error:", e);
-    msg.textContent = "❌ Erreur de chargement";
-  }
-}
-
-/* ========= GUARD ========= */
-requireAdmin({
-  onOk: loadAnnonce,
-  onDenied: () => {
-    msg.textContent = "⛔ Accès refusé";
-    box.classList.add("hidden");
-  }
-});
+        // 2. Supprimer le
