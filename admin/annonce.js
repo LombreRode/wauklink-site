@@ -1,5 +1,5 @@
 // admin/annonce.js
-import { db, auth, storage } from "/wauklink-site/shared/firebase.js"; // Ajout de storage ici
+import { db, auth, storage } from "/wauklink-site/shared/firebase.js";
 import { requireAdmin } from "/wauklink-site/shared/guard.js";
 import { logAdminAction } from "/wauklink-site/shared/admin_logger.js";
 import {
@@ -8,7 +8,6 @@ import {
   updateDoc,
   deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-// Ajout de ref et deleteObject pour nettoyer les photos
 import { ref, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
 /* ========= DOM ========= */
@@ -30,13 +29,13 @@ if (!annonceId) {
   msg.textContent = "❌ ID annonce manquant";
 }
 
-let photoUrls = []; // On va stocker les URLs ici pour la suppression
+let photoUrls = []; 
 
 /* ========= HELPERS ========= */
 const lockButtons = (v) => {
-  btnActivate.disabled = v;
-  btnDisable.disabled  = v;
-  btnDelete.disabled   = v;
+  if(btnActivate) btnActivate.disabled = v;
+  if(btnDisable) btnDisable.disabled  = v;
+  if(btnDelete) btnDelete.disabled   = v;
 };
 
 function statusLabel(s) {
@@ -65,13 +64,14 @@ async function setStatus(ref, status, label) {
     alert("✅ Statut mis à jour");
   } catch (e) {
     console.error("status update error:", e);
-    alert("❌ Erreur : vérifiez vos règles Firestore Admin");
+    alert("❌ Erreur de permission");
     lockButtons(false);
   }
 }
 
 /* ========= LOAD ========= */
 async function loadAnnonce() {
+  if (!annonceId) return;
   msg.textContent = "Chargement…";
   box.classList.add("hidden");
 
@@ -84,11 +84,10 @@ async function loadAnnonce() {
     }
 
     const a = snap.data();
-    photoUrls = a.photos || []; // On récupère les photos pour plus tard
+    photoUrls = a.photos || [];
 
     titleEl.textContent = a.title || "Annonce";
-    metaEl.textContent =
-      `${a.type || "—"} • ${a.city || "—"} • ${a.price ?? "—"} €`;
+    metaEl.textContent = `${a.type || "—"} • ${a.city || "—"} • ${a.price ?? "—"} €`;
     descEl.textContent = a.description || "";
     userEl.textContent = a.userId || "—";
 
@@ -109,26 +108,55 @@ async function loadAnnonce() {
       photosEl.innerHTML = `<p class="meta">Aucune photo</p>`;
     }
 
+    // Gestion de l'affichage des boutons selon le statut
     btnActivate.classList.toggle("hidden", a.status === "active");
     btnDisable.classList.toggle("hidden", a.status !== "active");
 
     btnActivate.onclick = () => setStatus(annonceRef, "active", "Activer l’annonce");
     btnDisable.onclick = () => setStatus(annonceRef, "disabled", "Désactiver l’annonce");
 
-    /* ========= SUPPRESSION TOTALE ========= */
     btnDelete.onclick = async () => {
-      if (!confirm("⚠️ SUPPRESSION DÉFINITIVE (Photos + Annonce)\n\nConfirmer ?")) return;
+      if (!confirm("⚠️ SUPPRESSION DÉFINITIVE\n\nConfirmer ?")) return;
       lockButtons(true);
-      
       try {
-        // 1. Supprimer les fichiers dans Storage
+        // Supprimer les photos du Storage
         for (const url of photoUrls) {
           try {
             const fileRef = ref(storage, url);
             await deleteObject(fileRef);
-          } catch (err) {
-            console.warn("Fichier Storage introuvable ou déjà supprimé");
-          }
+          } catch (err) { console.warn("Image déjà absente"); }
         }
+        // Supprimer le document Firestore
+        await deleteDoc(annonceRef);
+        
+        await logAdminAction({
+          action: "delete",
+          adminUid: auth.currentUser?.uid,
+          adminEmail: auth.currentUser?.email,
+          annonceId
+        });
+        
+        alert("🗑️ Supprimé");
+        location.href = "/wauklink-site/admin/annonces.html";
+      } catch (e) {
+        console.error("delete error:", e);
+        lockButtons(false);
+      }
+    };
 
-        // 2. Supprimer le
+    msg.textContent = "";
+    box.classList.remove("hidden");
+  } catch (e) {
+    console.error("load error:", e);
+    msg.textContent = "❌ Erreur de chargement";
+  }
+}
+
+/* ========= GUARD ========= */
+requireAdmin({
+  onOk: loadAnnonce,
+  onDenied: () => {
+    msg.textContent = "⛔ Accès refusé";
+    box.classList.add("hidden");
+  }
+});
