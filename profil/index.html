@@ -3,111 +3,61 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>WAUKLINK — Mon profil</title>
+  <title>Mon Profil — WAUKLINK</title>
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
 <body>
 
-<header class="topbar">
-  <div class="container topbar-row">
-    <div>
-      <h1>WAUKLINK</h1>
-      <div class="subtitle">Mon profil</div>
-    </div>
-    <nav class="topbar-nav">
-      <a class="btn btn-outline" href="/wauklink-site/dashboard/index.html">← Tableau de bord</a>
-    </nav>
-  </div>
-</header>
-
-<main class="container main-layout">
-  <h2>Mon profil</h2>
-
+<main class="container">
+  <a href="/wauklink-site/dashboard/index.html" class="btn" style="margin-bottom: 20px;">← Retour</a>
+  
   <div class="card">
-    <div class="profile-row" style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
-      <div class="avatar-wrapper">
-        <img id="avatarImg" src="/wauklink-site/assets/avatar-default.png" alt="Avatar">
-      </div>
+    <div style="display: flex; gap: 20px; align-items: center;">
+      <img id="avatarImg" src="/wauklink-site/assets/avatar-default.png" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--brand);">
       <div>
         <p id="emailDisplay"><strong>Email :</strong> <span>---</span></p>
         <p id="typeDisplay"><strong>Statut :</strong> <span>---</span></p>
-        <div id="averageRating" class="mt" style="color: #f1c40f;">
-          <span id="avgStars">⭐⭐⭐⭐⭐</span> 
-          <span id="avgCount" class="meta">(0 avis)</span>
+        <div style="color: #f1c40f;">
+          <span id="avgStars">⭐⭐⭐⭐⭐</span> <span id="avgCount" class="meta"></span>
         </div>
       </div>
     </div>
-
-    <label class="mt">
-      <strong>Changer l'avatar (JPG/PNG, max 6 Mo)</strong>
+    <label class="mt" style="display:block;">Changer l'avatar
       <input type="file" id="avatarInput" accept="image/*">
     </label>
-
-    <div id="progressContainer" class="progress-container">
-      <div id="progressBar" class="progress-bar"></div>
-    </div>
-    <p id="avatarMsg" class="meta mt"></p>
+    <div id="progressContainer" class="progress-container"><div id="progressBar" class="progress-bar"></div></div>
+    <p id="avatarMsg" class="meta"></p>
   </div>
 
-  <div id="proSection" class="card mt hidden">
-    <div class="pro-badge-info">✨ Devenir Professionnel</div>
-    <p class="meta mb">Boostez votre visibilité et gagnez la confiance des clients. Un justificatif officiel est requis.</p>
-    
+  <div id="proSection" class="card hidden">
+    <h3 style="color: var(--warning);">✨ Devenir Professionnel</h3>
     <div id="proForm">
-      <label>Nom de l'entreprise
-        <input type="text" id="businessName" placeholder="Ex: Wauklink SARL">
+      <input type="text" id="businessName" placeholder="Nom de l'entreprise">
+      <input type="text" id="siret" placeholder="SIRET (14 chiffres)" maxlength="14">
+      <label class="mt" style="display:block;">Justificatif (PDF ou Image)
+        <input type="file" id="proDocInput">
       </label>
-      <label class="mt">Numéro SIRET
-        <input type="text" id="siret" placeholder="14 chiffres" maxlength="14">
-      </label>
-      <label class="mt">
-        <strong>Justificatif (PDF, Kbis, Carte Pro...)</strong>
-        <div class="file-upload-zone">
-            <input type="file" id="proDocInput" accept=".pdf,image/*">
-        </div>
-      </label>
-      <button id="btnSendPro" class="btn btn-ok mt w-full">🚀 Envoyer mon dossier PRO</button>
+      <button id="btnSendPro" class="btn btn-ok mt">🚀 Envoyer le dossier</button>
     </div>
-
-    <div id="proPending" class="hidden">
-      <p style="color: #f59e0b; text-align: center; padding: 15px; background: rgba(245, 158, 11, 0.1); border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.3);">
-        ⏳ <strong>Dossier en cours d'examen par nos modérateurs</strong><br>
-        <span style="font-size: 0.85em; opacity: 0.8;">Vous recevrez une notification une fois validé.</span>
-      </p>
+    <div id="proPending" class="hidden text-center">
+      <p style="color: var(--warning);">⏳ Dossier en cours d'examen...</p>
     </div>
   </div>
 
-  <h3 class="mt">Paramètres du compte</h3>
   <div class="card">
-    <label>Prénom / Nom d'usage
-      <input type="text" id="firstNameInput" placeholder="Votre prénom">
-    </label>
-    <label class="mt">Téléphone
-      <input type="text" id="phoneInput" placeholder="06 00 00 00 00">
-    </label>
-    <button id="saveProfileBtn" class="btn btn-ok mt">💾 Enregistrer les modifications</button>
-    <p id="profileMsg" class="meta mt"></p>
+    <h3>Mes informations</h3>
+    <input type="text" id="firstNameInput" placeholder="Prénom">
+    <input type="text" id="phoneInput" placeholder="Téléphone">
+    <button id="saveProfileBtn" class="btn btn-ok mt">💾 Enregistrer</button>
+    <p id="profileMsg" class="meta"></p>
   </div>
 
-  <h3 class="mt">Avis et Témoignages</h3>
-  <div class="card mb">
-    <div id="reviewsList">
-      <p class="meta">Chargement des avis...</p>
-    </div>
+  <h3>Avis reçus</h3>
+  <div class="card" id="reviewsList">
+    <p class="meta">Chargement des avis...</p>
   </div>
 </main>
 
-<footer class="footer">
-  <div class="container footer-row">
-    <span>© WAUKLINK</span>
-    <nav class="footer-nav">
-       <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
-    </nav>
-  </div>
-</footer>
-
-<script type="module" src="/wauklink-site/shared/notifier.js"></script>
 <script type="module" src="./profil.js"></script>
-
 </body>
 </html>
