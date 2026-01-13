@@ -29,9 +29,11 @@ onAuthStateChanged(auth, async (user) => {
     }
     currentUser = user;
     
-    // Affichage de l'email
-    const emailSpan = document.getElementById("email").querySelector("span");
-    if (emailSpan) emailSpan.textContent = user.email;
+    // Correction ici : utiliser les IDs exacts du HTML
+    const emailElem = document.getElementById("emailDisplay");
+    const typeElem = document.getElementById("typeDisplay");
+    
+    if (emailElem) emailElem.querySelector("span").textContent = user.email;
 
     try {
         const userDoc = await getDoc(doc(db, "users", user.uid));
@@ -40,8 +42,9 @@ onAuthStateChanged(auth, async (user) => {
             if (data.avatarUrl) avatarImg.src = data.avatarUrl;
             if (data.firstName) firstNameInput.value = data.firstName;
             if (data.phone) phoneInput.value = data.phone;
+            if (data.role && typeElem) typeElem.querySelector("span").textContent = data.role;
         }
-    } catch (e) { console.error("Erreur de chargement profil:", e); }
+    } catch (e) { console.error("Erreur de chargement:", e); }
 });
 
 // Gestion de l'upload de l'avatar
