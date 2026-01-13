@@ -1,6 +1,6 @@
 /* =================================================
-   WAUKLINK — PROFIL.JS
-   VERSION FINALE STABLE — SANS BUG
+    WAUKLINK — PROFIL.JS
+    VERSION CORRIGÉE ET STABLE
 ================================================= */
 import { auth, db, storage } from "../shared/firebase.js";
 import { onAuthStateChanged } from
@@ -18,26 +18,30 @@ import {
   getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
+// Sélection des éléments HTML
 const avatarInput = document.getElementById("avatarInput");
 const avatarImg   = document.getElementById("avatarImg");
 
-
 let currentUser = null;
+
+// Gestion de l'état de connexion
 onAuthStateChanged(auth, user => {
   if (!user) return;
   currentUser = user;
 });
 
+// Événement de changement d'avatar
 avatarInput.addEventListener("change", async () => {
-  const msg = document.getElementById("avatarMsg"); // On utilise le bon ID HTML
+  // On récupère l'élément message ici avec le bon ID
+  const msg = document.getElementById("avatarMsg"); 
   
-  // 1. On récupère le fichier d'abord
+  // 1. On récupère le fichier sélectionné
   const file = avatarInput.files[0];
 
-  // 2. On vérifie si tout est prêt
+  // 2. Vérification de sécurité : fichier présent et utilisateur connecté
   if (!file || !currentUser) return;
 
-  // 3. Vérifications de sécurité
+  // 3. Vérification du type et de la taille
   if (!file.type.startsWith("image/")) {
     msg.textContent = "❌ Fichier invalide";
     return;
@@ -50,30 +54,35 @@ avatarInput.addEventListener("change", async () => {
 
   msg.textContent = "⏳ Upload de l’avatar…";
   
-  // ... le reste de ton code avec try { ... }
   try {
+    // Création du chemin de stockage unique
     const path = `avatars/${currentUser.uid}/${Date.now()}_${file.name}`;
     const fileRef = ref(storage, path);
 
+    // Lancement de l'upload
     const task = uploadBytesResumable(fileRef, file);
 
+    // Attente de la fin de l'upload
     await new Promise((resolve, reject) => {
       task.on("state_changed", null, reject, resolve);
     });
 
+    // Récupération de l'URL publique de l'image
     const url = await getDownloadURL(fileRef);
 
+    // Mise à jour du document utilisateur dans Firestore
     await updateDoc(doc(db, "users", currentUser.uid), {
       avatarUrl: url,
       avatarPath: path,
       updatedAt: serverTimestamp()
     });
 
+    // Mise à jour visuelle immédiate de l'image
     avatarImg.src = url + "?t=" + Date.now();
     msg.textContent = "✅ Avatar mis à jour";
 
   } catch (e) {
-    console.error(e);
+    console.error("Erreur détaillée :", e);
     msg.textContent = "❌ Erreur upload avatar";
   }
 });
