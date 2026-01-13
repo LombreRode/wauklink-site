@@ -19,9 +19,7 @@
 /* =========================
    RESET
 ========================= */
-*,
-*::before,
-*::after {
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -36,11 +34,7 @@ body {
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   color: var(--text-main);
   line-height: 1.4;
-  background: radial-gradient(
-    circle at top,
-    var(--bg-green),
-    var(--bg-dark)
-  );
+  background: radial-gradient(circle at top, var(--bg-green), var(--bg-dark));
 }
 
 /* =========================
@@ -68,11 +62,7 @@ body {
    TOPBAR
 ========================= */
 .topbar {
-  background: linear-gradient(
-    to right,
-    rgba(6,78,59,.95),
-    rgba(2,6,23,.9)
-  );
+  background: linear-gradient(to right, rgba(6,78,59,.95), rgba(2,6,23,.9));
   border-bottom: 1px solid rgba(255,255,255,.15);
 }
 
@@ -83,24 +73,9 @@ body {
   gap: 12px;
 }
 
-.topbar h1 {
-  font-size: 22px;
-  font-weight: 800;
-}
-
-.subtitle {
-  font-size: 13px;
-  opacity: .85;
-}
-
-/* =========================
-   NAVIGATION
-========================= */
-.topbar-nav {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
+.topbar h1 { font-size: 22px; font-weight: 800; }
+.subtitle { font-size: 13px; opacity: .85; }
+.topbar-nav { display: flex; gap: 10px; align-items: center; }
 
 /* =========================
    BUTTONS
@@ -119,26 +94,11 @@ body {
   transition: all 0.2s ease;
 }
 
-.btn:hover {
-  background: rgba(34,197,94,0.1);
-}
-
-.btn-outline {
-  background: rgba(34,197,94,.15);
-}
-
-.btn-danger {
-  border-color: var(--danger);
-  color: #fecaca;
-}
-.btn-danger:hover {
-  background: rgba(239, 68, 68, 0.2);
-}
-
-.btn-ok {
-  border-color: var(--brand);
-  background: rgba(34,197,94,.15);
-}
+.btn:hover { background: rgba(34,197,94,0.1); }
+.btn-outline { background: rgba(34,197,94,.15); }
+.btn-danger { border-color: var(--danger); color: #fecaca; }
+.btn-danger:hover { background: rgba(239, 68, 68, 0.2); }
+.btn-ok { border-color: var(--brand); background: rgba(34,197,94,.15); }
 
 /* =========================
    CARD & TABLE
@@ -186,15 +146,15 @@ input, select {
   min-height: 40px;
 }
 
-input:focus, select:focus {
-  outline: none;
-  border-color: var(--brand);
-}
+input:focus, select:focus { outline: none; border-color: var(--brand); }
+select option { background: var(--bg-dark); color: white; }
 
-/* Spécifique pour les flèches du select sur fond sombre */
-select option {
-  background: var(--bg-dark);
-  color: white;
+label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text-muted);
 }
 
 /* =========================
@@ -212,42 +172,18 @@ select option {
 .b-dis { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #fbbf24; }
 .b-del { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #f87171; }
 
+.badge-admin { color: #f1c40f; font-weight: bold; background: rgba(241, 196, 15, 0.15); padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(241, 196, 15, 0.3); display: inline-block; }
+.badge-pro { color: #2ecc71; font-weight: bold; background: rgba(46, 204, 113, 0.15); padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(46, 204, 113, 0.3); display: inline-block; }
+
 /* =========================
    AVATAR / PROFIL
 ========================= */
-.profile-row {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-}
+.profile-row { display: flex; gap: 16px; align-items: center; }
+.avatar-wrapper { position: relative; width: 80px; height: 80px; }
+#avatarImg { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; background: #222; display: block; }
 
-.avatar-wrapper {
-  position: relative;
-  width: 80px;
-  height: 80px;
-}
-
-#avatarImg {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  object-fit: cover;
-  background: #222;
-  display: block;
-}
-
-.avatar-loader {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 4px solid rgba(255,255,255,.2);
-  border-top-color: var(--brand);
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+.progress-container { width: 100%; background: #222; border-radius: 5px; margin: 10px 0; height: 8px; display: none; overflow: hidden; border: 1px solid #444; }
+.progress-bar { width: 0%; height: 100%; background: var(--brand); transition: width 0.3s ease; }
 
 .hidden { display: none !important; }
 .meta { color: var(--text-muted); font-size: 13px; }
@@ -262,56 +198,21 @@ select option {
   border-top: 1px solid rgba(255,255,255,.12);
   background: linear-gradient(to right, rgba(6,78,59,.9), rgba(2,6,23,.95));
 }
-
-.footer-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  font-size: 13px;
-}
+.footer-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 13px; }
 
 /* =========================
-   ADMIN BAR (INDEX)
+   ANIMATIONS & NOTIFS
 ========================= */
-.admin-bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-  align-items: center;
-  padding: 14px 16px;
-  margin-top: 32px;
-  border-top: 1px solid rgba(255,255,255,.12);
-}
-
-.admin-bar::before {
-  content: "Administration";
-  font-size: 12px;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  opacity: .6;
-  margin-right: 12px;
-}
-
-@keyframes slideIn {
-  from { transform: translateX(120%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
-@keyframes slideOut {
-  from { transform: translateX(0); opacity: 1; }
-  to { transform: translateX(120%); opacity: 0; }
-}
+@keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(120%); opacity: 0; } }
 
 .shadow { box-shadow: 0 10px 30px rgba(0,0,0,0.6) !important; }
+.toast-success { border-left: 6px solid #22c55e !important; }
+.toast-danger { border-left: 6px solid #ef4444 !important; }
+
 /* =========================
    RESPONSIVE
 ========================= */
 @media (max-width: 768px) {
-  .topbar-row, .footer-row {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .admin-bar { justify-content: flex-start; }
+  .topbar-row, .footer-row { flex-direction: column; align-items: flex-start; }
 }
