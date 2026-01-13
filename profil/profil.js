@@ -46,7 +46,7 @@ avatarInput.addEventListener("change", async () => {
     return;
   }
 
-  if (file.size > 2 * 1024 * 1024) {
+  if (file.size > 6 * 1024 * 1024) {
     msg.textContent = "❌ Image trop lourde (max 6 Mo)";
     return;
   }
