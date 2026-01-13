@@ -17,7 +17,6 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&l
 /* ========= FONCTION NOTIFICATION ========= */
 async function sendNotification(userId, title, message, type = "info") {
   try {
-    // On crée un ID unique pour la notification
     const notifRef = doc(collection(db, "notifications"));
     await setDoc(notifRef, {
       userId: userId,
@@ -61,19 +60,25 @@ async function loadRequests() {
       const u = userSnap.data();
 
       const card = document.createElement("div");
-      card.className = "card";
+      card.className = "card mb"; // Ajout de marge en bas
 
       card.innerHTML = `
         <div style="margin-bottom: 12px;">
-          <strong style="font-size:1.1em; color:var(--brand);">${esc(req.businessName || u.firstName + " " + u.lastName)}</strong>
-          <div class="meta" style="margin-top:5px;">
+          <strong style="font-size:1.1em; color:var(--brand);">${esc(req.businessName || u.firstName)}</strong>
+          <div class="meta" style="margin-top:5px; line-height: 1.6;">
             📧 ${esc(u.email)}<br>
             📞 ${esc(u.phone || "Non renseigné")}<br>
             🆔 SIRET : <code>${esc(req.siret || "Non fourni")}</code>
           </div>
+          
+          <div style="margin-top:12px; padding:10px; background:rgba(255,255,255,0.05); border-radius:8px; border: 1px solid rgba(34, 197, 94, 0.3);">
+            <a href="${req.documentUrl}" target="_blank" style="color:var(--brand); text-decoration:none; font-weight:bold; display:flex; align-items:center; gap:8px;">
+               📄 Voir le justificatif officiel (Kbis/Carte Pro)
+            </a>
+          </div>
         </div>
         
-        <div class="row-actions" style="display:flex; gap:10px; margin-top:auto;">
+        <div class="row-actions" style="display:flex; gap:10px; margin-top:15px;">
           <button class="btn btn-ok btnApprove" style="flex:1">Valider</button>
           <button class="btn btn-danger btnReject" style="flex:1">Refuser</button>
         </div>
@@ -90,21 +95,20 @@ async function loadRequests() {
         try {
           // 1. Update utilisateur
           await updateDoc(doc(db, "users", req.userId), {
-            isPro: true,
             plan: "pro",
             "pro.validated": true,
             "pro.validatedAt": serverTimestamp()
           });
 
-          // 2. Envoyer notification à l'utilisateur
+          // 2. Notification de succès
           await sendNotification(
             req.userId, 
             "Félicitations ! 🚀", 
-            `Votre demande pour ${req.businessName} a été validée. Vous êtes désormais membre PRO !`,
+            `Votre demande pour ${req.businessName} a été validée. Votre badge PRO est activé !`,
             "success"
           );
 
-          // 3. Logger l'action admin
+          // 3. Log Admin
           await logAdminAction({
             action: "pro_validate",
             adminUid: auth.currentUser?.uid,
@@ -112,40 +116,33 @@ async function loadRequests() {
             extra: { targetEmail: u.email, userId: req.userId }
           });
 
-          // 4. Nettoyer la demande
+          // 4. Suppression demande
           await deleteDoc(doc(db, "pro_requests", rid));
           loadRequests(); 
           
         } catch (err) {
-          alert("Erreur lors de la validation : " + err.message);
+          alert("Erreur validation : " + err.message);
           btnOk.disabled = btnNo.disabled = false;
         }
       };
 
       // ❌ ACTIONS : REFUSER
       btnNo.onclick = async () => {
-        const raison = prompt("Raison du refus (optionnel) :");
-        if (raison === null) { // Si on clique sur "Annuler"
-          return; 
-        }
+        const raison = prompt("Raison du refus (sera visible par l'utilisateur) :");
+        if (raison === null) return; 
         
         btnOk.disabled = btnNo.disabled = true;
 
         try {
-          // 1. Update utilisateur (on reset sa demande)
-          await updateDoc(doc(db, "users", req.userId), {
-            "pro.requested": false
-          });
-
-          // 2. Notification de refus
+          // 1. Notification de refus
           await sendNotification(
             req.userId, 
-            "Demande PRO refusée ❌", 
-            `Votre demande a été refusée. Motif : ${raison || "Dossier incomplet"}.`,
+            "Dossier PRO refusé ❌", 
+            `Votre demande a été refusée. Motif : ${raison || "Document non conforme"}.`,
             "danger"
           );
 
-          // 3. Logger l'action
+          // 2. Log Admin
           await logAdminAction({
             action: "pro_refuse",
             adminUid: auth.currentUser?.uid,
@@ -153,11 +150,11 @@ async function loadRequests() {
             extra: { targetEmail: u.email, userId: req.userId, raison }
           });
 
-          // 4. Supprimer la demande
+          // 3. Suppression demande
           await deleteDoc(doc(db, "pro_requests", rid));
           loadRequests();
         } catch (err) {
-          alert("Erreur lors du refus : " + err.message);
+          alert("Erreur refus : " + err.message);
           btnOk.disabled = btnNo.disabled = false;
         }
       };
