@@ -10,6 +10,9 @@
     .progress-container { width: 100%; background: #222; border-radius: 5px; margin: 10px 0; height: 8px; display: none; overflow: hidden; border: 1px solid #444; }
     .progress-bar { width: 0%; height: 100%; background: #27ae60; transition: width 0.3s ease; }
     .mt { margin-top: 15px; }
+    
+    /* Style spécifique pour la section PRO */
+    .pro-badge-info { color: #f59e0b; font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
   </style>
 </head>
 <body>
@@ -52,7 +55,28 @@
     <p id="avatarMsg" class="meta" style="font-size: 0.85em; color: #aaa; margin-top: 5px;"></p>
   </div>
 
-  <hr>
+  <div id="proSection" class="card mt hidden">
+    <div class="pro-badge-info">✨ Avantages Professionnels</div>
+    <p class="meta" style="margin-bottom: 15px;">Passez au compte PRO pour booster la visibilité de vos annonces et obtenir un badge certifié.</p>
+    
+    <div id="proForm">
+      <label>Nom de l'entreprise
+        <input type="text" id="businessName" placeholder="Ex: Wauklink SARL">
+      </label>
+      <label class="mt" style="display: block;">Numéro SIRET
+        <input type="text" id="siret" placeholder="14 chiffres" maxlength="14">
+      </label>
+      <button id="btnSendPro" class="btn btn-ok mt" style="width: 100%">🚀 Envoyer ma demande PRO</button>
+    </div>
+
+    <div id="proPending" class="hidden">
+      <p style="color: #f59e0b; text-align: center; padding: 10px; background: rgba(245, 158, 11, 0.1); border-radius: 8px;">
+        ⏳ <strong>Demande en cours...</strong><br>Nos administrateurs vérifient vos informations.
+      </p>
+    </div>
+  </div>
+
+  <hr style="margin: 30px 0; opacity: 0.2;">
 
   <h3>Modifier mes informations</h3>
   <div class="card">
