@@ -2,10 +2,9 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Admin — Dashboard</title>
+  <title>Admin — Dashboard — WAUKLINK</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="/wauklink-site/style.css">
 
   <style>
@@ -17,25 +16,18 @@
     .stat {
       padding: 18px;
       border-radius: 14px;
-      background: linear-gradient(
-        180deg,
-        rgba(255,255,255,.06),
-        rgba(0,0,0,.25)
-      );
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.25));
     }
-    .stat h3 {
-      margin: 0;
-      font-size: 14px;
-      opacity: .8;
-    }
-    .stat .v {
-      font-size: 28px;
-      font-weight: 700;
-      margin-top: 6px;
-    }
-    .ok   { color:#35d07f }
-    .warn { color:#f7b955 }
-    .bad  { color:#ff6b6b }
+    .stat h3 { margin: 0; font-size: 14px; opacity: .8; }
+    .stat .v { font-size: 28px; font-weight: 700; margin-top: 6px; }
+    
+    .ok    { color:#35d07f }
+    .warn  { color:#f7b955 }
+    .bad   { color:#ff6b6b }
+
+    /* Style pour les listes d'administration */
+    .admin-list { margin-top: 20px; overflow-x: auto; }
+    .status-tag { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
   </style>
 </head>
 
@@ -48,83 +40,55 @@
       <div class="subtitle">Dashboard administrateur</div>
     </div>
     <nav class="topbar-nav">
-      <a class="btn"
-         href="/wauklink-site/admin/index.html">
-        ← Admin
-      </a>
+      <a class="btn" href="/wauklink-site/admin/index.html">← Admin</a>
     </nav>
   </div>
 </header>
 
 <main class="container main-layout">
 
-  <!-- 🔹 VUE D’ENSEMBLE -->
   <section class="card">
     <h2>Vue d’ensemble</h2>
-
     <div class="stats">
-      <div class="stat">
-        <h3>Total annonces</h3>
-        <div class="v" id="sTotal">—</div>
-      </div>
-
-      <div class="stat">
-        <h3>Actives</h3>
-        <div class="v ok" id="sActive">—</div>
-      </div>
-
-      <div class="stat">
-        <h3>Désactivées</h3>
-        <div class="v warn" id="sDisabled">—</div>
-      </div>
-
-      <div class="stat">
-        <h3>En attente</h3>
-        <div class="v" id="sPending">—</div>
-      </div>
+      <div class="stat"><h3>Total annonces</h3><div class="v" id="sTotal">—</div></div>
+      <div class="stat"><h3>Actives</h3><div class="v ok" id="sActive">—</div></div>
+      <div class="stat"><h3>Désactivées</h3><div class="v warn" id="sDisabled">—</div></div>
+      <div class="stat"><h3>En attente</h3><div class="v" id="sPending">—</div></div>
     </div>
   </section>
 
-  <!-- 🔎 FILTRE TEMPS -->
   <div class="row-actions mt">
-    <button type="button"
-            class="btn btn-outline btn-ok"
-            data-range="1">
-      Aujourd’hui
-    </button>
-    <button type="button"
-            class="btn btn-outline"
-            data-range="7">
-      7 jours
-    </button>
-    <button type="button"
-            class="btn btn-outline"
-            data-range="30">
-      30 jours
-    </button>
+    <button type="button" class="btn btn-outline btn-ok" data-range="1">Aujourd’hui</button>
+    <button type="button" class="btn btn-outline" data-range="7">7 jours</button>
+    <button type="button" class="btn btn-outline" data-range="30">30 jours</button>
   </div>
 
-  <!-- 📊 ACTIVITÉ ADMIN -->
-  <section class="card">
-    <h2 id="activityTitle">
-      Activité admin — Aujourd’hui
-    </h2>
-
+  <section class="card mt">
+    <h2 id="activityTitle">Activité admin — Aujourd’hui</h2>
     <div class="stats">
-      <div class="stat">
-        <h3>Actions aujourd’hui</h3>
-        <div class="v" id="sToday">—</div>
-      </div>
+      <div class="stat"><h3>Actions aujourd’hui</h3><div class="v" id="sToday">—</div></div>
+      <div class="stat"><h3>Actions période</h3><div class="v" id="sPeriod">—</div></div>
+      <div class="stat"><h3>Signalements en attente</h3><div class="v bad" id="sReports">0</div></div>
+    </div>
+  </section>
 
-      <div class="stat">
-        <h3>Actions période</h3>
-        <div class="v" id="sPeriod">—</div>
-      </div>
-
-      <div class="stat">
-        <h3>Signalements en attente</h3>
-        <div class="v bad" id="sReports">—</div>
-      </div>
+  <section class="card mt">
+    <h2>Signalements et Utilisateurs suspect</h2>
+    <div class="admin-list">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Cible</th>
+            <th>Type</th>
+            <th>Raison</th>
+            <th>Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="reportsList">
+          <tr><td colspan="5" class="meta text-center">Chargement des signalements...</td></tr>
+        </tbody>
+      </table>
     </div>
   </section>
 
@@ -133,37 +97,29 @@
 <footer class="footer">
   <div class="container footer-row">
     <span>© WAUKLINK</span>
+    <img src="/wauklink-site/assets/avatar-default.png" alt="" style="display:none">
   </div>
 </footer>
 
-<!-- 🔐 PROTECTION ADMIN -->
 <script type="module">
-  import { requireAdmin } from
-    "/wauklink-site/shared/guard.js";
-
+  import { requireAdmin } from "/wauklink-site/shared/guard.js";
   requireAdmin({
     onOk: () => {},
     onDenied: () => {
       document.body.innerHTML = `
         <main class="container main-layout">
-          <h2>⛔ Accès refusé</h2>
-          <p class="meta">
-            Page réservée aux administrateurs
-          </p>
-          <a class="btn"
-             href="/wauklink-site/dashboard/index.html">
-            Retour dashboard
-          </a>
+          <div class="card text-center">
+            <h2 class="bad">⛔ Accès refusé</h2>
+            <p class="meta">Page réservée aux administrateurs</p>
+            <a class="btn mt" href="/wauklink-site/dashboard/index.html">Retour dashboard</a>
+          </div>
         </main>
       `;
     }
   });
 </script>
 
-<!-- 📊 LOGIQUE DASHBOARD ADMIN -->
-<script type="module"
-        src="/wauklink-site/admin/dashboard.js">
-</script>
+<script type="module" src="/wauklink-site/admin/dashboard.js"></script>
 
 </body>
 </html>
