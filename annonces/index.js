@@ -9,9 +9,8 @@ import {
 
 const list  = document.getElementById("list");
 const msg   = document.getElementById("msg");
-const title = document.getElementById("pageTitle");
 
-/* ========= helpers ========= */
+/* ========= HELPERS ========= */
 const esc = s =>
   String(s ?? "").replace(/[&<>"']/g, m =>
     ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
@@ -22,12 +21,13 @@ function empty(text) {
   list.innerHTML = "";
 }
 
-/* ========= load annonces ========= */
+/* ========= LOAD ANNONCES ========= */
 async function loadAnnonces() {
   list.innerHTML = "";
   msg.textContent = "⏳ Chargement des annonces…";
 
   try {
+    // On ne montre que les annonces validées par l'admin
     const q = query(
       collection(db, "annonces"),
       where("status", "==", "active"),
@@ -45,30 +45,33 @@ async function loadAnnonces() {
 
     snap.forEach(d => {
       const a = d.data();
-      const shortDesc =
-        (a.description || "").slice(0, 120);
+      const shortDesc = (a.description || "").slice(0, 100);
 
       const card = document.createElement("div");
       card.className = "card";
       card.innerHTML = `
-        <strong>${esc(a.title || "Annonce")}</strong>
-
-        <div class="meta">
-          ${esc(a.city || "—")} • ${esc(a.type || "—")}
+        <div style="display:flex; justify-content:space-between;">
+           <strong>${esc(a.title || "Annonce")}</strong>
+           <span style="color:var(--primary); font-weight:bold;">${a.price ?? "—"} €</span>
         </div>
 
-        <div class="meta">
-          ${a.price ?? "—"} €
+        <div class="meta" style="margin-bottom:10px;">
+          📍 ${esc(a.city || "—")} • 🏠 ${esc(a.type || "—")}
         </div>
 
-        <p class="meta" style="margin-top:8px">
-          ${esc(shortDesc)}…
+        <p class="meta">
+          ${esc(shortDesc)}...
         </p>
 
-        <div class="row-actions" style="margin-top:10px">
-          <a class="btn btn-outline"
+        <div class="row-actions" style="margin-top:15px; display:flex; gap:10px;">
+          <a class="btn btn-outline" style="flex:1; text-align:center;"
              href="/wauklink-site/annonces/location-detail.html?id=${d.id}">
-            Voir l’annonce
+             Voir
+          </a>
+          
+          <a class="btn" style="background:#ff4444; color:white; border:none; padding:5px 10px;"
+             href="/wauklink-site/annonces/reports-annonce.html?id=${d.id}" title="Signaler un problème">
+             🚩
           </a>
         </div>
       `;
@@ -78,9 +81,10 @@ async function loadAnnonces() {
 
   } catch (err) {
     console.error("loadAnnonces error:", err);
-    empty("❌ Erreur de chargement des annonces");
+    // Si l'index manque, le message s'affichera ici
+    empty("❌ Erreur de chargement des annonces (Vérifiez l'index Firestore)");
   }
 }
 
-/* ========= init ========= */
+/* ========= INIT ========= */
 loadAnnonces();
