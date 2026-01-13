@@ -108,9 +108,10 @@ async function loadUsers() {
           try {
             await updateDoc(doc(db, "users", uid), { isBanned: newState });
             
-            // Log de l'action
+            // Log de l'action corrigé
             await logAdminAction({
               action: newState ? "user_banned" : "user_unbanned",
+              adminUid: auth.currentUser?.uid, // Indispensable pour ton logger !
               adminEmail: auth.currentUser?.email,
               extra: { targetId: uid }
             });
