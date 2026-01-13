@@ -30,13 +30,18 @@ onAuthStateChanged(auth, user => {
 });
 
 avatarInput.addEventListener("change", async () => {
-  const msg = document.getElementById("avatarMsg");
-
-  // 1️⃣ D'abord, on définit ce qu'est "file"
+  const msg = document.getElementById("avatarMsg"); // On utilise le bon ID HTML
+  
+  // 1. On récupère le fichier d'abord
   const file = avatarInput.files[0];
 
-  // 2️⃣ Ensuite, on vérifie s'il existe (la ligne 34)
+  // 2. On vérifie si tout est prêt
   if (!file || !currentUser) return;
+
+  // 3. Vérifications de sécurité
+  if (!file.type.startsWith("image/")) {
+    msg.textContent = "❌ Fichier invalide";
+    return;
   }
 
   if (file.size > 2 * 1024 * 1024) {
@@ -45,7 +50,8 @@ avatarInput.addEventListener("change", async () => {
   }
 
   msg.textContent = "⏳ Upload de l’avatar…";
-
+  
+  // ... le reste de ton code avec try { ... }
   try {
     const path = `avatars/${currentUser.uid}/${Date.now()}_${file.name}`;
     const fileRef = ref(storage, path);
