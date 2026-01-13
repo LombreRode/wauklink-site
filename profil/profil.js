@@ -30,7 +30,7 @@ onAuthStateChanged(auth, user => {
 });
 
 avatarInput.addEventListener("change", async () => {
-  const file = avatarInput.files[0];
+  const msg = document.getElementById("avatarMsg");
   if (!file || !currentUser) return;
 
   if (!file.type.startsWith("image/")) {
