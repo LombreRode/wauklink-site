@@ -18,47 +18,65 @@
 </header>
 
 <main class="container main-layout">
-  <p id="msg" class="meta">Chargement…</p>
+  <p id="msg" class="meta">⏳ Chargement…</p>
 
   <section id="annonce" class="card hidden">
     <h2 id="titre"></h2>
+    <div id="meta" class="meta mb"></div>
 
-    <div id="meta" class="meta"></div>
+    <p id="description" class="mb"></p>
 
-    <p id="description"></p>
+    <div id="photos" class="grid mb"></div>
 
-    <!-- 📷 PHOTOS -->
-    <div id="photos" class="grid"></div>
+    <hr style="opacity: 0.1; margin: 30px 0;">
 
-    <!-- ⭐ AVIS / NOTE -->
-    <section id="ratingSection" class="card hidden" style="margin-top:20px">
-      <h3>Donner une note</h3>
+    <section id="ratingSection" class="hidden">
+      <h3>Laisser un avis</h3>
+      <p class="meta">Partagez votre expérience avec ce prestataire.</p>
+      
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
+        <select id="ratingValue">
+          <option value="">— Choisir une note —</option>
+          <option value="5">⭐⭐⭐⭐⭐ 5/5</option>
+          <option value="4">⭐⭐⭐⭐ 4/5</option>
+          <option value="3">⭐⭐⭐ 3/5</option>
+          <option value="2">⭐⭐ 2/5</option>
+          <option value="1">⭐ 1/5</option>
+        </select>
 
-      <select id="ratingValue">
-        <option value="">— Note —</option>
-        <option value="1">⭐ 1</option>
-        <option value="2">⭐⭐ 2</option>
-        <option value="3">⭐⭐⭐ 3</option>
-        <option value="4">⭐⭐⭐⭐ 4</option>
-        <option value="5">⭐⭐⭐⭐⭐ 5</option>
-      </select>
+        <textarea id="ratingComment" placeholder="Votre commentaire..." class="input"></textarea>
 
-      <button id="rateBtn" class="btn btn-ok">
-        Envoyer la note
-      </button>
-
-      <p id="ratingMsg" class="meta"></p>
+        <button id="rateBtn" class="btn btn-ok w-full">🚀 Publier mon avis</button>
+      </div>
+      <p id="ratingMsg" class="meta mt"></p>
     </section>
+
+    <section id="reviewsContainer" class="mt" style="padding-top: 20px;">
+      <h3>Avis des utilisateurs</h3>
+      <div id="reviewsList" class="mt">
+        <p class="meta">Aucun avis pour le moment.</p>
+      </div>
+    </section>
+
+    <section id="reportSection" class="hidden mt" style="text-align: right; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 20px;">
+      <a id="reportLink" href="#" style="color: var(--danger); text-decoration: none; font-size: 0.85rem;">
+        🚩 Signaler cette annonce
+      </a>
+    </section>
+
   </section>
 </main>
 
 <footer class="footer">
   <div class="container footer-row">
     <span>© WAUKLINK</span>
+    <nav class="footer-nav">
+      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
+    </nav>
   </div>
 </footer>
 
-<!-- JS -->
+<script type="module" src="/wauklink-site/shared/admin_links.js"></script>
 <script type="module" src="./location-detail.js"></script>
 
 </body>
