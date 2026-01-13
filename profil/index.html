@@ -6,16 +6,20 @@
   <title>WAUKLINK — Mon profil</title>
   <link rel="stylesheet" href="/wauklink-site/style.css">
   <style>
-    /* Style pour la barre de progression */
     .progress-container { width: 100%; background: #222; border-radius: 5px; margin: 10px 0; height: 8px; display: none; overflow: hidden; border: 1px solid #444; }
     .progress-bar { width: 0%; height: 100%; background: #27ae60; transition: width 0.3s ease; }
     .mt { margin-top: 15px; }
-    
-    /* Utitaire pour cacher les éléments */
     .hidden { display: none !important; }
-    
-    /* Style spécifique pour la section PRO */
     .pro-badge-info { color: #f59e0b; font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
+    
+    /* Style pour le champ fichier justificatif */
+    .file-upload-zone {
+      border: 1px dashed rgba(255,255,255,0.3);
+      padding: 10px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.05);
+      margin-top: 5px;
+    }
   </style>
 </head>
 <body>
@@ -40,7 +44,6 @@
       <div class="avatar-wrapper">
         <img id="avatarImg" src="/wauklink-site/assets/avatar-default.png" alt="Avatar" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid #27ae60;">
       </div>
-
       <div>
         <p id="emailDisplay"><strong>Email :</strong> <span>---</span></p>
         <p id="typeDisplay"><strong>Type :</strong> <span>---</span></p>
@@ -59,22 +62,33 @@
   </div>
 
   <div id="proSection" class="card mt hidden">
-    <div class="pro-badge-info">✨ Avantages Professionnels</div>
-    <p class="meta" style="margin-bottom: 15px;">Passez au compte PRO pour booster la visibilité de vos annonces et obtenir un badge certifié.</p>
+    <div class="pro-badge-info">✨ Devenir Professionnel</div>
+    <p class="meta" style="margin-bottom: 15px;">Boostez votre visibilité. Un justificatif officiel est requis pour la validation.</p>
     
     <div id="proForm">
       <label>Nom de l'entreprise
         <input type="text" id="businessName" placeholder="Ex: Wauklink SARL">
       </label>
+      
       <label class="mt" style="display: block;">Numéro SIRET
         <input type="text" id="siret" placeholder="14 chiffres" maxlength="14">
       </label>
-      <button id="btnSendPro" class="btn btn-ok mt" style="width: 100%">🚀 Envoyer ma demande PRO</button>
+
+      <label class="mt" style="display: block;">
+        <strong>Justificatif (PDF, Kbis, Carte Pro...)</strong>
+        <div class="file-upload-zone">
+            <input type="file" id="proDocInput" accept=".pdf,image/*">
+        </div>
+        <small class="meta">Max 5 Mo</small>
+      </label>
+
+      <button id="btnSendPro" class="btn btn-ok mt" style="width: 100%">🚀 Envoyer mon dossier PRO</button>
     </div>
 
     <div id="proPending" class="hidden">
       <p style="color: #f59e0b; text-align: center; padding: 10px; background: rgba(245, 158, 11, 0.1); border-radius: 8px;">
-        ⏳ <strong>Demande en cours...</strong><br>Nos administrateurs vérifient vos informations.
+        ⏳ <strong>Dossier en cours d'examen</strong><br>
+        Nos administrateurs vérifient votre justificatif.
       </p>
     </div>
   </div>
@@ -86,11 +100,9 @@
     <label>Prénom
       <input type="text" id="firstNameInput">
     </label>
-
     <label class="mt">Téléphone
       <input type="text" id="phoneInput">
     </label>
-
     <button id="saveProfileBtn" class="btn btn-ok mt">💾 Enregistrer</button>
     <p id="profileMsg" class="meta"></p>
   </div>
@@ -103,7 +115,6 @@
 </footer>
 
 <script type="module" src="/wauklink-site/shared/notifier.js"></script>
-
 <script type="module" src="./profil.js"></script>
 
 </body>
