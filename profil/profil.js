@@ -1,9 +1,13 @@
+/* =================================================
+    WAUKLINK — PROFIL.JS
+    VERSION NETTOYÉE ET OPTIMISÉE (6 MO + CORS)
+================================================= */
 import { auth, db, storage } from "../shared/firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 import { ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
-// Sélection des éléments
+// Sélection des éléments HTML (IDs basés sur ton index.html)
 const avatarImg = document.getElementById("avatarImg");
 const avatarInput = document.getElementById("avatarInput");
 const avatarMsg = document.getElementById("avatarMsg");
@@ -24,32 +28,36 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
     currentUser = user;
-    document.getElementById("emailDisplay").querySelector("span").textContent = user.email;
+    
+    // Affichage de l'email
+    const emailSpan = document.getElementById("email").querySelector("span");
+    if (emailSpan) emailSpan.textContent = user.email;
 
-    const userDoc = await getDoc(doc(db, "users", user.uid));
-    if (userDoc.exists()) {
-        const data = userDoc.data();
-        if (data.avatarUrl) avatarImg.src = data.avatarUrl;
-        if (data.firstName) firstNameInput.value = data.firstName;
-        if (data.phone) phoneInput.value = data.phone;
-        if (data.role) document.getElementById("typeDisplay").querySelector("span").textContent = data.role;
-    }
+    try {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+            const data = userDoc.data();
+            if (data.avatarUrl) avatarImg.src = data.avatarUrl;
+            if (data.firstName) firstNameInput.value = data.firstName;
+            if (data.phone) phoneInput.value = data.phone;
+        }
+    } catch (e) { console.error("Erreur de chargement profil:", e); }
 });
 
-// Gestion de l'upload (6 Mo)
+// Gestion de l'upload de l'avatar
 avatarInput.addEventListener("change", async () => {
     const file = avatarInput.files[0];
     if (!file || !currentUser) return;
 
-    // Validation 6 Mo
-    if (file.size > 6 * 1024 * 1024) {
+    // Validation 6 Mo (6 * 1024 * 1024 octets)
+    if (file.size > 6291456) {
         avatarMsg.textContent = "❌ Image trop lourde (max 6 Mo)";
         return;
     }
 
-    avatarMsg.textContent = "⏳ Initialisation de l'envoi...";
-    progressContainer.style.display = "block";
-    progressBar.style.width = "0%";
+    avatarMsg.textContent = "⏳ Upload en cours...";
+    if (progressContainer) progressContainer.style.display = "block";
+    if (progressBar) progressBar.style.width = "0%";
 
     try {
         const path = `avatars/${currentUser.uid}/${Date.now()}_${file.name}`;
@@ -59,7 +67,7 @@ avatarInput.addEventListener("change", async () => {
         task.on('state_changed', 
             (snapshot) => {
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                progressBar.style.width = progress + "%";
+                if (progressBar) progressBar.style.width = progress + "%";
                 avatarMsg.textContent = `⏳ Upload : ${Math.round(progress)}%`;
             }, 
             (error) => { throw error; }, 
@@ -71,17 +79,16 @@ avatarInput.addEventListener("change", async () => {
                 });
                 avatarImg.src = url + "?t=" + Date.now();
                 avatarMsg.textContent = "✅ Avatar mis à jour !";
-                setTimeout(() => { progressContainer.style.display = "none"; }, 3000);
+                setTimeout(() => { if (progressContainer) progressContainer.style.display = "none"; }, 3000);
             }
         );
     } catch (e) {
-        console.error("Erreur Storage:", e);
-        avatarMsg.textContent = "❌ Erreur : Vérifiez votre connexion ou CORS";
-        progressContainer.style.display = "none";
+        console.error("Erreur d'upload :", e);
+        avatarMsg.textContent = "❌ Erreur : Vérifiez CORS ou connexion";
     }
 });
 
-// Enregistrement des informations textuelles
+// Enregistrement des informations (Prénom, Tél)
 saveProfileBtn.addEventListener("click", async () => {
     if (!currentUser) return;
     profileMsg.textContent = "⏳ Sauvegarde...";
@@ -91,7 +98,7 @@ saveProfileBtn.addEventListener("click", async () => {
             phone: phoneInput.value,
             updatedAt: serverTimestamp()
         });
-        profileMsg.textContent = "✅ Profil mis à jour !";
+        profileMsg.textContent = "✅ Informations enregistrées !";
     } catch (e) {
         profileMsg.textContent = "❌ Erreur de sauvegarde";
     }
