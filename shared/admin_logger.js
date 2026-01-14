@@ -21,8 +21,8 @@ export async function logAdminAction({
     return false;
   }
 
- try {
-    // On crée une copie de extra en remplaçant les 'undefined' par 'null'
+  try {
+    // Nettoyage de l'objet extra pour éviter les valeurs "undefined"
     const cleanExtra = {};
     if (extra) {
       for (const key in extra) {
@@ -39,4 +39,8 @@ export async function logAdminAction({
       createdAt: serverTimestamp()
     });
     return true;
+  } catch (err) {
+    console.error("admin_logger error:", err);
+    return false;
   }
+}
