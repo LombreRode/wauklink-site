@@ -21,25 +21,22 @@ export async function logAdminAction({
     return false;
   }
 
-  try {
-    // Nettoyage de l'objet extra pour éviter les valeurs "undefined"
-    // On remplace chaque valeur undefined par null pour que Firebase accepte
+ try {
+    // On crée une copie de extra en remplaçant les 'undefined' par 'null'
     const cleanExtra = {};
-    Object.keys(extra).forEach(key => {
-      cleanExtra[key] = extra[key] === undefined ? null : extra[key];
-    });
+    if (extra) {
+      for (const key in extra) {
+        cleanExtra[key] = extra[key] === undefined ? null : extra[key];
+      }
+    }
 
     await addDoc(collection(db, "admin_logs"), {
       action,
       adminUid,
       adminEmail: adminEmail || null,
       annonceId: annonceId || null,
-      extra: cleanExtra, // On utilise l'objet nettoyé ici
+      extra: cleanExtra,
       createdAt: serverTimestamp()
     });
     return true;
-  } catch (err) {
-    console.error("admin_logger error:", err);
-    return false;
   }
-}
