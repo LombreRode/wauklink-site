@@ -1,46 +1,10 @@
-import { db, auth } from "/wauklink-site/shared/firebase.js";
-import { requireAdmin } from "/wauklink-site/shared/guard.js";
-import { logAdminAction } from "/wauklink-site/shared/admin_logger.js";
-import {
-  collection,
-  getDocs,
-  doc,
-  updateDoc
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
-const list = document.getElementById("list");
-const msg  = document.getElementById("msg");
-
-/* ========= HELPERS ========= */
-const esc = s => String(s ?? "").replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
-
-function badge(u) {
-  if (u.role === "admin") return "👑 Administrateur";
-  if (u.isBanned === true) return "🚫 Banni";
-  if (u.plan === "pro") return "🟢 Professionnel";
-  if (u.plan === "particulier") return "🟡 Particulier";
-  return "⚪ Gratuit";
-}
-
-/* ========= CHARGEMENT DES UTILISATEURS ========= */
-async function loadUsers() {
-  list.innerHTML = "";
-  msg.textContent = "⏳ Chargement des utilisateurs...";
-
-  try {
-    const snap = await getDocs(collection(db, "users"));
-
-    if (snap.empty) {
-      msg.textContent = "❌ Aucun utilisateur trouvé";
-      return;
-    }
-
-    msg.textContent = `${snap.size} utilisateur(s) inscrit(s)`;
-
-    snap.forEach(d => {
+snap.forEach(d => {
       const u   = d.data();
       const uid = d.id;
       
+      // Sécurité pour l'email (si manquant en base)
+      const userEmail = u.email || "Email inconnu";
+
       // Gestion de l'image de profil ou image par défaut
       const photoUrl = u.avatarUrl || "/wauklink-site/assets/avatar-default.png";
 
@@ -76,12 +40,12 @@ async function loadUsers() {
 
       card.innerHTML = `
         <div style="display:flex; align-items:center; gap:15px;">
-           <img src="${photoUrl}" alt="Avatar" style="width:50px; height:50px; border-radius:50%; object-fit:cover; border:2px solid #2ecc71;">
-           <div style="flex:1;">
-              <strong style="font-size:1.1em;">${esc(u.firstName || "Sans")} ${esc(u.lastName || "Nom")}</strong>
-              <div class="meta">${esc(u.email)}</div>
-              <div class="meta" style="font-size:0.8em; opacity:0.6;">ID: ${uid}</div>
-           </div>
+            <img src="${photoUrl}" alt="Avatar" style="width:50px; height:50px; border-radius:50%; object-fit:cover; border:2px solid #2ecc71;">
+            <div style="flex:1;">
+               <strong style="font-size:1.1em;">${esc(u.firstName || "Sans")} ${esc(u.lastName || "Nom")}</strong>
+               <div class="meta">${esc(userEmail)}</div>
+               <div class="meta" style="font-size:0.8em; opacity:0.6;">ID: ${uid}</div>
+            </div>
         </div>
         <hr style="margin:12px 0; opacity:0.1; border:none; border-top:1px solid white;">
         <div class="row-actions">
@@ -95,7 +59,7 @@ async function loadUsers() {
         select.value = u.plan || "free";
         select.onchange = async () => {
           const newPlan = select.value;
-          if (!confirm(`Passer ${u.email} au plan ${newPlan} ?`)) {
+          if (!confirm(`Passer ${userEmail} au plan ${newPlan} ?`)) {
             select.value = u.plan || "free";
             return;
           }
@@ -108,7 +72,7 @@ async function loadUsers() {
               action: "user_plan_change",
               adminUid: auth.currentUser?.uid,
               adminEmail: auth.currentUser?.email,
-              extra: { targetId: uid, targetEmail: u.email, newPlan }
+              extra: { targetId: uid, targetEmail: userEmail, newPlan }
             });
             alert("✅ Plan mis à jour !");
             loadUsers(); 
@@ -124,7 +88,7 @@ async function loadUsers() {
         btnBan.onclick = async () => {
           const currentState = u.isBanned || false;
           const newState = !currentState;
-          if (!confirm(`${newState ? "Bannir" : "Débannir"} définitivement ${u.email} ?`)) return;
+          if (!confirm(`${newState ? "Bannir" : "Débannir"} définitivement ${userEmail} ?`)) return;
 
           try {
             await updateDoc(doc(db, "users", uid), { isBanned: newState });
@@ -132,7 +96,7 @@ async function loadUsers() {
               action: newState ? "user_banned" : "user_unbanned",
               adminUid: auth.currentUser?.uid,
               adminEmail: auth.currentUser?.email,
-              extra: { targetId: uid, targetEmail: u.email }
+              extra: { targetId: uid, targetEmail: userEmail }
             });
             loadUsers(); 
           } catch (err) {
@@ -143,17 +107,3 @@ async function loadUsers() {
 
       list.appendChild(card);
     });
-  } catch (err) {
-    console.error(err);
-    msg.textContent = "❌ Erreur de chargement (vérifiez vos permissions admin)";
-  }
-}
-
-/* ========= PROTECTION ADMIN ========= */
-requireAdmin({
-  onOk: loadUsers,
-  onDenied: () => {
-    msg.innerHTML = "⛔ <strong>Accès refusé</strong><br>Espace réservé à la direction.";
-    list.innerHTML = "";
-  }
-});
