@@ -1,11 +1,48 @@
-snap.forEach(d => {
+import { db, auth } from "/wauklink-site/shared/firebase.js";
+import { requireAdmin } from "/wauklink-site/shared/guard.js";
+import { logAdminAction } from "/wauklink-site/shared/admin_logger.js";
+import {
+  collection,
+  getDocs,
+  doc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const list = document.getElementById("list");
+const msg  = document.getElementById("msg");
+
+/* ========= HELPERS ========= */
+const esc = s => String(s ?? "").replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
+
+function badge(u) {
+  if (u.role === "admin") return "👑 Administrateur";
+  if (u.isBanned === true) return "🚫 Banni";
+  if (u.plan === "pro") return "🟢 Professionnel";
+  if (u.plan === "particulier") return "🟡 Particulier";
+  return "⚪ Gratuit";
+}
+
+/* ========= CHARGEMENT DES UTILISATEURS ========= */
+async function loadUsers() {
+  list.innerHTML = "";
+  msg.textContent = "⏳ Chargement des utilisateurs...";
+
+  try {
+    const snap = await getDocs(collection(db, "users"));
+
+    if (snap.empty) {
+      msg.textContent = "❌ Aucun utilisateur trouvé";
+      return;
+    }
+
+    msg.textContent = `${snap.size} utilisateur(s) inscrit(s)`;
+
+    snap.forEach(d => {
       const u   = d.data();
       const uid = d.id;
       
-      // Sécurité pour l'email (si manquant en base)
+      // Sécurité : on définit l'email ou une valeur par défaut
       const userEmail = u.email || "Email inconnu";
-
-      // Gestion de l'image de profil ou image par défaut
       const photoUrl = u.avatarUrl || "/wauklink-site/assets/avatar-default.png";
 
       const card = document.createElement("div");
@@ -107,3 +144,17 @@ snap.forEach(d => {
 
       list.appendChild(card);
     });
+  } catch (err) {
+    console.error(err);
+    msg.textContent = "❌ Erreur de chargement (vérifiez vos permissions admin)";
+  }
+}
+
+/* ========= PROTECTION ADMIN ========= */
+requireAdmin({
+  onOk: loadUsers,
+  onDenied: () => {
+    msg.innerHTML = "⛔ <strong>Accès refusé</strong><br>Espace réservé à la direction.";
+    list.innerHTML = "";
+  }
+});
