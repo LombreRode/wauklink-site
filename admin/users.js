@@ -24,6 +24,7 @@ function badge(u) {
 
 /* ========= CHARGEMENT DES UTILISATEURS ========= */
 async function loadUsers() {
+  if (!list || !msg) return;
   list.innerHTML = "";
   msg.textContent = "⏳ Chargement des utilisateurs...";
 
@@ -41,9 +42,9 @@ async function loadUsers() {
       const u   = d.data();
       const uid = d.id;
       
-      // Sécurité : on définit l'email ou une valeur par défaut
+      // Sécurité pour l'email (si absent en base)
       const userEmail = u.email || "Email inconnu";
-      const photoUrl = u.avatarUrl || "/wauklink-site/assets/avatar-default.png";
+      const photoUrl  = u.avatarUrl || "/wauklink-site/assets/avatar-default.png";
 
       const card = document.createElement("div");
       card.className = "card";
@@ -144,9 +145,10 @@ async function loadUsers() {
 
       list.appendChild(card);
     });
+
   } catch (err) {
-    console.error(err);
-    msg.textContent = "❌ Erreur de chargement (vérifiez vos permissions admin)";
+    console.error("Erreur loadUsers:", err);
+    msg.textContent = "❌ Erreur de chargement des données.";
   }
 }
 
