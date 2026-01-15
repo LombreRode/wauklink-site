@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Détail annonce — WAUKLINK</title>
   <link rel="stylesheet" href="/wauklink-site/style.css">
+  <style>
+    /* Styles pour les photos et badges */
+    #photos img { width: 100%; border-radius: 8px; object-fit: cover; height: 250px; }
+    .badge-spec { background: var(--ok); color: white; padding: 4px 10px; border-radius: 5px; font-weight: bold; font-size: 0.9em; display: inline-block; margin-bottom: 10px; }
+    .price-box { font-size: 1.5rem; font-weight: bold; color: var(--ok); margin: 15px 0; }
+    .contact-area { background: #f4f4f4; padding: 15px; border-radius: 10px; margin: 20px 0; text-align: center; }
+  </style>
 </head>
 <body>
 
@@ -12,7 +19,7 @@
   <div class="container topbar-row">
     <h1>WAUKLINK</h1>
     <nav class="topbar-nav">
-      <a class="btn" href="/wauklink-site/index.html">← Accueil</a>
+      <a class="btn" href="javascript:history.back()">← Retour</a>
     </nav>
   </div>
 </header>
@@ -21,17 +28,23 @@
   <p id="msg" class="meta">⏳ Chargement…</p>
 
   <section id="annonce" class="card hidden">
+    <div id="badgeSpec" class="badge-spec"></div>
+    
     <h2 id="titre"></h2>
-
-    <div id="meta" class="meta"></div>
-
-    <p id="description"></p>
+    <div id="meta" class="meta" style="margin-bottom: 15px;"></div>
 
     <div id="photos" class="grid" style="margin-bottom: 20px;"></div>
 
+    <div id="displayPrice" class="price-box"></div>
+    <p id="description" style="white-space: pre-wrap; line-height: 1.6;"></p>
+
+    <div class="contact-area">
+      <p>Besoin d'une intervention ?</p>
+      <a id="callBtn" href="#" class="btn btn-ok" style="font-size: 1.1rem; padding: 12px 25px;">📞 Appeler le prestataire</a>
+    </div>
+
     <section id="ratingSection" class="hidden" style="margin-top:20px; padding-top:20px; border-top: 1px solid var(--border);">
       <h3>Laisser un avis</h3>
-      
       <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
         <select id="ratingValue" class="input" style="width: 100%;">
           <option value="">Choisir une note</option>
@@ -41,9 +54,7 @@
           <option value="2">⭐⭐ 2 - Décevant</option>
           <option value="1">⭐ 1 - À éviter</option>
         </select>
-
-        <textarea id="ratingComment" class="input" placeholder="Partagez votre expérience avec ce prestataire..." style="width: 100%; min-height: 80px;"></textarea>
-
+        <textarea id="ratingComment" class="input" placeholder="Partagez votre expérience..." style="width: 100%; min-height: 80px;"></textarea>
         <button id="rateBtn" class="btn btn-ok" style="width: 100%;">🌟 Publier mon avis</button>
       </div>
       <p id="rateMsg" class="meta"></p>
@@ -63,19 +74,12 @@
         🚩 Signaler un problème
       </a>
     </section>
-
   </section>
 </main>
 
 <footer class="footer">
   <div class="container footer-row">
     <span>© WAUKLINK</span>
-    <nav class="footer-nav">
-      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
-      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
-      <a class="link" href="/wauklink-site/legal/privacy.html">Confidentialité</a>
-      <a class="link" href="/wauklink-site/legal/mentions-legales.html">Mentions légales</a>
-    </nav>
   </div>
 </footer>
 
