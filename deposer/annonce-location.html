@@ -5,112 +5,71 @@
   <title>Déposer une annonce — WAUKLINK</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/wauklink-site/style.css">
+  <style>
+    .hidden { display: none; }
+    .mt-10 { margin-top: 10px; }
+  </style>
 </head>
 <body>
 
 <header class="topbar">
   <div class="container topbar-row">
     <h1>WAUKLINK</h1>
-    <nav>
-      <a class="btn" href="/wauklink-site/dashboard/index.html">
-        ← Retour dashboard
-      </a>
-    </nav>
+    <nav><a class="btn" href="/wauklink-site/dashboard/index.html">← Retour dashboard</a></nav>
   </div>
 </header>
 
 <main class="container main-layout">
   <h2>Nouvelle annonce</h2>
 
-  <!-- 🚫 Accès restreint -->
   <div id="planBlock" class="card hidden">
     <h3>Accès restreint</h3>
-    <p>
-      Le dépôt d’annonce est réservé aux comptes
-      <strong>Particulier</strong>, <strong>Professionnel</strong>
-      ou <strong>Administrateur</strong>.
-    </p>
-    <a href="/wauklink-site/pricing.html" class="btn btn-ok">
-      Voir les offres
-    </a>
+    <p>Le dépôt d’annonce est réservé aux comptes autorisés.</p>
+    <a href="/wauklink-site/pricing.html" class="btn btn-ok">Voir les offres</a>
   </div>
 
-  <!-- ✅ Formulaire -->
   <form id="annonceForm" class="card hidden">
+    <label>Titre <input type="text" id="title" required></label>
+    <label>Ville <input type="text" id="city" required></label>
+    <label>Téléphone <input type="tel" id="phone" required></label>
+    <label>Code postal <input type="text" id="postalCode" required></label>
 
     <label>
-      Titre
-      <input type="text" id="title" required>
-    </label>
-
-    <label>
-      Ville
-      <input type="text" id="city" required>
-    </label>
-
-    <label>
-      Téléphone
-      <input type="tel" id="phone" required>
-    </label>
-
-    <label>
-      Code postal
-      <input type="text" id="postalCode" required>
-    </label>
-
-    <label>
-      Type d’annonce
+      Rubrique
       <select id="type" required>
         <option value="">— Choisir —</option>
-        <option value="immobilier">Immobilier</option>
-        <option value="loisir">Loisir</option>
-        <option value="autres">Autre location</option>
-        <option value="services-personne">Services à la personne</option>
-        <option value="travaux">Travaux</option>
-        <option value="urgences">Urgences</option>
+        <option value="urgences">🚨 Urgences</option>
+        <option value="travaux">🏗️ Travaux</option>
+        <option value="exterieur">🌿 Espaces Verts / Extérieur</option>
+        <option value="assainissement">💧 Assainissement & Pompage</option>
+        <option value="services-personne">🛠️ Services / Débarras</option>
+        <option value="immobilier">🏠 Immobilier</option>
+        <option value="loisir">⚽ Loisir</option>
+        <option value="autres">📦 Autre location</option>
       </select>
     </label>
 
-    <label>
-      Prix (€)
-      <input type="number" id="price" min="0">
-    </label>
+    <div id="specialiteBlock" class="hidden mt-10">
+      <label>
+        Spécialité précise
+        <select id="specialite">
+          <option value="">— Choisir une spécialité —</option>
+        </select>
+      </label>
+    </div>
 
-    <label>
-      Description
-      <textarea id="description" rows="4" required></textarea>
-    </label>
+    <label>Prix (€) <input type="number" id="price" min="0"></label>
+    <label>Description <textarea id="description" rows="4" required></textarea></label>
 
-    <!-- 📷 PHOTOS -->
-    <label>
-      Photos de l’annonce (max 6)
-      <input
-        type="file"
-        id="photosInput"
-        accept="image/*"
-        multiple
-      >
-    </label>
-
+    <label>Photos (max 6) <input type="file" id="photosInput" accept="image/*" multiple></label>
     <div id="preview" class="grid" style="margin-top:10px"></div>
 
-    <button class="btn btn-ok" type="submit">
-      Publier l’annonce
-    </button>
-
+    <button class="btn btn-ok" type="submit" id="submitBtn">Publier l’annonce</button>
   </form>
 
   <p id="msg" class="meta" aria-live="polite"></p>
 </main>
 
-<footer class="footer">
-  <div class="container footer-row">
-    <span>© WAUKLINK</span>
-  </div>
-</footer>
-
-<!-- JS -->
 <script type="module" src="./annonce-location.js"></script>
-
 </body>
 </html>
