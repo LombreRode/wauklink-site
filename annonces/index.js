@@ -9,6 +9,7 @@ import {
 
 const list  = document.getElementById("list");
 const msg   = document.getElementById("msg");
+const pageTitle = document.getElementById("pageTitle"); // Récupère le titre H2 pour le modifier
 
 /* ========= HELPERS ========= */
 const esc = s =>
@@ -26,22 +27,37 @@ async function loadAnnonces() {
   list.innerHTML = "";
   msg.textContent = "⏳ Chargement des annonces…";
 
-  try {
-    // 1. On ne récupère que les annonces validées (status == 'active')
-    const q = query(
-      collection(db, "annonces"),
-      where("status", "==", "active"),
-      orderBy("createdAt", "desc")
-    );
+  // 1. Récupération du filtre dans l'URL (ex: ?type=Piscine)
+  const params = new URLSearchParams(window.location.search);
+  const typeFilter = params.get("type");
 
+  if (typeFilter) {
+      // Met à jour le titre de la page (ex: Annonces : Piscine)
+      if(pageTitle) pageTitle.textContent = `Annonces : ${typeFilter}`;
+  }
+
+  try {
+    // 2. Préparation de la requête de base (Status Active + Tri par date)
+    let qRef = collection(db, "annonces");
+    let constraints = [
+        where("status", "==", "active"),
+        orderBy("createdAt", "desc")
+    ];
+
+    // 3. Application du filtre si présent
+    if (typeFilter) {
+        constraints.push(where("type", "==", typeFilter));
+    }
+
+    const q = query(qRef, ...constraints);
     const snap = await getDocs(q);
 
     if (snap.empty) {
-      empty("❌ Aucune annonce disponible.");
+      empty("❌ Aucune annonce disponible pour le moment.");
       return;
     }
 
-    msg.textContent = `${snap.size} annonce(s)`;
+    msg.textContent = `${snap.size} annonce(s) trouvée(s)`;
 
     snap.forEach(d => {
       const a = d.data();
