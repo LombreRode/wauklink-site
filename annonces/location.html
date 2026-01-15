@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Détail annonce — WAUKLINK</title>
+  <title>Déposer une annonce — WAUKLINK</title>
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
 <body>
@@ -12,72 +12,57 @@
   <div class="container topbar-row">
     <h1>WAUKLINK</h1>
     <nav class="topbar-nav">
-      <a class="btn" href="/wauklink-site/index.html">← Accueil</a>
+      <a class="btn" href="/wauklink-site/index.html">Annuler</a>
     </nav>
   </div>
 </header>
 
 <main class="container main-layout">
-  <p id="msg" class="meta">⏳ Chargement…</p>
+  <div id="planBlock" class="card hidden" style="text-align: center;">
+    <h2>Accès Restreint</h2>
+    <p>Vous devez choisir un forfait Pro ou Particulier pour publier une annonce.</p>
+    <a href="/wauklink-site/dashboard/plans.html" class="btn">Voir les forfaits</a>
+  </div>
 
-  <section id="annonce" class="card hidden">
-    <h2 id="titre"></h2>
-    <div id="meta" class="meta mb"></div>
-
-    <p id="description" class="mb"></p>
-
-    <div id="photos" class="grid mb"></div>
-
-    <hr style="opacity: 0.1; margin: 30px 0;">
-
-    <section id="ratingSection" class="hidden">
-      <h3>Laisser un avis</h3>
-      <p class="meta">Partagez votre expérience avec ce prestataire.</p>
+  <div class="card" style="max-width: 700px; margin: 0 auto;">
+    <h2>Publier une annonce</h2>
+    <p id="msg" class="meta">Remplissez les informations ci-dessous.</p>
+    
+    <form id="annonceForm" class="hidden" style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
+      <input type="text" id="title" placeholder="Titre de l'annonce" required class="input">
       
-      <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
-        <select id="ratingValue">
-          <option value="">— Choisir une note —</option>
-          <option value="5">⭐⭐⭐⭐⭐ 5/5</option>
-          <option value="4">⭐⭐⭐⭐ 4/5</option>
-          <option value="3">⭐⭐⭐ 3/5</option>
-          <option value="2">⭐⭐ 2/5</option>
-          <option value="1">⭐ 1/5</option>
-        </select>
-
-        <textarea id="ratingComment" placeholder="Votre commentaire..." class="input"></textarea>
-
-        <button id="rateBtn" class="btn btn-ok w-full">🚀 Publier mon avis</button>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <input type="text" id="city" placeholder="Ville" required class="input">
+        <input type="text" id="postalCode" placeholder="Code Postal" required class="input">
       </div>
-      <p id="ratingMsg" class="meta mt"></p>
-    </section>
 
-    <section id="reviewsContainer" class="mt" style="padding-top: 20px;">
-      <h3>Avis des utilisateurs</h3>
-      <div id="reviewsList" class="mt">
-        <p class="meta">Aucun avis pour le moment.</p>
+      <input type="tel" id="phone" placeholder="Numéro de téléphone" class="input">
+      
+      <select id="type" class="input" required>
+        <option value="">-- Choisir une catégorie --</option>
+        <option value="travaux">Travaux / BTP</option>
+        <option value="urgences">Urgences</option>
+        <option value="piscine">Piscine / Entretien</option>
+        <option value="emploi">Offre d'emploi</option>
+      </select>
+
+      <input type="number" id="price" placeholder="Prix indicatif (€)" class="input">
+      
+      <textarea id="description" placeholder="Description détaillée..." required class="input" style="min-height: 150px;"></textarea>
+
+      <div style="border: 2px dashed rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; text-align: center;">
+        <label for="photosInput" style="cursor: pointer; display: block;">
+          📸 <strong>Ajouter des photos</strong> (Max 6)
+          <input type="file" id="photosInput" accept="image/*" multiple style="display: none;">
+        </label>
+        <div id="preview" style="display: flex; flex-wrap: wrap; justify-content: center; margin-top: 10px;"></div>
       </div>
-    </section>
 
-    <section id="reportSection" class="hidden mt" style="text-align: right; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 20px;">
-      <a id="reportLink" href="#" style="color: var(--danger); text-decoration: none; font-size: 0.85rem;">
-        🚩 Signaler cette annonce
-      </a>
-    </section>
-
-  </section>
+      <button type="submit" class="btn btn-ok" style="width: 100%; border: none; padding: 15px;">🚀 Publier l'annonce</button>
+    </form>
+  </div>
 </main>
 
-<footer class="footer">
-  <div class="container footer-row">
-    <span>© WAUKLINK</span>
-    <nav class="footer-nav">
-      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
-    </nav>
-  </div>
-</footer>
-
-<script type="module" src="/wauklink-site/shared/admin_links.js"></script>
-<script type="module" src="./location-detail.js"></script>
-
+<script type="module" src="./location.js"></script>
 </body>
 </html>
