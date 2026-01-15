@@ -1,90 +1,124 @@
-<!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Détail annonce — WAUKLINK</title>
-  <link rel="stylesheet" href="/wauklink-site/style.css">
-  <style>
-    /* Styles pour les photos et badges */
-    #photos img { width: 100%; border-radius: 8px; object-fit: cover; height: 250px; }
-    .badge-spec { background: var(--ok); color: white; padding: 4px 10px; border-radius: 5px; font-weight: bold; font-size: 0.9em; display: inline-block; margin-bottom: 10px; }
-    .price-box { font-size: 1.5rem; font-weight: bold; color: var(--ok); margin: 15px 0; }
-    .contact-area { background: #f4f4f4; padding: 15px; border-radius: 10px; margin: 20px 0; text-align: center; }
-  </style>
-</head>
-<body>
+import { db, auth } from "../shared/firebase.js";
+import { doc, getDoc, collection, addDoc, serverTimestamp, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-<header class="topbar">
-  <div class="container topbar-row">
-    <h1>WAUKLINK</h1>
-    <nav class="topbar-nav">
-      <a class="btn" href="javascript:history.back()">← Retour</a>
-    </nav>
-  </div>
-</header>
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
 
-<main class="container main-layout">
-  <p id="msg" class="meta">⏳ Chargement…</p>
+const msg = document.getElementById("msg");
+const section = document.getElementById("annonce");
+const reviewsList = document.getElementById("reviewsList");
 
-  <section id="annonce" class="card hidden">
-    <div id="badgeSpec" class="badge-spec"></div>
-    
-    <h2 id="titre"></h2>
-    <div id="meta" class="meta" style="margin-bottom: 15px;"></div>
+// Sécurité XSS
+const esc = s => String(s ?? "").replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
 
-    <div id="photos" class="grid" style="margin-bottom: 20px;"></div>
+if (!id) {
+    msg.textContent = "❌ Annonce introuvable.";
+} else {
+    loadAnnonce();
+}
 
-    <div id="displayPrice" class="price-box"></div>
-    <p id="description" style="white-space: pre-wrap; line-height: 1.6;"></p>
+async function loadAnnonce() {
+    try {
+        const snap = await getDoc(doc(db, "annonces", id));
+        if (!snap.exists()) {
+            msg.textContent = "❌ Cette annonce n'existe plus.";
+            return;
+        }
 
-    <div class="contact-area">
-      <p>Besoin d'une intervention ?</p>
-      <a id="callBtn" href="#" class="btn btn-ok" style="font-size: 1.1rem; padding: 12px 25px;">📞 Appeler le prestataire</a>
-    </div>
+        const a = snap.data();
 
-    <section id="ratingSection" class="hidden" style="margin-top:20px; padding-top:20px; border-top: 1px solid var(--border);">
-      <h3>Laisser un avis</h3>
-      <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
-        <select id="ratingValue" class="input" style="width: 100%;">
-          <option value="">Choisir une note</option>
-          <option value="5">⭐⭐⭐⭐⭐ 5 - Excellent</option>
-          <option value="4">⭐⭐⭐⭐ 4 - Très bien</option>
-          <option value="3">⭐⭐⭐ 3 - Moyen</option>
-          <option value="2">⭐⭐ 2 - Décevant</option>
-          <option value="1">⭐ 1 - À éviter</option>
-        </select>
-        <textarea id="ratingComment" class="input" placeholder="Partagez votre expérience..." style="width: 100%; min-height: 80px;"></textarea>
-        <button id="rateBtn" class="btn btn-ok" style="width: 100%;">🌟 Publier mon avis</button>
-      </div>
-      <p id="rateMsg" class="meta"></p>
-    </section>
+        // Remplissage des infos
+        document.getElementById("badgeSpec").textContent = a.specialite || a.type;
+        document.getElementById("titre").textContent = a.title;
+        document.getElementById("meta").textContent = `📍 ${a.city} • Publié le ${a.createdAt?.toDate().toLocaleDateString() || 'récemment'}`;
+        document.getElementById("displayPrice").textContent = a.price > 0 ? `${a.price} €` : "Sur devis";
+        document.getElementById("description").textContent = a.description;
 
-    <hr style="margin: 30px 0; opacity: 0.1;">
+        // Gestion du bouton d'appel
+        const callBtn = document.getElementById("callBtn");
+        if (a.phone) {
+            callBtn.href = `tel:${a.phone}`;
+            callBtn.textContent = `📞 Appeler (${a.phone})`;
+        } else {
+            callBtn.style.display = "none";
+        }
 
-    <section id="reviewsContainer" style="margin-top:20px;">
-      <h3>Avis des clients</h3>
-      <div id="reviewsList" class="mt">
-        <p class="meta">Chargement des avis...</p>
-      </div>
-    </section>
+        // Photos
+        const photosDiv = document.getElementById("photos");
+        if (a.images && a.images.length > 0) {
+            a.images.forEach(url => {
+                const img = document.createElement("img");
+                img.src = url;
+                photosDiv.appendChild(img);
+            });
+        }
 
-    <section id="reportSection" class="hidden" style="margin-top:40px; text-align: right; border-top: 1px dashed var(--border); padding-top: 10px;">
-      <a id="reportLink" href="#" style="color: var(--error); text-decoration: none; font-size: 0.85rem; font-weight: bold;">
-        🚩 Signaler un problème
-      </a>
-    </section>
-  </section>
-</main>
+        // Afficher la section et cacher le chargement
+        msg.classList.add("hidden");
+        section.classList.remove("hidden");
+        
+        // Charger les avis
+        loadReviews();
 
-<footer class="footer">
-  <div class="container footer-row">
-    <span>© WAUKLINK</span>
-  </div>
-</footer>
+        // Activer la section avis si l'utilisateur est connecté
+        onAuthStateChanged(auth, (user) => {
+            if (user) document.getElementById("ratingSection").classList.remove("hidden");
+        });
 
-<script type="module" src="/wauklink-site/shared/admin_links.js"></script>
-<script type="module" src="./location-detail.js"></script>
+    } catch (err) {
+        console.error(err);
+        msg.textContent = "Erreur de chargement.";
+    }
+}
 
-</body>
-</html>
+// --- GESTION DES AVIS ---
+async function loadReviews() {
+    reviewsList.innerHTML = "";
+    const q = query(collection(db, "reviews"), where("annonceId", "==", id), orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
+
+    if (snap.empty) {
+        reviewsList.innerHTML = "<p class='meta'>Aucun avis pour le moment. Soyez le premier !</p>";
+        return;
+    }
+
+    snap.forEach(d => {
+        const r = d.data();
+        const div = document.createElement("div");
+        div.className = "review-item"; // Utilise le style de ton CSS
+        div.innerHTML = `
+            <div class="stars">${"⭐".repeat(r.rating)}</div>
+            <p>${esc(r.comment)}</p>
+            <small class="meta">Posté par un utilisateur le ${r.createdAt?.toDate().toLocaleDateString()}</small>
+        `;
+        reviewsList.appendChild(div);
+    });
+}
+
+// --- POSTER UN AVIS ---
+document.getElementById("rateBtn").onclick = async () => {
+    const rating = document.getElementById("ratingValue").value;
+    const comment = document.getElementById("ratingComment").value;
+    const rateMsg = document.getElementById("rateMsg");
+
+    if (!rating || !comment) {
+        alert("Merci de remplir tous les champs.");
+        return;
+    }
+
+    try {
+        await addDoc(collection(db, "reviews"), {
+            annonceId: id,
+            userId: auth.currentUser.uid,
+            rating: parseInt(rating),
+            comment: comment,
+            createdAt: serverTimestamp()
+        });
+        rateMsg.textContent = "✅ Avis publié !";
+        document.getElementById("ratingComment").value = "";
+        loadReviews();
+    } catch (e) {
+        rateMsg.textContent = "❌ Erreur lors de la publication.";
+    }
+};
