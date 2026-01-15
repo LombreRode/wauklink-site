@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>WAUKLINK — Urgences</title>
   <link rel="stylesheet" href="../style.css" />
+  <style>
+    /* Petit style rapide pour la barre de filtre */
+    .filter-section { margin-bottom: 20px; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .filter-section select { padding: 10px; border-radius: 5px; border: 1px solid #ddd; width: 100%; max-width: 300px; }
+    .badge-spec { background: #ff4757; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-bottom: 10px; display: inline-block; }
+    .card img { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; }
+  </style>
 </head>
 <body>
 
@@ -22,10 +29,20 @@
 
 <main class="container main-layout">
   <h2>Annonces urgentes</h2>
+
+  <div class="filter-section">
+    <label for="filterSpec">Filtrer par besoin :</label>
+    <select id="filterSpec">
+      <option value="">Toutes les urgences</option>
+    </select>
+  </div>
+
   <p id="statusMsg" class="meta">Chargement…</p>
+  
   <section id="list" class="grid"></section>
+  
   <p id="empty" class="muted hidden">
-    Aucune annonce urgente disponible.
+    Aucune annonce urgente disponible pour cette sélection.
   </p>
 </main>
 
@@ -35,7 +52,6 @@
   </div>
 </footer>
 
-<!-- JS EXTERNE UNIQUEMENT -->
 <script type="module" src="./index.js"></script>
 </body>
 </html>
