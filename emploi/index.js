@@ -10,15 +10,15 @@ import {
 const jobList = document.getElementById("jobList");
 const msg = document.getElementById("msg");
 
-// Fonction pour échapper les caractères spéciaux (Sécurité XSS)
+// Protection contre les injections (XSS)
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, m => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
 }[m]));
 
 async function loadJobs() {
   try {
-    // 1. Création de la requête
-    // Note : Cette requête nécessite l'index dont on a parlé précédemment
+    // REQUÊTE : On filtre par type 'emploi' et statut 'active'
+    // ⚠️ Rappel : Cette requête demande la création d'un index composé dans Firebase
     const q = query(
       collection(db, "annonces"),
       where("type", "==", "emploi"),
@@ -29,7 +29,7 @@ async function loadJobs() {
     const snap = await getDocs(q);
 
     if (snap.empty) {
-      msg.textContent = "Aucune offre d'emploi n'est disponible pour le moment.";
+      msg.textContent = "Aucune offre d'emploi disponible pour le moment.";
       return;
     }
 
@@ -42,17 +42,15 @@ async function loadJobs() {
       card.className = "card";
 
       card.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-          <h3>${esc(job.title)}</h3>
-          <span class="badge-spec" style="background: var(--brand); font-size: 0.7rem;">Offre</span>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <h3 style="margin:0;">${esc(job.title)}</h3>
+          <span class="badge-spec" style="background: var(--brand); font-size: 0.7rem;">RECRUTEMENT</span>
         </div>
         <p class="meta">📍 ${esc(job.city)} (${esc(job.postalCode)})</p>
-        <p style="margin: 10px 0; line-height: 1.5;">
-          ${esc(job.description.substring(0, 120))}...
-        </p>
-        <div style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+        <p style="margin: 15px 0;">${esc(job.description.substring(0, 150))}...</p>
+        <div style="margin-top: auto; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
           <a href="/wauklink-site/annonces/location-detail.html?id=${docSnap.id}" class="btn btn-ok" style="width: 100%; display: block; text-align: center;">
-            Voir les détails
+            Voir l'offre complète
           </a>
         </div>
       `;
@@ -60,10 +58,9 @@ async function loadJobs() {
     });
 
   } catch (error) {
-    console.error("Erreur lors du chargement des emplois :", error);
-    msg.innerHTML = `❌ Erreur de chargement.<br><small>Assurez-vous d'avoir créé l'index dans la console Firebase.</small>`;
+    console.error("Erreur Firebase :", error);
+    msg.innerHTML = "❌ Erreur de chargement. <br><small>Vérifiez que l'index composé est bien créé dans Firebase.</small>";
   }
 }
 
-// Lancement au chargement de la page
 loadJobs();
