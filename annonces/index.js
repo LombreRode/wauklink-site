@@ -27,7 +27,7 @@ async function loadAnnonces() {
   msg.textContent = "⏳ Chargement des annonces…";
 
   try {
-    // On ne montre que les annonces validées par l'admin
+    // 1. On ne récupère que les annonces validées (status == 'active')
     const q = query(
       collection(db, "annonces"),
       where("status", "==", "active"),
@@ -48,15 +48,19 @@ async function loadAnnonces() {
       const shortDesc = (a.description || "").slice(0, 100);
 
       const card = document.createElement("div");
-      card.className = "card";
+      card.className = "card"; // Utilise l'animation fadeInUp de ton CSS
+      
       card.innerHTML = `
-        <div style="display:flex; justify-content:space-between;">
-           <strong>${esc(a.title || "Annonce")}</strong>
-           <span style="color:var(--primary); font-weight:bold;">${a.price ?? "—"} €</span>
+        <span class="badge-spec">${esc(a.specialite || a.type)}</span>
+
+        <div style="display:flex; justify-content:space-between; align-items: flex-start; margin-top:10px;">
+           <strong style="font-size:1.1rem;">${esc(a.title || "Annonce")}</strong>
         </div>
 
+        <div class="price-box">${a.price ? a.price + ' €' : 'Sur devis'}</div>
+
         <div class="meta" style="margin-bottom:10px;">
-          📍 ${esc(a.city || "—")} • 🏠 ${esc(a.type || "—")}
+          📍 ${esc(a.city || "—")}
         </div>
 
         <p class="meta">
@@ -66,10 +70,10 @@ async function loadAnnonces() {
         <div class="row-actions" style="margin-top:15px; display:flex; gap:10px;">
           <a class="btn btn-outline" style="flex:1; text-align:center;"
              href="/wauklink-site/annonces/location-detail.html?id=${d.id}">
-             Voir
+             Voir les détails
           </a>
           
-          <a class="btn" style="background:#ff4444; color:white; border:none; padding:5px 10px;"
+          <a class="btn" style="background:var(--danger); color:white; border:none; padding:5px 12px; border-radius:8px;"
              href="/wauklink-site/annonces/reports-annonce.html?id=${d.id}" title="Signaler un problème">
              🚩
           </a>
@@ -81,8 +85,7 @@ async function loadAnnonces() {
 
   } catch (err) {
     console.error("loadAnnonces error:", err);
-    // Si l'index manque, le message s'affichera ici
-    empty("❌ Erreur de chargement des annonces (Vérifiez l'index Firestore)");
+    empty("❌ Erreur de chargement (Vérifiez votre connexion ou l'index Firestore)");
   }
 }
 
