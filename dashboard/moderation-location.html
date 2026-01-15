@@ -4,66 +4,68 @@
   <meta charset="utf-8">
   <title>WAUKLINK — Modération</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- STYLE GLOBAL -->
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
-
 <body>
 
 <header class="topbar">
   <div class="container topbar-row">
-    <div>
-      <h1>WAUKLINK</h1>
-      <div class="subtitle">Espace Modération</div>
-    </div>
-
-    <nav class="topbar-nav">
-      <a class="link" href="/wauklink-site/dashboard/index.html">
-        Dashboard
-      </a>
-      <a class="btn btn-outline"
-         href="/wauklink-site/admin/index.html">
-        Admin
-      </a>
-    </nav>
+    <h1>Espace Modération</h1>
+    <nav><a class="btn" href="/wauklink-site/dashboard/index.html">← Dashboard</a></nav>
   </div>
 </header>
 
 <main class="container main-layout">
-  <section class="center mb-xl">
-    <h2>Modération</h2>
-    <p class="muted">Validation et contrôle des contenus</p>
-  </section>
-
-  <section class="grid">
-    <a class="card" href="/wauklink-site/admin/annonces.html">
-      <h3>📢 Annonces en attente</h3>
-      <p class="meta">Valider / refuser les annonces</p>
-    </a>
-
-    <a class="card" href="/wauklink-site/admin/reports.html">
-      <h3>🚨 Signalements</h3>
-      <p class="meta">Contenus signalés</p>
-    </a>
-  </section>
+  <h2>Annonces en attente de validation</h2>
+  <div id="modList" class="grid" style="margin-top:20px;">Chargement...</div>
 </main>
 
-<footer class="footer">
-  <div class="container footer-row">
-    <span>© WAUKLINK</span>
-  </div>
-</footer>
-
-<!-- 🔐 PROTECTION MODÉRATEUR / ADMIN -->
 <script type="module">
-  import { requireModerator } from
-    "/wauklink-site/shared/guard.js";
+  import { db } from "../shared/firebase.js";
+  import { collection, query, where, getDocs, updateDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  import { requireModerator } from "/wauklink-site/shared/guard.js";
 
-  requireModerator({
-    redirectTo: "/wauklink-site/dashboard/index.html"
-  });
+  requireModerator({ redirectTo: "/wauklink-site/dashboard/index.html" });
+
+  const modList = document.getElementById("modList");
+
+  async function load() {
+    modList.innerHTML = "Recherche d'annonces...";
+    const q = query(collection(db, "annonces"), where("status", "==", "pending"));
+    const snap = await getDocs(q);
+    
+    if(snap.empty) {
+        modList.innerHTML = "<p>✅ Aucune annonce à valider.</p>";
+        return;
+    }
+
+    modList.innerHTML = "";
+    snap.forEach(d => {
+      const a = d.data();
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <h3>${a.title}</h3>
+        <p class="meta">Par: ${a.userId} | Ville: ${a.city}</p>
+        <div style="display:flex; gap:10px; margin-top:15px;">
+            <button class="btn btn-ok" onclick="process('${d.id}', 'active')">Valider</button>
+            <button class="btn btn-danger" onclick="process('${d.id}', 'delete')">Supprimer</button>
+            <a class="btn btn-outline" href="../annonces/location-detail.html?id=${d.id}" target="_blank">Voir</a>
+        </div>
+      `;
+      modList.appendChild(card);
+    });
+  }
+
+  window.process = async (id, action) => {
+      if(action === 'active') {
+          await updateDoc(doc(db, "annonces", id), { status: "active" });
+      } else {
+          if(confirm("Supprimer ?")) await deleteDoc(doc(db, "annonces", id));
+      }
+      load();
+  };
+  load();
 </script>
-
 </body>
 </html>
