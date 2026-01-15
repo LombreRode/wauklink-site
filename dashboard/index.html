@@ -4,11 +4,8 @@
   <meta charset="utf-8">
   <title>WAUKLINK — Tableau de bord</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex, nofollow">
-
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
-
 <body>
 
 <header class="topbar">
@@ -17,39 +14,25 @@
       <h1>WAUKLINK</h1>
       <div class="subtitle">Tableau de bord</div>
     </div>
-
     <nav class="topbar-nav">
-      <a class="btn" href="/wauklink-site/index.html">
-        ← Accueil
-      </a>
+      <a class="btn" href="/wauklink-site/index.html">← Accueil</a>
     </nav>
-  </div>
-
-  <div id="userNav" class="user-nav hidden">
-    <img id="navAvatar" src="/wauklink-site/assets/avatar-default.png" alt="Avatar" 
-         style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:1px solid #2ecc71;">
-    
-    <a href="/wauklink-site/dashboard/index.html" class="btn btn-outline">📊 Dashboard</a>
-    <a href="/wauklink-site/profil/index.html" class="btn btn-outline">👤 Profil</a>
-    
-    <button id="logoutBtn" class="btn btn-danger">Déconnexion</button>
-  </div>
-
-  <div id="guestStatus" class="guest-status hidden">
-    <a href="/wauklink-site/auth/login.html">Connexion</a>
-    <a href="/wauklink-site/auth/register.html">Inscription</a>
   </div>
 </header>
 
 <main class="container main-layout">
   <h2>Bienvenue sur votre espace</h2>
-
   <div id="proStatus" style="margin:20px 0; min-height: 40px;"></div>
 
   <div class="grid">
     <a class="card" href="/wauklink-site/deposer/annonce-location.html">
       <strong>➕ Déposer une annonce</strong>
       <p class="meta">Publier une nouvelle annonce</p>
+    </a>
+
+    <a class="card" href="/wauklink-site/dashboard/mes-annonces.html" style="border-left: 5px solid #2ecc71;">
+      <strong>📋 Mes annonces</strong>
+      <p class="meta">Gérer ou supprimer mes publications</p>
     </a>
 
     <a class="card" href="/wauklink-site/urgences/index.html">
@@ -62,23 +45,21 @@
       <p class="meta">Voir les travaux</p>
     </a>
 
-    <a class="card" href="/wauklink-site/locations/immobilier.html">
-      <strong>🏠 Locations</strong>
-      <p class="meta">Voir les locations</p>
-    </a>
-
     <a class="card" href="/wauklink-site/profil/index.html">
       <strong>👤 Mon profil</strong>
       <p class="meta">Gérer mes informations personnelles</p>
     </a>
+
+    <div id="adminSection" class="hidden" style="grid-column: 1 / -1; margin-top:20px;">
+      <hr>
+      <h3 style="margin-top:10px;">👑 Administration</h3>
+      <a class="card" href="/wauklink-site/dashboard/moderation-location.html" style="background:#fff5f5; border:1px solid #feb2b2;">
+        <strong>⚖️ Modération</strong>
+        <p class="meta">Valider les nouvelles annonces</p>
+      </a>
+    </div>
   </div>
 </main>
-
-<footer class="footer">
-  <div class="container footer-row">
-    <span>© WAUKLINK</span>
-  </div>
-</footer>
 
 <script type="module">
   import { requireUser } from "/wauklink-site/shared/guard.js";
@@ -93,53 +74,40 @@
   import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
   const proStatus = document.getElementById("proStatus");
+  const adminSection = document.getElementById("adminSection");
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) return;
-
     try {
       const snap = await getDoc(doc(db, "users", user.uid));
       if (!snap.exists()) return;
-
       const data = snap.data();
       proStatus.innerHTML = "";
 
-      // Priorité 1 : Admin
       if (data.role === "admin") {
         proStatus.innerHTML = "<span style='color:#f1c40f; font-weight:bold;'>👑 Administrateur</span>";
+        adminSection.classList.remove("hidden");
         return;
       }
 
-      // Priorité 2 : Déjà PRO
       if (data.plan === "pro") {
-        proStatus.innerHTML = "<span style='color:#2ecc71; font-weight:bold;'>🟢 Compte Professionnel Validé</span>";
+        proStatus.innerHTML = "<span style='color:#2ecc71; font-weight:bold;'>🟢 Compte Professionnel</span>";
         return;
       }
 
-      // Priorité 3 : Demande déjà envoyée
       const reqSnap = await getDoc(doc(db, "pro_requests", user.uid));
       if (reqSnap.exists()) {
-        proStatus.innerHTML = "<span class='meta'>⏳ Demande PRO en cours d'examen...</span>";
+        proStatus.innerHTML = "<span class='meta'>⏳ Demande PRO en cours...</span>";
         return;
       }
 
-      // Priorité 4 : Proposer de devenir PRO (renvoie vers le formulaire du profil)
       const btn = document.createElement("button");
-      btn.className = "btn btn-ok";
-      btn.style.width = "100%";
-      btn.textContent = "🚀 Passer Professionnel (Vérification gratuite)";
-      btn.onclick = () => {
-        window.location.href = "/wauklink-site/profil/index.html";
-      };
+      btn.className = "btn btn-ok"; btn.style.width = "100%";
+      btn.textContent = "🚀 Passer Professionnel";
+      btn.onclick = () => { window.location.href = "/wauklink-site/profil/index.html"; };
       proStatus.appendChild(btn);
-
-    } catch (err) {
-      console.error("Erreur Dashboard Status:", err);
-    }
+    } catch (err) { console.error(err); }
   });
 </script>
-
-<script type="module" src="/wauklink-site/shared/notifier.js"></script> 
-
 </body>
 </html>
