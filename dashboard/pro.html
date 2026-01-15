@@ -3,164 +3,75 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Espace PRO — WAUKLINK</title>
-
-  <!-- STYLE GLOBAL -->
+  <title>Mes Annonces — WAUKLINK</title>
   <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
-
 <body>
 
 <header class="topbar">
   <div class="container topbar-row">
-    <div>
-      <h1>WAUKLINK</h1>
-      <div class="subtitle">Espace Professionnel ⭐⭐⭐</div>
-    </div>
-
+    <h1>WAUKLINK</h1>
+    <div class="subtitle">Gestion de mes annonces</div>
     <nav class="topbar-nav">
-      <a class="btn" href="/wauklink-site/index.html">
-        ← Accueil
-      </a>
-      <a class="btn"
-         href="/wauklink-site/deposer/annonce-location.html">
-        ➕ Nouvelle annonce PRO
-      </a>
+      <a class="btn" href="/wauklink-site/dashboard/index.html">← Dashboard</a>
     </nav>
   </div>
 </header>
 
 <main class="container main-layout">
-  <h2>Mes annonces PRO</h2>
-  <p id="msg" class="meta" aria-live="polite"></p>
+  <h2>Liste de mes publications</h2>
+  <p id="msg" class="meta"></p>
   <section id="grid" class="grid"></section>
 </main>
 
-<footer class="footer">
-  <div class="container footer-row">
-    <span>© WAUKLINK</span>
-    <nav class="footer-nav">
-      <a class="link" href="/wauklink-site/pricing.html">Tarifs</a>
-      <a class="link" href="/wauklink-site/legal/index.html">CGU</a>
-      <a class="link" href="/wauklink-site/legal/privacy.html">
-        Confidentialité
-      </a>
-      <a class="link"
-         href="/wauklink-site/legal/mentions-legales.html">
-        Mentions légales
-      </a>
-    </nav>
-  </div>
-</footer>
-
-<!-- 👤 NAVBAR / AUTH -->
-<script type="module"
-        src="/wauklink-site/shared/user_status.js">
-</script>
-
-<!-- =========================
-     LOGIQUE ESPACE PRO
-========================= -->
 <script type="module">
-  import { auth, db } from
-    "/wauklink-site/shared/firebase.js";
-  import { onAuthStateChanged } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-  import {
-    collection, query, where, orderBy,
-    getDocs, doc, getDoc
-  } from
-    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  import { auth, db } from "/wauklink-site/shared/firebase.js";
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import { collection, query, where, orderBy, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
   const grid = document.getElementById("grid");
-  const msg  = document.getElementById("msg");
-
-  const esc = s =>
-    String(s ?? "").replace(/[&<>"']/g, m =>
-      ({ "&":"&amp;","<":"&lt;",">":"&gt;",
-         '"':"&quot;","'":"&#039;" }[m])
-    );
+  const msg = document.getElementById("msg");
 
   onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      location.replace("/wauklink-site/auth/login.html");
-      return;
-    }
-
-    // 🔐 Vérification rôle PRO / ADMIN
-    const snap = await getDoc(
-      doc(db, "users", user.uid)
-    );
-
-    if (!snap.exists()) {
-      msg.textContent = "⛔ Profil introuvable.";
-      return;
-    }
-
-    const data = snap.data();
-    const isAllowed =
-      data.role === "admin" ||
-      data.plan === "pro" ||
-      data.isPro === true;
-
-    if (!isAllowed) {
-      msg.textContent =
-        "⛔ Accès réservé aux comptes Professionnels.";
-      return;
-    }
-
-    loadProAnnonces(user.uid);
+    if (!user) { location.replace("/wauklink-site/auth/login.html"); return; }
+    load(user.uid);
   });
 
-  async function loadProAnnonces(uid) {
-    grid.innerHTML = "";
-    msg.textContent =
-      "⏳ Chargement de vos annonces PRO…";
-
-    const qy = query(
-      collection(db, "annonces"),
-      where("userId", "==", uid),
-      where("proOnly", "==", true),
-      orderBy("createdAt", "desc")
-    );
-
-    const snap = await getDocs(qy);
+  async function load(uid) {
+    grid.innerHTML = "⏳ Chargement...";
+    const q = query(collection(db, "annonces"), where("userId", "==", uid), orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
 
     if (snap.empty) {
-      msg.textContent =
-        "Aucune annonce PRO pour le moment.";
+      msg.textContent = "Vous n'avez aucune annonce.";
+      grid.innerHTML = "";
       return;
     }
 
-    msg.textContent =
-      `${snap.size} annonce(s) PRO`;
-
+    grid.innerHTML = "";
     snap.forEach(d => {
       const a = d.data();
-
       const card = document.createElement("div");
       card.className = "card";
-
       card.innerHTML = `
-        <strong>${esc(a.title || "Annonce")}</strong>
-        <div class="meta">
-          ${esc(a.city || "—")} • ${esc(a.type || "—")}
+        <strong>${a.title}</strong>
+        <p class="meta">${a.specialite || a.type} | ${a.city}</p>
+        <p class="meta">Statut: <b>${a.status}</b></p>
+        <div style="margin-top:10px; display:flex; gap:10px;">
+            <a class="btn" href="../annonces/location-detail.html?id=${d.id}">Voir</a>
+            <button class="btn btn-danger" onclick="del('${d.id}')">Supprimer</button>
         </div>
-        <div class="meta">
-          ${esc(a.price ?? "—")} €
-        </div>
-        <div class="meta">
-          Statut : <b>${esc(a.status || "—")}</b>
-        </div>
-        <p class="meta" style="margin-top:10px">
-          ${esc(a.description || "")}
-        </p>
       `;
-
       grid.appendChild(card);
     });
   }
-</script>
 
+  window.del = async (id) => {
+    if(confirm("Supprimer cette annonce ?")) {
+        await deleteDoc(doc(db, "annonces", id));
+        location.reload();
+    }
+  };
+</script>
 </body>
 </html>
