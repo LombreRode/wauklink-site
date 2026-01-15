@@ -25,7 +25,7 @@ export const wauklinkCategories = {
             "Menuiserie (Fenêtres/Portes)",
             "Isolation (Combles/Murs)",
             "Carrelage & Sols",
-            "Panneaux Solaires (Photovoltaïque)", // Ajouté !
+            "Panneaux Solaires (Photovoltaïque)",
             "Bornes de recharge électrique",
             "Pompe à chaleur",
             "Ramonage & Entretien Poêle"
@@ -46,13 +46,14 @@ export const wauklinkCategories = {
     "exterieur": {
         label: "🌿 Espaces Verts & Jardins",
         specs: [
+            "Entretien & Construction Piscine", // Ajouté pour toi !
+            "Installation Spa & Sauna",
             "Tonte & Entretien pelouse",
             "Taille de haies & Arbustes",
             "Élagage & Abattage d'arbres",
             "Entretien Chemins & Allées",
             "Nettoyage Haute Pression (Terrasse/Façade)",
             "Portail & Clôture",
-            "Piscine & Spa (Entretien/Const)",
             "Arrosage automatique"
         ]
     },
@@ -90,7 +91,14 @@ export const wauklinkCategories = {
     },
     "immobilier": {
         label: "🏠 Immobilier (Location)",
-        specs: ["Appartement", "Maison", "Garage/Box", "Bureau/Commerce"]
+        specs: [
+            "Chambre", // Ajouté pour toi !
+            "Appartement", 
+            "Maison", 
+            "Garage/Box", 
+            "Bureau/Commerce",
+            "Terrain"
+        ]
     },
     "loisir": {
         label: "⚽ Loisir & Divers",
