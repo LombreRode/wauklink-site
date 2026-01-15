@@ -1,124 +1,157 @@
-import { db, auth } from "./shared/firebase.js";
-import { doc, getDoc, collection, addDoc, serverTimestamp, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Détail de l'annonce - WAUKLINK</title>
+    <link rel="stylesheet" href="../detail.css">
+</head>
+<body>
 
-const params = new URLSearchParams(window.location.search);
-const id = params.get("id");
+    <div id="msg" style="padding: 20px; text-align: center;">Chargement de l'annonce...</div>
 
-const msg = document.getElementById("msg");
-const section = document.getElementById("annonce");
-const reviewsList = document.getElementById("reviewsList");
-
-// Sécurité XSS
-const esc = s => String(s ?? "").replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
-
-if (!id) {
-    msg.textContent = "❌ Annonce introuvable.";
-} else {
-    loadAnnonce();
-}
-
-async function loadAnnonce() {
-    try {
-        const snap = await getDoc(doc(db, "annonces", id));
-        if (!snap.exists()) {
-            msg.textContent = "❌ Cette annonce n'existe plus.";
-            return;
-        }
-
-        const a = snap.data();
-
-        // Remplissage des infos
-        document.getElementById("badgeSpec").textContent = a.specialite || a.type;
-        document.getElementById("titre").textContent = a.title;
-        document.getElementById("meta").textContent = `📍 ${a.city} • Publié le ${a.createdAt?.toDate().toLocaleDateString() || 'récemment'}`;
-        document.getElementById("displayPrice").textContent = a.price > 0 ? `${a.price} €` : "Sur devis";
-        document.getElementById("description").textContent = a.description;
-
-        // Gestion du bouton d'appel
-        const callBtn = document.getElementById("callBtn");
-        if (a.phone) {
-            callBtn.href = `tel:${a.phone}`;
-            callBtn.textContent = `📞 Appeler (${a.phone})`;
-        } else {
-            callBtn.style.display = "none";
-        }
-
-        // Photos
-        const photosDiv = document.getElementById("photos");
-        if (a.images && a.images.length > 0) {
-            a.images.forEach(url => {
-                const img = document.createElement("img");
-                img.src = url;
-                photosDiv.appendChild(img);
-            });
-        }
-
-        // Afficher la section et cacher le chargement
-        msg.classList.add("hidden");
-        section.classList.remove("hidden");
+    <section id="annonce" class="hidden" style="max-width: 800px; margin: auto; padding: 20px;">
+        <span id="badgeSpec" style="background: #004d40; color: white; padding: 5px 10px; border-radius: 5px;"></span>
+        <h1 id="titre"></h1>
+        <div id="meta" class="meta"></div>
+        <div id="displayPrice" style="font-size: 1.5rem; font-weight: bold; margin: 15px 0;"></div>
         
-        // Charger les avis
-        loadReviews();
+        <div id="photos" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;"></div>
+        
+        <p id="description" style="white-space: pre-wrap; line-height: 1.6;"></p>
+        
+        <a id="callBtn" class="btn" style="display: inline-block; padding: 10px 20px; background: #28a745; color: white; text-decoration: none; border-radius: 5px;"></a>
 
-        // Activer la section avis si l'utilisateur est connecté
-        onAuthStateChanged(auth, (user) => {
-            if (user) document.getElementById("ratingSection").classList.remove("hidden");
-        });
+        <hr style="margin: 30px 0;">
 
-    } catch (err) {
-        console.error(err);
-        msg.textContent = "Erreur de chargement.";
-    }
-}
+        <h3>Avis des utilisateurs</h3>
+        <div id="reviewsList"></div>
 
-// --- GESTION DES AVIS ---
-async function loadReviews() {
-    reviewsList.innerHTML = "";
-    const q = query(collection(db, "reviews"), where("annonceId", "==", id), orderBy("createdAt", "desc"));
-    const snap = await getDocs(q);
+        <div id="ratingSection" class="hidden" style="margin-top: 20px; background: #f9f9f9; padding: 15px; border-radius: 8px;">
+            <h4>Laisser un avis</h4>
+            <select id="ratingValue">
+                <option value="5">⭐⭐⭐⭐⭐</option>
+                <option value="4">⭐⭐⭐⭐</option>
+                <option value="3">⭐⭐⭐</option>
+                <option value="2">⭐⭐</option>
+                <option value="1">⭐</option>
+            </select><br><br>
+            <textarea id="ratingComment" placeholder="Votre commentaire..." style="width: 100%; height: 80px;"></textarea><br>
+            <button id="rateBtn" style="margin-top: 10px; padding: 10px 20px; cursor: pointer;">Publier l'avis</button>
+            <p id="rateMsg"></p>
+        </div>
+    </section>
 
-    if (snap.empty) {
-        reviewsList.innerHTML = "<p class='meta'>Aucun avis pour le moment. Soyez le premier !</p>";
-        return;
-    }
+    <script type="module">
+        // Important : on utilise ../ car le fichier est dans le dossier /annonces
+        import { db, auth } from "../shared/firebase.js"; 
+        import { doc, getDoc, collection, addDoc, serverTimestamp, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-    snap.forEach(d => {
-        const r = d.data();
-        const div = document.createElement("div");
-        div.className = "review-item"; // Utilise le style de ton CSS
-        div.innerHTML = `
-            <div class="stars">${"⭐".repeat(r.rating)}</div>
-            <p>${esc(r.comment)}</p>
-            <small class="meta">Posté par un utilisateur le ${r.createdAt?.toDate().toLocaleDateString()}</small>
-        `;
-        reviewsList.appendChild(div);
-    });
-}
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
 
-// --- POSTER UN AVIS ---
-document.getElementById("rateBtn").onclick = async () => {
-    const rating = document.getElementById("ratingValue").value;
-    const comment = document.getElementById("ratingComment").value;
-    const rateMsg = document.getElementById("rateMsg");
+        const msg = document.getElementById("msg");
+        const section = document.getElementById("annonce");
+        const reviewsList = document.getElementById("reviewsList");
 
-    if (!rating || !comment) {
-        alert("Merci de remplir tous les champs.");
-        return;
-    }
+        const esc = s => String(s ?? "").replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
 
-    try {
-        await addDoc(collection(db, "reviews"), {
-            annonceId: id,
-            userId: auth.currentUser.uid,
-            rating: parseInt(rating),
-            comment: comment,
-            createdAt: serverTimestamp()
-        });
-        rateMsg.textContent = "✅ Avis publié !";
-        document.getElementById("ratingComment").value = "";
-        loadReviews();
-    } catch (e) {
-        rateMsg.textContent = "❌ Erreur lors de la publication.";
-    }
-};
+        if (!id) {
+            msg.textContent = "❌ Annonce introuvable.";
+        } else {
+            loadAnnonce();
+        }
+
+        async function loadAnnonce() {
+            try {
+                const snap = await getDoc(doc(db, "annonces", id));
+                if (!snap.exists()) {
+                    msg.textContent = "❌ Cette annonce n'existe plus.";
+                    return;
+                }
+
+                const a = snap.data();
+                document.getElementById("badgeSpec").textContent = a.specialite || a.type;
+                document.getElementById("titre").textContent = a.title;
+                document.getElementById("meta").textContent = `📍 ${a.city} • Publié le ${a.createdAt?.toDate().toLocaleDateString() || 'récemment'}`;
+                document.getElementById("displayPrice").textContent = a.price > 0 ? `${a.price} €` : "Sur devis";
+                document.getElementById("description").textContent = a.description;
+
+                const callBtn = document.getElementById("callBtn");
+                if (a.phone) {
+                    callBtn.href = `tel:${a.phone}`;
+                    callBtn.textContent = `📞 Appeler (${a.phone})`;
+                } else {
+                    callBtn.style.display = "none";
+                }
+
+                const photosDiv = document.getElementById("photos");
+                if (a.images && a.images.length > 0) {
+                    a.images.forEach(url => {
+                        const img = document.createElement("img");
+                        img.src = url;
+                        img.style.width = "200px";
+                        img.style.borderRadius = "8px";
+                        photosDiv.appendChild(img);
+                    });
+                }
+
+                msg.classList.add("hidden");
+                section.classList.remove("hidden");
+                
+                loadReviews();
+
+                onAuthStateChanged(auth, (user) => {
+                    if (user) document.getElementById("ratingSection").classList.remove("hidden");
+                });
+
+            } catch (err) {
+                console.error(err);
+                msg.textContent = "Erreur de chargement.";
+            }
+        }
+
+        async function loadReviews() {
+            reviewsList.innerHTML = "";
+            try {
+                const q = query(collection(db, "reviews"), where("annonceId", "==", id), orderBy("createdAt", "desc"));
+                const snap = await getDocs(q);
+                if (snap.empty) {
+                    reviewsList.innerHTML = "<p>Aucun avis pour le moment.</p>";
+                    return;
+                }
+                snap.forEach(d => {
+                    const r = d.data();
+                    const div = document.createElement("div");
+                    div.style.borderBottom = "1px solid #eee";
+                    div.style.padding = "10px 0";
+                    div.innerHTML = `
+                        <div style="color: #f39c12;">${"⭐".repeat(r.rating)}</div>
+                        <p>${esc(r.comment)}</p>
+                        <small style="color: #777;">Le ${r.createdAt?.toDate().toLocaleDateString()}</small>
+                    `;
+                    reviewsList.appendChild(div);
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        document.getElementById("rateBtn").onclick = async () => {
+            const rating = document.getElementById("ratingValue").value;
+            const comment = document.getElementById("ratingComment").value;
+            if (!comment) return alert("Merci d'écrire un commentaire.");
+
+            try {
+                await addDoc(collection(db, "reviews"), {
+                    annonceId: id,
+                    userId: auth.currentUser.uid,
+                    rating: parseInt(rating),
+                    comment: comment,
+                    createdAt: serverTimestamp()
+                });
+                document.getElementById("ratingComment").value = "";
+                loadReviews();
+            } catch (e) { alert("Erreur d'envoi"); }
+        };
+    </script>
+</body>
+</html>
