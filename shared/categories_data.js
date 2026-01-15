@@ -1,27 +1,99 @@
 // /wauklink-site/shared/categories_data.js
+
 export const wauklinkCategories = {
     "urgences": {
-        label: "🚨 Urgences",
-        specs: ["Serrurerie", "Plomberie (Fuite/Débouchage)", "Électricité (Panne)", "Chauffage/Clim en panne", "Vitrerie (Bris)", "Toiture (Bâchage)"]
+        label: "🚨 Urgences (Intervention Rapide)",
+        specs: [
+            "Serrurerie (Porte claquée/vol)",
+            "Plomberie (Fuite d'eau/Débouchage)",
+            "Électricité (Panne totale)",
+            "Chauffage/Clim en panne",
+            "Vitrerie (Bris de glace)",
+            "Toiture (Bâchage après sinistre)",
+            "Débouchage Canalisation Express",
+            "Pompage Inondation"
+        ]
     },
     "travaux": {
-        label: "🏗️ Travaux",
-        specs: ["Maçonnerie", "Électricité", "Plomberie", "Peinture", "Toiture", "Menuiserie", "Isolation", "Carrelage"]
+        label: "🏗️ Travaux & Rénovation",
+        specs: [
+            "Maçonnerie & Gros œuvre",
+            "Électricité (Mise aux normes)",
+            "Plomberie & Sanitaire",
+            "Peinture & Enduits",
+            "Toiture & Charpente",
+            "Menuiserie (Fenêtres/Portes)",
+            "Isolation (Combles/Murs)",
+            "Carrelage & Sols",
+            "Panneaux Solaires (Photovoltaïque)", // Ajouté !
+            "Bornes de recharge électrique",
+            "Pompe à chaleur",
+            "Ramonage & Entretien Poêle"
+        ]
     },
     "amenagement": {
-        label: "🏠 Aménagement",
-        specs: ["Cuisine", "Dressing", "Salle de Bain", "Décoration", "Verrière", "Combles"]
+        label: "🏠 Aménagement d'Intérieur",
+        specs: [
+            "Cuisine (Pose & Rénovation)",
+            "Dressing & Placards sur mesure",
+            "Salle de Bain (Agencement)",
+            "Décoration & Coaching déco",
+            "Verrières & Cloisons amovibles",
+            "Aménagement de combles",
+            "Domotique & Alarme"
+        ]
     },
     "exterieur": {
-        label: "🌿 Espaces Verts & Extérieur",
-        specs: ["Tonte/Haie", "Élagage", "Entretien Chemins/Allées", "Portail & Clôture", "Piscine", "Arrosage"]
+        label: "🌿 Espaces Verts & Jardins",
+        specs: [
+            "Tonte & Entretien pelouse",
+            "Taille de haies & Arbustes",
+            "Élagage & Abattage d'arbres",
+            "Entretien Chemins & Allées",
+            "Nettoyage Haute Pression (Terrasse/Façade)",
+            "Portail & Clôture",
+            "Piscine & Spa (Entretien/Const)",
+            "Arrosage automatique"
+        ]
     },
     "assainissement": {
-        label: "💧 Assainissement",
-        specs: ["Vidange Fosse Septique", "Pompage/Curage", "Débouchage Canalisation", "Inspection Caméra"]
+        label: "💧 Assainissement & Pompage",
+        specs: [
+            "Vidange Fosse Septique",
+            "Pompage Bac à graisse",
+            "Curage de canalisations",
+            "Inspection Caméra (Tuyaux)",
+            "Traitement de l'eau (Adoucisseur)"
+        ]
+    },
+    "logistique_recyclage": {
+        label: "🗑️ Débarras & Recyclage",
+        specs: [
+            "Débarras Maison & Cave",
+            "Enlèvement Encombrants",
+            "Évacuation de Gravats",
+            "Enlèvement Épave (Voiture HS)",
+            "Transport de véhicules",
+            "Dératisation & Nuisibles"
+        ]
     },
     "services-personne": {
-        label: "🛠️ Services à la personne",
-        specs: ["Ménage", "Petit Bricolage", "Garde d'enfants", "Informatique", "Ramonage", "Nuisibles", "Débarras/Encombrants"]
+        label: "🛠️ Services & Aide",
+        specs: [
+            "Ménage & Repassage",
+            "Petit Bricolage (Montage meuble)",
+            "Garde d'enfants (Babysitting)",
+            "Assistance Informatique",
+            "Soutien scolaire",
+            "Aide au déménagement"
+        ]
+    },
+    "immobilier": {
+        label: "🏠 Immobilier (Location)",
+        specs: ["Appartement", "Maison", "Garage/Box", "Bureau/Commerce"]
+    },
+    "loisir": {
+        label: "⚽ Loisir & Divers",
+        specs: ["Matériel de sport", "Outils de jardin", "Événementiel", "Autres"]
     }
 };
