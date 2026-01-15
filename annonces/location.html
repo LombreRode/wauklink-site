@@ -1,66 +1,66 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Déposer une annonce — WAUKLINK</title>
-  <link rel="stylesheet" href="/wauklink-site/style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Déposer une annonce — WAUKLINK</title>
+  <link rel="stylesheet" href="/wauklink-site/style.css">
 </head>
 <body>
 
 <header class="topbar">
-  <div class="container topbar-row">
-    <h1>WAUKLINK</h1>
-    <nav class="topbar-nav">
-      <a class="btn" href="/wauklink-site/index.html">Annuler</a>
-    </nav>
-  </div>
+  <div class="container topbar-row">
+    <h1>WAUKLINK</h1>
+    <nav class="topbar-nav">
+      <a class="btn" href="/wauklink-site/index.html">Annuler</a>
+    </nav>
+  </div>
 </header>
 
 <main class="container main-layout">
-  <div id="planBlock" class="card hidden" style="text-align: center;">
-    <h2>Accès Restreint</h2>
-    <p>Vous devez choisir un forfait Pro ou Particulier pour publier une annonce.</p>
-    <a href="/wauklink-site/dashboard/plans.html" class="btn">Voir les forfaits</a>
-  </div>
+    <div id="planBlock" class="card hidden" style="text-align: center;">
+    <h2>Accès réservé</h2>
+    <p>Vous devez choisir un forfait pour publier une annonce.</p>
+    <a href="/wauklink-site/dashboard/plans.html" class="btn btn-ok">Voir les forfaits</a>
+  </div>
 
-  <div class="card" style="max-width: 700px; margin: 0 auto;">
-    <h2>Publier une annonce</h2>
-    <p id="msg" class="meta">Remplissez les informations ci-dessous.</p>
-    
-    <form id="annonceForm" class="hidden" style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
-      <input type="text" id="title" placeholder="Titre de l'annonce" required class="input">
-      
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <input type="text" id="city" placeholder="Ville" required class="input">
-        <input type="text" id="postalCode" placeholder="Code Postal" required class="input">
-      </div>
+  <div class="card" style="max-width: 700px; margin: 0 auto;">
+    <h2 id="formTitle">Publier une annonce</h2>
+    <p id="msg" class="meta">Vérification de votre profil...</p>
+    
+    <form id="annonceForm" class="hidden" style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
+      <input type="text" id="title" placeholder="Titre de l'annonce (ex: Plombier chauffagiste)" required class="input">
+      
+      <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 10px;">
+        <input type="text" id="city" placeholder="Ville" required class="input">
+        <input type="text" id="postalCode" placeholder="Code postal" required class="input">
+      </div>
 
-      <input type="tel" id="phone" placeholder="Numéro de téléphone" class="input">
-      
-      <select id="type" class="input" required>
-        <option value="">-- Choisir une catégorie --</option>
-        <option value="travaux">Travaux / BTP</option>
-        <option value="urgences">Urgences</option>
-        <option value="piscine">Piscine / Entretien</option>
-        <option value="emploi">Offre d'emploi</option>
-      </select>
+      <input type="tel" id="phone" placeholder="Téléphone de contact" class="input">
+      
+      <select id="type" class="input" required>
+        <option value="">-- Catégorie --</option>
+        <option value="travaux">Travaux / BTP</option>
+        <option value="urgences">Urgences</option>
+        <option value="piscine">Piscine</option>
+        <option value="emploi">Emploi</option>
+      </select>
 
-      <input type="number" id="price" placeholder="Prix indicatif (€)" class="input">
-      
-      <textarea id="description" placeholder="Description détaillée..." required class="input" style="min-height: 150px;"></textarea>
+      <input type="number" id="price" placeholder="Prix indicatif (€)" class="input">
+      
+      <textarea id="description" placeholder="Description détaillée de votre service..." required class="input" style="min-height: 150px;"></textarea>
 
-      <div style="border: 2px dashed rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; text-align: center;">
-        <label for="photosInput" style="cursor: pointer; display: block;">
-          📸 <strong>Ajouter des photos</strong> (Max 6)
-          <input type="file" id="photosInput" accept="image/*" multiple style="display: none;">
-        </label>
-        <div id="preview" style="display: flex; flex-wrap: wrap; justify-content: center; margin-top: 10px;"></div>
-      </div>
+            <div style="border: 2px dashed var(--border); padding: 20px; border-radius: 10px; text-align: center;">
+        <label for="photosInput" style="cursor: pointer; display: block; font-weight: bold;">
+          📸 Cliquez pour ajouter des photos (max 6)
+        </label>
+        <input type="file" id="photosInput" accept="image/*" multiple style="display: none;">
+        <div id="preview" style="display: flex; flex-wrap: wrap; justify-content: center; margin-top: 10px;"></div>
+      </div>
 
-      <button type="submit" class="btn btn-ok" style="width: 100%; border: none; padding: 15px;">🚀 Publier l'annonce</button>
-    </form>
-  </div>
+      <button type="submit" class="btn btn-ok" style="width: 100%; border: none; padding: 15px; font-size: 1.1rem;">🚀 Envoyer pour validation</button>
+    </form>
+  </div>
 </main>
 
 <script type="module" src="./location.js"></script>
