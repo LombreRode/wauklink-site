@@ -1,86 +1,105 @@
-// location-detail.js
+// location-detail.js — VERSION FINALE WAUKLINK
 import { db, auth } from "../shared/firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import {
   doc, getDoc, collection, addDoc, query, where, getDocs, serverTimestamp, orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-/* ========= DOM ========= */
+/* ========= DOM ELEMENTS ========= */
 const msg = document.getElementById("msg");
 const box = document.getElementById("annonce");
 const titre = document.getElementById("titre");
 const meta = document.getElementById("meta");
 const description = document.getElementById("description");
 const photos = document.getElementById("photos");
+const displayPrice = document.getElementById("displayPrice");
+const badgeSpec = document.getElementById("badgeSpec");
+const callBtn = document.getElementById("callBtn");
 
-// Éléments Avis (Assure-toi que ces IDs existent dans ton HTML)
+// Éléments Avis
 const ratingSection = document.getElementById("ratingSection");
-const ratingValue = document.getElementById("ratingValue"); // Le <select>
-const ratingComment = document.getElementById("ratingComment"); // Le <textarea>
+const ratingValue = document.getElementById("ratingValue");
+const ratingComment = document.getElementById("ratingComment");
 const rateBtn = document.getElementById("rateBtn");
-const reviewsList = document.getElementById("reviewsList"); // Le <div> pour la liste
+const reviewsList = document.getElementById("reviewsList");
 
 // Éléments Signalement
 const reportSection = document.getElementById("reportSection");
 const reportLink = document.getElementById("reportLink");
 
-/* ========= PARAM ========= */
+/* ========= PARAMÈTRES URL ========= */
 const annonceId = new URLSearchParams(location.search).get("id");
-let ownerId = null; // Pour stocker l'ID du prestataire
+let ownerId = null; 
 
 if (!annonceId) {
-  msg.textContent = "❌ Annonce introuvable";
-  throw new Error("ID annonce manquant");
+  msg.textContent = "❌ Annonce introuvable (ID manquant)";
+} else {
+  loadAnnonce();
 }
 
-/* ========= LOAD ANNONCE ========= */
+/* ========= CHARGEMENT DE L'ANNONCE ========= */
 async function loadAnnonce() {
-  msg.textContent = "⏳ Chargement…";
+  msg.textContent = "⏳ Chargement des détails...";
   try {
-    const ref = doc(db, "annonces", annonceId);
-    const snap = await getDoc(ref);
+    const snap = await getDoc(doc(db, "annonces", annonceId));
 
     if (!snap.exists()) {
-      msg.textContent = "❌ Annonce introuvable";
+      msg.textContent = "❌ Cette annonce n'existe plus.";
       return;
     }
 
     const a = snap.data();
-    ownerId = a.userId; // On récupère l'ID du créateur de l'annonce
+    ownerId = a.userId;
 
-    if (a.status !== "active") {
-      msg.textContent = "⛔ Cette annonce n’est plus disponible";
-      return;
+    // Affichage des textes
+    titre.textContent = a.title || "Sans titre";
+    badgeSpec.textContent = a.specialite || a.type || "Général";
+    
+    // Meta : Ville + Date
+    const datePub = a.createdAt?.toDate().toLocaleDateString() || "récemment";
+    meta.textContent = `📍 ${a.city || "—"} (${a.postalCode || "—"}) • Publié le ${datePub}`;
+    
+    // Prix
+    displayPrice.textContent = a.price > 0 ? `${a.price} €` : "Prix sur devis / Gratuit";
+    
+    // Description
+    description.textContent = a.description || "Aucune description fournie.";
+
+    // Téléphone & Bouton d'appel
+    if (a.phone) {
+      callBtn.href = `tel:${a.phone}`;
+      callBtn.textContent = `📞 Appeler (${a.phone})`;
+      callBtn.classList.remove("hidden");
+    } else {
+      callBtn.classList.add("hidden");
     }
 
-    titre.textContent = a.title || "Annonce";
-    meta.textContent = `${a.city || "—"} • ${a.type || "—"} • ${a.price ?? "—"} €`;
-    description.textContent = a.description || "";
-
-    // Photos
+    // Gestion des Photos
     photos.innerHTML = "";
-    if (Array.isArray(a.photos) && a.photos.length) {
+    if (a.photos && a.photos.length > 0) {
       a.photos.forEach(url => {
         const img = document.createElement("img");
         img.src = url;
-        img.className = "img-preview"; // Utilise tes classes CSS
+        img.style.cursor = "pointer";
+        img.onclick = () => window.open(url, '_blank'); // Agrandir au clic
         photos.appendChild(img);
       });
     }
 
+    // Affichage des blocs
     box.classList.remove("hidden");
-    msg.textContent = "";
+    msg.classList.add("hidden");
 
-    // Une fois l'annonce chargée, on affiche les avis sur ce prestataire
+    // Lancer le chargement des avis
     loadReviews(ownerId);
 
   } catch (err) {
     console.error(err);
-    msg.textContent = "❌ Erreur de chargement";
+    msg.textContent = "❌ Erreur lors de la récupération des données.";
   }
 }
 
-/* ========= CHARGER LES AVIS (Reviews) ========= */
+/* ========= CHARGER LES AVIS ========= */
 async function loadReviews(targetId) {
   if (!reviewsList) return;
   reviewsList.innerHTML = "<p class='meta'>Chargement des avis...</p>";
@@ -94,7 +113,7 @@ async function loadReviews(targetId) {
 
     const snap = await getDocs(q);
     if (snap.empty) {
-      reviewsList.innerHTML = "<p class='meta'>Aucun avis pour le moment.</p>";
+      reviewsList.innerHTML = "<p class='meta'>Soyez le premier à laisser un avis !</p>";
       return;
     }
 
@@ -102,21 +121,22 @@ async function loadReviews(targetId) {
     snap.forEach(d => {
       const r = d.data();
       const div = document.createElement("div");
-      div.className = "review-item mb";
+      div.className = "card";
+      div.style.marginBottom = "10px";
       div.innerHTML = `
-        <div style="color:#f1c40f;">${"⭐".repeat(r.rating)}</div>
-        <p style="margin:5px 0;">${r.comment || ""}</p>
-        <small class="meta">Le ${r.createdAt?.toDate().toLocaleDateString()}</small>
+        <div style="color:#f1c40f; margin-bottom:5px;">${"⭐".repeat(r.rating)}</div>
+        <p style="margin:0; font-size:0.95rem;">${r.comment || ""}</p>
+        <small class="meta" style="font-size:0.8rem;">Le ${r.createdAt?.toDate().toLocaleDateString()}</small>
       `;
       reviewsList.appendChild(div);
     });
   } catch (e) {
-    console.error(e);
+    console.error("Erreur reviews:", e);
     reviewsList.innerHTML = "";
   }
 }
 
-/* ========= AUTH & ACTIONS ========= */
+/* ========= AUTH & LOGIQUE D'AVIS ========= */
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     ratingSection.classList.add("hidden");
@@ -124,62 +144,56 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  // --- SIGNALEMENT ---
-  if (reportSection && reportLink) {
+  // Activer le signalement
+  if (reportSection) {
     reportSection.classList.remove("hidden");
     reportLink.href = `/wauklink-site/annonces/reports-annonce.html?id=${annonceId}`;
   }
 
-  // --- NOTATION ---
-  // On ne peut pas noter sa propre annonce
+  // Ne pas noter soi-même
   if (ownerId && user.uid === ownerId) {
-    ratingSection.innerHTML = `<p class="meta">Ceci est votre annonce.</p>`;
+    ratingSection.innerHTML = `<p class="meta">💡 Vous ne pouvez pas noter votre propre annonce.</p>`;
+    ratingSection.classList.remove("hidden");
     return;
   }
 
-  // Vérifier si déjà noté (dans la collection reviews désormais)
-  const q = query(
-    collection(db, "reviews"),
-    where("targetId", "==", ownerId),
-    where("authorId", "==", user.uid)
-  );
-
-  const snap = await getDocs(q);
-  if (!snap.empty) {
-    ratingSection.innerHTML = `<p class="meta">⭐ Vous avez déjà noté ce prestataire</p>`;
-  } else {
-    ratingSection.classList.remove("hidden");
+  // Vérifier si déjà noté
+  try {
+    const qNote = query(collection(db, "reviews"), where("targetId", "==", ownerId), where("authorId", "==", user.uid));
+    const snapNote = await getDocs(qNote);
     
-    rateBtn.onclick = async () => {
-      const rating = Number(ratingValue.value);
-      const comment = ratingComment ? ratingComment.value.trim() : "";
+    if (!snapNote.empty) {
+      ratingSection.innerHTML = `<p class="meta">✅ Vous avez déjà noté ce prestataire.</p>`;
+      ratingSection.classList.remove("hidden");
+    } else {
+      ratingSection.classList.remove("hidden");
+      
+      rateBtn.onclick = async () => {
+        const rating = Number(ratingValue.value);
+        const comment = ratingComment.value.trim();
 
-      if (rating < 1 || rating > 5) return alert("Note invalide");
-      if (comment.length < 3) return alert("Veuillez laisser un petit commentaire");
+        if (!rating) return alert("Choisissez une note !");
+        if (comment.length < 5) return alert("Laissez un commentaire un peu plus long.");
 
-      rateBtn.disabled = true;
-      rateBtn.textContent = "Envoi…";
+        rateBtn.disabled = true;
+        rateBtn.textContent = "Envoi...";
 
-      try {
-        await addDoc(collection(db, "reviews"), {
-          targetId: ownerId,      // Le prestataire
-          authorId: user.uid,     // L'auteur
-          rating,
-          comment,
-          annonceId,              // Pour savoir de quelle annonce ça vient
-          createdAt: serverTimestamp()
-        });
-
-        alert("✅ Merci pour votre avis !");
-        location.reload();
-      } catch (err) {
-        console.error(err);
-        alert("❌ Erreur lors de l’envoi");
-        rateBtn.disabled = false;
-        rateBtn.textContent = "Noter";
-      }
-    };
-  }
+        try {
+          await addDoc(collection(db, "reviews"), {
+            targetId: ownerId,
+            authorId: user.uid,
+            rating,
+            comment,
+            annonceId,
+            createdAt: serverTimestamp()
+          });
+          alert("⭐ Merci ! Votre avis a été publié.");
+          location.reload();
+        } catch (err) {
+          alert("Erreur lors de l'envoi.");
+          rateBtn.disabled = false;
+        }
+      };
+    }
+  } catch (e) { console.error(e); }
 });
-
-loadAnnonce();
