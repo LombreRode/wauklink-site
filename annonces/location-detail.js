@@ -74,14 +74,16 @@ async function loadAnnonce() {
       callBtn.classList.add("hidden");
     }
 
-    // Gestion des Photos
+    // Gestion des Photos (Accepte 'photos' ou 'images')
     photos.innerHTML = "";
-    if (a.photos && a.photos.length > 0) {
-      a.photos.forEach(url => {
+    const album = a.photos || a.images || []; 
+    if (album.length > 0) {
+      album.forEach(url => {
         const img = document.createElement("img");
         img.src = url;
         img.style.cursor = "pointer";
-        img.onclick = () => window.open(url, '_blank'); // Agrandir au clic
+        img.style.width = "200px"; // Optionnel : pour uniformiser la taille
+        img.onclick = () => window.open(url, '_blank');
         photos.appendChild(img);
       });
     }
