@@ -51,4 +51,40 @@ async function loadLatestAnnonces() {
     }
 }
 
+// --- AJOUTE CECI À LA FIN DE TON FICHIER INDEX.JS ---
+
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { auth } from "./shared/firebase.js";
+
+onAuthStateChanged(auth, (user) => {
+    const userNav = document.getElementById("userNav");
+    const guestStatus = document.getElementById("guestStatus");
+
+    if (user) {
+        // Si connecté : on montre le profil, on cache l'inscription
+        if (userNav) userNav.classList.remove("hidden");
+        if (guestStatus) guestStatus.classList.add("hidden");
+        
+        // Si l'utilisateur a une photo, on l'affiche dans le petit rond
+        const navAvatar = document.getElementById("navAvatar");
+        if (navAvatar && user.photoURL) {
+            navAvatar.src = user.photoURL;
+        }
+    } else {
+        // Si déconnecté : on cache le profil, on montre l'inscription
+        if (userNav) userNav.classList.add("hidden");
+        if (guestStatus) guestStatus.classList.remove("hidden");
+    }
+});
+
+// Gérer le clic sur le bouton déconnexion
+const logoutBtn = document.getElementById("logoutBtn");
+if (logoutBtn) {
+    logoutBtn.onclick = async () => {
+        await signOut(auth);
+        window.location.reload(); // Rafraîchit la page après déconnexion
+    };
+}
+
+// Enfin, on n'oublie pas de lancer le chargement des annonces
 loadLatestAnnonces();
